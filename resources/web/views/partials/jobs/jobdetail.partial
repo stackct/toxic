@@ -1,0 +1,110 @@
+<div ng-controller="JobDetailController">
+
+  <div class="box box-success">
+    <div class="box-header">
+      <h3 class="box-title">
+        <span class="fa fa-gears"></span> {{ job.id }}
+      </h3>
+    </div><!-- /.box-header -->
+
+    <div class="box-body">
+      <div class="row">
+        <div class="col-xs-4">
+          <span ng-include="'/views/partials/jobs/jobstatus.partial'" ng-init="job=job"></span>
+        </div>
+          
+        <div class="col-xs-8" align="right">
+          <button class="btn btn-sm bg-navy" ng-click="stopJob()" ng-hide="(['RUNNING','INITIALIZING','PENDING','ENDING'].indexOf(job.status) ==-1)" tooltip="Terminate Job" tooltip-animation="true">
+            <span class="fa fa-stop"></span> Terminate
+          </button>
+
+          <button class="btn btn-sm bg-navy" ng-click="startJob()" ng-hide="(['RUNNING','INITIALIZING','PENDING','ENDING'].indexOf(job.status) !=-1)" tooltip="Start Job" tooltip-animation="true">
+            <span class="fa fa-play"></span> Start
+          </button>
+
+          <button class="btn btn-sm bg-blue" ng-click="ackJob()" ng-if="user.authenticated && !job.acked && job.failed > 0" tooltip="Ack" tooltip-animation="true">
+            <span class="fa fa-hand-paper-o"></span> Ack
+          </button>
+
+          <button class="btn btn-sm bg-blue" ng-click="resolveJob()" ng-if="user.authenticated && job.acked == user.id" tooltip="Claim" tooltip-animation="true">
+            <span class="fa fa-thumbs-o-up"></span> Resolve
+          </button>
+
+          <span ng-repeat="(action,actionData) in job.actions">
+            <button class="btn btn-sm btn-primary" ng-click="performAction(action)">
+              <span class="fa fa-ellipsis-v"></span> {{ actionData.name }}
+            </button>
+          </span>
+
+        </div>
+      </div>
+    </div><!-- /.box-body -->
+  </div>
+
+
+  <ul ng-init="tab = 0" class="nav nav-tabs">
+    <li ng-class="{active:tab===0}">
+      <a href ng-click="tab = 0; loadSummary()">
+        <span class="fa fa-table"></span> Summary
+      </a>
+    </li>
+    <li ng-class="{active:tab===1}">
+      <a href ng-click="tab = 1; loadTaskResultsTab()">
+        <span class="fa fa-bar-chart-o"></span> Task Results
+        
+      </a>
+    </li>
+    <li ng-class="{active:tab===2}">
+      <a href ng-click="tab = 2; loadLog()">
+        <span class="fa fa-code"></span> Logs
+      </a>
+    </li>
+    <li ng-class="{active:tab===3}">
+      <a href ng-click="tab = 3; loadArtifacts()">
+        <span class="fa fa-download"></span> Artifacts
+      </a>
+    </li>
+    <li ng-class="{active:tab===4}">
+      <a href ng-click="tab = 4; loadImages()">
+        <span class="fa fa-archive"></span> Images
+      </a>
+    </li>
+    <li ng-class="{active:tab===5}">
+      <a href ng-click="tab = 5; loadDocs()">
+        <span class="fa fa-paperclip"></span> Docs
+      </a>
+    </li>
+  </ul>
+
+  <div style="height:1px;"></div>
+
+  <div>
+    <div class="box box-success">
+      <div class="box-body table-responsive">
+
+        <div class="box-body">
+          <p ng-show="tab === 0">
+            <ng-include src="'/views/partials/jobs/jobdetail-summary.partial'" />
+          </p>
+          <p ng-show="tab === 1">
+            <ng-include src="'/views/partials/jobs/jobdetail-results.partial'" />
+          </p>
+          <p ng-show="tab === 2">
+            <ng-include src="'/views/partials/jobs/jobdetail-log.partial'" />
+          </p>
+          <p ng-show="tab === 3">
+            <ng-include src="'/views/partials/jobs/jobdetail-artifacts.partial'" />
+          </p>
+          <p ng-show="tab === 4">
+            <ng-include src="'/views/partials/jobs/jobdetail-images.partial'" />
+          </p>
+          <p ng-show="tab === 5">
+            <ng-include src="'/views/partials/jobs/jobdetail-docs.partial'" />
+          </p>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>

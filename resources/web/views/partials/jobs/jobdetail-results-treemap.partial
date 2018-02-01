@@ -1,0 +1,87 @@
+<style>
+
+  #chart {
+  }
+
+  svg {
+  }
+
+  text {
+    pointer-events: none;
+  }
+
+  .grandparent text {
+    font-weight: bold;
+    font-size: 16pt;
+  }
+
+  rect {
+    fill: #777;
+    stroke: #fff;
+  }
+
+  rect.parent,
+  .grandparent rect {
+    stroke-width: 2px;
+  }
+
+  .grandparent rect {
+    fill: orange;
+  }
+
+  .grandparent:hover rect {
+    fill: #ee9700;
+  }
+
+  .children rect.parent,
+  .grandparent rect {
+    cursor: pointer;
+  }
+
+  .children rect.parent {
+    fill-opacity: .2;
+  }
+
+  .children rect.child {
+    fill-opacity: .8;
+  }
+  .children:hover rect.child {
+    fill-opacity: .5;
+  }
+
+  .leaf rect {
+  }
+
+  .hasFailure rect {
+    fill: #aa5555;
+    cursor: pointer;
+  }
+
+</style>
+
+<div>
+  <div id="chart" results-treemap  data="taskResults" job-id="job.id" width="900" height="500"></div>
+  <aside>
+    <div>Click any cell to zoom in, or the top orange label to zoom out.</div>
+    <div>Cell size indicates time spent on task/suite relative to siblings (Larger cell == more time).</div>
+    <div>Red cells indicate an error at that level or below, drill down for details.</div>
+  </aside>
+</div>
+
+<div class="modal" id="taskFailureModal" tabindex="-1" role="dialog" aria-labelledby="label" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="label">{{ taskToDisplay.name }}</h4>
+      </div>
+
+      <div class="modal-body" style="height: 70% !important; overflow:scroll !important;">
+        <pre>{{ taskToDisplay.error }}</pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

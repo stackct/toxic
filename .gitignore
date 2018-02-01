@@ -1,2 +1,55 @@
-conf
-terraform/.terraform
+# Application output directories
+/gen/
+/output/
+/test-output/
+/log/
+/jobs/
+/current/
+/.vagrant/
+
+# Log files
+*.log
+
+# Application generated files
+toxic.pid
+/results/
+
+# Eclipse project files
+.project
+.classpath
+.settings
+
+# VI temporary files
+*.swp
+tags
+
+# IntelliJ project files.
+/.idea/
+*.iml
+
+# Visual Studio Code
+/.vscode/
+
+# Mac specific files
+/.DS_Store/
+
+# Custom security properties
+toxic-secure.properties
+toxic-server.properties
+
+# RPM build files
+rpm/BUILD/toxic-*
+rpm/RPMS/noarch/toxic-*
+
+# Ansible files
+/inventory
+site.retry
+
+# Docker Build Files
+docker/artifacts
+
+# Ivy local cache
+/.ivy/
+
+# Ant autocomplete 
+.ant-targets-build.xml

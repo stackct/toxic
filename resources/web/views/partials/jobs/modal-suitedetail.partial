@@ -1,0 +1,74 @@
+<div class="modal fade" id="suitedetail" tabindex="-1" role="dialog" aria-labelledby="label" aria-hidden="true"
+     ng-mouseover="disableScroll()" ng-mouseout="enableScroll()">
+  <div class="modal-dialog modal-lg" style="overflow: initial !important">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="label">{{ suiteDetail.name }}</h4>
+      </div>
+
+      <div class="modal-body" style="height: 70% !important; overflow: auto">
+        <table class="table">
+        <thead>
+          <tr>
+            <th>
+              <a ng-click="modalSortField='name'; modalSortReverse = !modalSortReverse">
+                Task
+                <span ng-show="modalSortField == 'name' && !modalSortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                <span ng-show="modalSortField == 'name' && modalSortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+              </a>
+            </th>
+            <th class="text-center" nowrap>
+              <a ng-click="modalSortField='success'; modalSortReverse = !modalSortReverse">
+                Result
+                <span ng-show="modalSortField == 'success' && !modalSortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                <span ng-show="modalSortField == 'success' && modalSortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+              </a>
+            </th>
+            <th class="text-center" nowrap>
+              <a ng-click="modalSortField='startTime'; modalSortReverse = !modalSortReverse">
+                Start Time
+                <span ng-show="modalSortField == 'startTime' && !modalSortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                <span ng-show="modalSortField == 'startTime' && modalSortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+              </a>
+            </th>
+            <th class="text-right" nowrap>
+              <a ng-click="modalSortField='duration'; modalSortReverse = !modalSortReverse">
+                Duration
+                <span ng-show="modalSortField == 'duration' && !modalSortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                <span ng-show="modalSortField == 'duration' && modalSortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+              </a>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat-start="task in suiteDetail.tasks | orderBy:modalSortField:modalSortReverse">
+            <td>
+              <span>{{ task.name }}</span>
+            </td>
+            <td class="text-center">
+              <span class="label label-success" ng-show="task.success">OK</span>
+              <span class="label label-danger" ng-show="!task.success">FAILED</span>
+            </td>
+            <td class="text-right startTime">{{ task.startTime | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+            <td class="text-right">{{ task.duration | duration:'hh:mm:ss:ssss' }}</td>
+          </tr>
+          <tr ng-show="!task.success" ng-repeat-end>
+            <td colspan="4">
+              <pre>{{ task.error }}</pre>
+            </td>
+          </tr>
+        </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-sm" ng-click="loadSuiteDetail(suiteDetail.name)">
+          <span class="fa fa-refresh"></span> Refresh
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">
+          <span class="fa fa-sign-out"></span> Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

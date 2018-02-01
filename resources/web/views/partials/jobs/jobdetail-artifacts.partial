@@ -1,0 +1,30 @@
+<div>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>
+          <a ng-click="artifactsSortField='name'; artifactsSortReverse = !artifactsSortReverse">
+            Name
+            <span ng-show="artifactsSortField == 'name' && !artifactsSortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="artifactsSortField == 'name' && artifactsSortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+        <th class="text-right" nowrap>
+          <a ng-click="artifactsSortField='size'; artifactsSortReverse = !artifactsSortReverse">
+            Size
+            <span ng-show="artifactsSortField == 'size' && !artifactsSortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="artifactsSortField == 'size' && artifactsSortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+      </tr>
+    </thead>
+    <tr ng-repeat="artifact in artifacts | orderBy:artifactsSortField:artifactsSortReverse">
+      <td>
+        <a href="/api/job/{{job.id}}/artifact/{{artifact.name}}">{{ artifact.name }}</a>
+      </td>
+      <td class="text-right">
+        {{ artifact.size | bytes }} 
+      </td>
+    </tr>
+  </table>
+</div>

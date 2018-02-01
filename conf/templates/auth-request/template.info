@@ -1,0 +1,3 @@
+fromEmail=example@mycompany.invalid
+fromName=Toxic
+subject=Toxic Authentication Token

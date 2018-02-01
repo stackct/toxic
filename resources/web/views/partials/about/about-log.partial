@@ -1,0 +1,8 @@
+<div class="well well-sm">
+  <span ng-class="{'hide': (about.log != null && about.log.length > 0)}">
+    To monitor toxic server logs, create a custom $TOXIC_HOME/conf/log4j.xml 
+    with a rolling appender and with no console appender.  
+    Use $TOXIC_HOME/current/conf/log4j.xml as a reference, if needed.
+  </span>
+  <div ng-class="{'hide': (about.log == null || about.log.length == 0)}" class="raw log">{{ about.log }}</div>
+</div>

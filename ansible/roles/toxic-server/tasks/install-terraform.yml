@@ -1,0 +1,9 @@
+- name: Install terraform
+  unarchive:
+    remote_src: yes
+    src: https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip
+    dest: /usr/local/bin
+  become: true
+
+- name: Link terraform
+  file: src=/usr/local/bin/terraform dest=/usr/bin/terraform state=link

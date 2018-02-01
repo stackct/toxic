@@ -1,0 +1,21 @@
+To get started, create a text file named myProject.job with contents 
+describing the job parameters. Refer to the job parameters tab above to 
+determine what parameters are available, and their defaults.
+<br/>
+<br/>
+Next, place the file into the pending jobs directory: 
+<pre>{{ about.sysParams['jobManager.jobDirectory'] }}/pending</pre>
+<br/>
+Toxic's built-in job manager will detect the new job automatically and begin
+execution of the job's instructions.
+<br/>
+<br/>
+The following example illustrates a possible job file:
+<br/>
+<pre>
+-xmlHost=localhost
+-xmlPort=6011
+-doDir=`"${memory['project.workDir']}/toxic/foo"`
+-doDir1=`"${memory['project.workDir']}/toxic/bar"`
+-job.end.script.1="echo Finished!".execute().text
+</pre>

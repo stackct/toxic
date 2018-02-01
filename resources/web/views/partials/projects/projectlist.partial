@@ -1,0 +1,87 @@
+<div ng-controller="ProjectListController">
+  <div class="box-body text-right">
+    <input ng-model="projectFilter" type="search" placeholder="&#xf0b0;" style="font-family: FontAwesome, 'Source Sans Pro'" />
+  </div>
+  <div class="box box-success" ng-repeat="group in latestGroups | orderBy: group">
+      <div class="box-header">
+        <h3 class="box-title">
+          <span class="fa fa-folder-open-o"></span>
+          {{ group }}
+        </h3>
+      </div><!-- /.box-header -->
+      <div class="box-body table-responsive">
+
+          <table id="projects" class="table table-hover">
+            <thead>
+              <tr>
+                <th>
+                  <a ng-click="sortField='project'; sortReverse = !sortReverse">
+                    Project
+                    <span ng-show="sortField == 'project' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                    <span ng-show="sortField == 'project' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                  </a>
+                </th>
+                <th class="text-left" nowrap>
+                  <a ng-click="sortField='id'; sortReverse = !sortReverse">
+                    Latest Job
+                    <span ng-show="sortField == 'id' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                    <span ng-show="sortField == 'id' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                  </a>
+                </th>
+                <th class="text-left" colspan="2" nowrap>
+                  <a ng-click="sortField='status'; sortReverse = !sortReverse">
+                    Status
+                    <span ng-show="sortField == 'status' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                    <span ng-show="sortField == 'status' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                  </a>
+                </th>
+                <!-- <th>Ack</th> colspan:2 above -->
+                <th class="text-right" nowrap>
+                  <a ng-click="sortField='suites'; sortReverse = !sortReverse">
+                    Suites
+                    <span ng-show="sortField == 'suites' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                    <span ng-show="sortField == 'suites' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                  </a>
+                </th>
+                <th class="text-right" nowrap>
+                  <a ng-click="sortField='startedDate'; sortReverse = !sortReverse">
+                    Latest Job Start
+                    <span ng-show="sortField == 'startedDate' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                    <span ng-show="sortField == 'startedDate' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                  </a>
+                </th>
+                <th class="text-right" nowrap>
+                  <a ng-click="sortField='duration'; sortReverse = !sortReverse">
+                    Latest Job Duration
+                    <span ng-show="sortField == 'duration' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                    <span ng-show="sortField == 'duration' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                  </a>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-class="{ 'paused' : job.paused}" ng-repeat="job in latestProjectsByGroup[group] | filter:{ project: projectFilter } | orderBy:sortField:sortReverse">
+                <td>
+                  <a href ng-click="pauseProject(job.project)"><span ng-class="{'fa fa-pause' : !job.paused}" tooltip="Prevent new jobs from running" tooltip-animation="true" /></a>
+                  <a href ng-click="unpauseProject(job.project)"><span ng-class="{'fa fa-play' : job.paused}" tooltip="Allow new jobs to run" tooltip-animation="true" /></a>
+                  
+                  &nbsp;
+                  <a ng-class="{ 'paused' : job.paused }" href="#/jobs/{{job.project}}">
+                    {{ job.project }}
+                  </a>
+                </td>
+                <td><a href="#job/{{job.id}}">{{ job.id }}</a></td>
+                <td class="text-left">
+                  <span ng-include="'/views/partials/jobs/jobstatus.partial'" ng-init="job=job"></span>
+                </td>
+                <td><img ng-src="/api/user/{{ job.acked }}/avatar/24" ng-if="job.acked" class="img-circle" /></td>
+                <td class="text-right">{{ job.suites }} ({{ job.failed }} failed)</td>
+                <td class="text-right startTime">{{ job.startedDate | date:'yyyy-MM-dd HH:mm'}}</td>
+                <td class="text-right">{{ job.duration | duration:'hh:mm:ss' }}</td>
+              </tr>
+            </tbody>
+          </table>
+      </div><!-- /.box-body -->
+  </div><!-- /.box -->
+
+</div>

@@ -1,0 +1,9 @@
+Host *
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  ConnectTimeout 10
+  ServerAliveInterval 5
+
+Host {{ git_repo_hostname }}
+  User {{ git_ssh_key_id }}
+  IdentityFile {{ git_ssh_key_file }}

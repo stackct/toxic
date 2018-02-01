@@ -1,0 +1,43 @@
+---
+- set_fact:
+    toxic_user_home: /home/toxic
+
+# Locate latest toxic package and install. 
+# TBD based on organization's packaging strategy.
+
+- user: name=toxic group=toxic groups=toxic
+  become: true
+
+- lineinfile: dest=/etc/sudoers state=present regexp='^%toxic   ALL\=' line='%toxic   ALL=(ALL)       NOPASSWD:ALL' validate='visudo -cf %s'
+  become: true
+
+- lineinfile: dest=/etc/sudoers state=present regexp='^%linuxadmin   ALL\=' line='%linuxadmin  ALL=(ALL)       NOPASSWD:ALL' validate='visudo -cf %s'
+  become: true
+
+- lineinfile: dest=/etc/sudoers state=present regexp='^Defaults    !requiretty' line='Defaults    !requiretty' validate='visudo -cf %s'
+  become: true
+
+- lineinfile: dest=/etc/sudoers state=absent regexp='^Defaults    requiretty' validate='visudo -cf %s'
+  become: true
+
+- file: path={{ toxic_user_home }}/.ssh state=directory owner=toxic group=toxic mode=0700
+
+- template: src=config.j2 dest={{ toxic_user_home }}/.ssh/config owner=toxic group=toxic mode=0400
+  become: true
+
+- template: src=toxic-secure.properties.j2 dest={{ toxic_home }}/conf/toxic-secure.properties owner=toxic group=toxic mode=400
+  become: true
+
+- template: src=toxic.sh.j2 dest=/etc/profile.d/toxic.sh owner=toxic group=toxic mode=644
+  become: true
+
+- copy: src={{ toxic_home }}/current/conf/log4j.xml dest={{ toxic_home }}/conf/log4j.xml owner=toxic group=toxic remote_src=True
+  become: true
+
+- replace: dest={{ toxic_home }}/conf/log4j.xml regexp='<appender-ref ref="console" />' replace='<appender-ref ref="rolling" />\n    <appender-ref ref="syslog" />'
+  become: true
+
+- file: path={{ toxic_user_home }}/.ssh state=directory mode=0700
+
+- name: Link log directory
+  file: src={{ toxic_home }}/log dest=/var/log/toxic state=link

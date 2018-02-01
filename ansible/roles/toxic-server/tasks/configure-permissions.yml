@@ -1,0 +1,10 @@
+---
+- set_fact: data_volume="/data"
+  
+- name: Grant Ownership 
+  file: path={{ data_volume }}/toxic state=directory owner=toxic group=toxic
+  become: true
+
+- name: Grant Permissions to Toxic to run Docker
+  user: name=toxic group=toxic groups=toxic,docker
+  become: true

@@ -1,0 +1,26 @@
+<div>
+  The following parameters can be customized by specifying the command line 
+  -propUrl parameter during startup.  The value of this parameter is a URL 
+  of a file containing one or more of the below properties, and/or job 
+  parameter default values.
+  <br/>
+  <br/>
+  <table class="table table-hover table-condensed">
+    <tr>
+      <th>Parameter</th>
+      <th>Current Value</th>
+    </tr>
+    <tr>
+      <td>app.version</td>
+      <td>{{ about.appVersion }}</td>
+    </tr>
+    <tr>
+      <td>app.buildDate</td>
+      <td>{{ about.appBuildDate | date:'yyyy-MM-dd' }} {{ about.appBuildTime | date:'HH:mm:ss' }} GMT</td>
+    </tr>
+    <tr ng-repeat="(param, value) in about.sysParams">
+      <td>{{ param }}</td>
+      <td>{{ value }}</td>
+    </tr>
+  </table>
+</div>

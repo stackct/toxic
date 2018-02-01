@@ -1,0 +1,3 @@
+fromEmail=sample@mycompany.invalid
+fromName=First Last
+subject=%%subject%%

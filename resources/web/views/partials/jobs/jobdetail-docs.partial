@@ -1,0 +1,7 @@
+<!-- 
+Display README only (for now). Eventually, we can show a list of 
+markdown files as returned by the API
+ -->
+<div class="markdown-body">
+  <md ng-model="docs.readme"></md>
+</div>

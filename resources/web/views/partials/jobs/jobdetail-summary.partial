@@ -1,0 +1,74 @@
+<div>
+
+  <table class="table table-bordered">
+    <tr>
+      <th>Project</th>
+      <td><a ui-sref="jobs({id:job.project})">{{ job.project }}</a></td>
+    </tr>
+    <tr>
+      <th>Submitted</th>
+      <td>{{ job.submittedDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    </tr>
+    <tr>
+      <th>Started</th>
+      <td>{{ job.startedDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    </tr>
+    <tr>
+      <th>Duration</th>
+      <td>{{ job.duration | duration:'hh:mm:ss:ssss' }}</td>
+    </tr>
+    <tr>
+      <th>Completed</th>
+      <td>{{ job.completedDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+    </tr>
+    <tr>
+      <th>Progress</th>
+      <td>Suites: {{ job.suites }} ({{ job.failed }} failed) &nbsp;
+          <img ng-src="/api/user/{{ job.acked }}/avatar/24" ng-if="job.acked" class="img-circle" />
+      </td>
+    </tr>
+    <tr ng-if="job.status == 'RUNNING'">
+      <th>Last completed</th>
+      <td>{{ job.lastCompleted.suite }} / {{ job.lastCompleted.name }} </td>
+    </tr>
+    <tr>
+      <th>Tags</th>
+      <td>
+        <span ng-repeat="tag in job.tags">
+          <span class="label bg-blue">{{ tag }}</span>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <th>Changes</th>
+      <td>
+        <span ng-if="job.commits.length == 0">None</span>
+        <table class="table table-condensed table-bordered" ng-if="job.commits.length > 0">
+          <tr>
+            <th>Changeset</th>
+            <th>Author</th>
+            <th>Summary</th>
+            <th>Date</th>
+          </tr>
+          <tr class="commit" ng-repeat="commit in job.commits">
+            <td><a href="javascript:void(0);" data-toggle="modal" data-target="#changeset" ng-click="loadChangeset(commit.changeset)">{{ commit.changeset }}</a>
+            <!--<td><a href="{{commit.changesetUrl}}">{{commit.changeset}}</a></td>-->
+            <td><a href="mailto:{{commit.email}}">{{commit.name}}</a></td>
+            <td>{{commit.summary}}</td>
+            <td>{{commit.date}}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <th>
+        Details</br></br>
+      </th>
+      <td>
+        <pre>{{ job.details }}</pre>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div ng-include="'/views/partials/jobs/modal-changeset.partial'" />

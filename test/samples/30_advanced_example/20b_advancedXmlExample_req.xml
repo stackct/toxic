@@ -1,0 +1,3 @@
+<rack>
+  <register type="server" hostname="%myHostname%"/>
+</rack>

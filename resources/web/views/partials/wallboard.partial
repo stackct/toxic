@@ -1,0 +1,32 @@
+<div ng-controller="WallboardController">
+  <div class="dashboard-container">
+      <div class="flex-box group={{ job.group }}" ng-repeat="job in latestProjects | orderBy:'project'">
+          <a ui-sref="job({id:job.id})">
+              <div class="small-box dashboard-box" ng-class="{ 
+                    'bg-aqua'       : job.status=='PENDING', 
+                    'bg-light-blue' : job.status=='INITIALIZING',
+                    'bg-grey'       : job.status=='ABANDONED',
+                    'bg-green'      : (['ABANDONED','INITIALIZING','PENDING'].indexOf(job.status)==-1 && job.failed==0 && (job.prevFailed==0 || job.status=='COMPLETED')), 
+                    'bg-yellow'     : (['ABANDONED','INITIALIZING','PENDING','COMPLETED'].indexOf(job.status)==-1 && job.failed==0 && job.prevFailed>0), 
+                    'bg-red'        : (['ABANDONED','INITIALIZING','PENDING'].indexOf(job.status)==-1 && job.failed!=0)
+                    }">
+                <div class="inner">
+                  <div class="row">
+                    <div class="col-xs-12">
+                      <h1>{{ job.id }}</h1>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-xs-9">
+                        <i class="fa" ng-class="{'fa-pause' : job.paused, 'fa-spinner fa-spin' : (['PENDING','INITIALIZING','RUNNING','ENDING'].indexOf(job.status) != -1) }"></i>
+                    </div>
+                    <div class="col-xs-3">
+                        <img ng-src="/api/user/{{ job.acked }}/avatar/32" class="img-circle bordered" ng-if="job.acked" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </a>
+      </div>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<div>
+  <div class="btn-group">
+    <label class="btn btn-default btn-sm" ng-model="resultsDisplay" btn-radio="'list'" ng-click="loadDetails()">
+      <span class="fa fa-bars">List</span>
+    </label>
+    <label class="btn btn-default btn-sm" ng-model="resultsDisplay" btn-radio="'treemap'" ng-click="loadTaskResults()">
+      <span class="fa fa-sitemap">Treemap</span>
+    </label>
+  </div>
+  <span class="inline" style="margin-left:10px" ng-if="resultsDisplay == 'list'" >
+      Show <select ng-model="filter.status" ng-change="reloadDetails()">
+    <option value="">all</option>
+    <option value="failed">failed</option>
+    <option value="success">passed</option>
+  </select> suites
+  </span>
+</div>
+
+
+<div>
+  <div ng-show="resultsDisplay == 'list'">
+    <div ng-include="'/views/partials/jobs/jobdetail-results-list.partial'" />
+    <div ng-include="'/views/partials/jobs/modal-suitedetail.partial'" />
+  </div>
+
+  <div ng-show="resultsDisplay == 'treemap'">
+    <div ng-include="'/views/partials/jobs/jobdetail-results-treemap.partial'" />
+  </div>
+</div>

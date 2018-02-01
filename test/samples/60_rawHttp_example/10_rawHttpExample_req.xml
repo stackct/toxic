@@ -1,0 +1,4 @@
+GET /title.html HTTP/1.1
+Host: s3.amazonaws.com
+Connection: close
+

@@ -1,0 +1,119 @@
+<div ng-controller="JobListController">
+
+<div class="row">
+  <div class="col-md-10">
+      <div class="box box-success">
+          <div class="box-header">
+              <h3 class="box-title">
+                <span class="fa fa-folder-open-o"></span>
+                {{ project.id }}
+              </h3>
+          </div><!-- /.box-header -->
+          <div class="box-body table-responsive">
+              <table class="table table-condensed">
+                <thead>
+                  <tr>
+                    <th class="text-left" nowrap>
+                      <a ng-click="sortField=['project','sequence']; sortReverse = !sortReverse">
+                        Job
+                        <span ng-show="sortField == ['project','sequence'] && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                        <span ng-show="sortField == ['project','sequence'] && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                      </a>
+                    </th>
+                    <th class="text-left" nowrap>
+                      <a ng-click="sortField=['tags']; sortReverse = !sortReverse">
+                        Tags
+                        <span ng-show="sortField == ['tags'] && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                        <span ng-show="sortField == ['tags'] && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                      </a>
+                    </th>
+                    <th class="text-left" nowrap>
+                      <a ng-click="sortField='status'; sortReverse = !sortReverse">
+                        Status
+                        <span ng-show="sortField == 'status' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                        <span ng-show="sortField == 'status' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                      </a>
+                    </th>
+                    <th class="text-right" nowrap>
+                      <a ng-click="sortField='suites'; sortReverse = !sortReverse">
+                        Suites
+                        <span ng-show="sortField == 'suites' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                        <span ng-show="sortField == 'suites' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                      </a>
+                    </th>
+                    <th class="text-right" nowrap>
+                      <a ng-click="sortField='startedDate'; sortReverse = !sortReverse">
+                        Started
+                        <span ng-show="sortField == 'startedDate' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                        <span ng-show="sortField == 'startedDate' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                      </a>
+                    </th>
+                    <th class="text-right" nowrap>
+                      <a ng-click="sortField='duration'; sortReverse = !sortReverse">
+                        Duration
+                        <span ng-show="sortField == 'duration' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+                        <span ng-show="sortField == 'duration' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+                      </a>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody ng-repeat="job in project.jobs | orderBy:sortField:sortReverse">
+                  <tr>
+                    <td><a href="#job/{{job.id}}">{{ job.id }}</a></td>
+                    <td>
+                      <span ng-repeat="tag in job.tags">
+                        <span class="label bg-blue">{{ tag }}</span>
+                      </span>
+                    </td>
+                    <td class="text-left">
+                      <span ng-include="'/views/partials/jobs/jobstatus.partial'" ng-init="job=job"></span>
+                    </td>
+                    <td class="text-right">{{ job.suites }} ({{ job.failed }} failed)</td>
+                    <td class="text-right startTime">{{ job.startedDate | date:'yyyy-MM-dd HH:mm:ss' }}</td>
+                    <td class="text-right">{{ job.duration | duration:'hh:mm:ss:ssss' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+          </div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+
+        <div class="ng-cloak info-box" ng-if="projectMetrics == null">
+          <span class="info-box-icon bg-black"><i class="ion ion-ios-time"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">No Recent History</span>
+          </div>
+        </div>
+
+
+        <div class="ng-cloak info-box" ng-if="projectMetrics != null" ng-class="{ 
+          'bg-red':    projectMetrics.successRatio == 0,
+          'bg-yellow': projectMetrics.successRatio > 0 && projectMetrics.successRatio < 1,
+          'bg-green':  projectMetrics.successRatio == 1,
+          }">
+          <span class="info-box-icon"><i class="ion ion-stats-bars"></i></span>
+          <div class="info-box-content">
+            <span class="info-box-text">Success Rate</span>
+            <span class="info-box-number">
+            {{ projectMetrics.successRatio * 100 | number:2 }}%
+            </span>
+          </div>
+        </div>
+
+        <div class="ng-cloak info-box bg-navy" ng-if="projectMetrics != null">
+          <span class="info-box-icon">
+            <i class="ion ion-clock"></i>
+          </span>
+          <div class="info-box-content">
+            <span class="info-box-text">Avg Duration</span>
+            <span class="info-box-number">
+              {{ projectMetrics.avgDuration * 60000 | duration:'hh:mm:ss' }}
+            </span>
+          </div>
+        </div>
+    </div>
+  </div>
+
+</div>

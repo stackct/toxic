@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration debug="false" xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <appender name="console" class="org.apache.log4j.ConsoleAppender">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d{ISO8601}[%t] %-5p %c %x- %m%n" />
+    </layout>
+  </appender>
+  <appender name="rolling" class="org.apache.log4j.RollingFileAppender">
+    <param name="file" value="${TOXIC_HOME}/log/toxic.log" />
+    <param name="MaxFileSize" value="10MB" />
+    <param name="MaxBackupIndex" value="10" />
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %-5p %c %x- %m%n" />
+    </layout>
+  </appender>
+  <appender name="webAccess" class="org.apache.log4j.RollingFileAppender">
+    <param name="file" value="${TOXIC_HOME}/log/toxic-web.log" />
+    <param name="MaxFileSize" value="10MB" />
+    <param name="MaxBackupIndex" value="10" />
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %-5p %c %x- %m%n" />
+    </layout>
+  </appender>
+  <appender name="syslog" class="org.apache.log4j.net.SyslogAppender">
+    <param name="SyslogHost" value="loghost" />
+    <param name="Facility" value="LOCAL0" />
+    <param name="FacilityPrinting" value="true" />
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %-5p %c %x- %m%n" />
+    </layout>
+  </appender>
+
+  <!-- Log web access to separate file -->
+  <logger name="ToxicWebAccess" additivity="false">
+    <level value="info" />
+    <appender-ref ref="webAccess" />
+  </logger>
+
+  <logger name="spark">
+    <level value="warn" />
+  </logger>
+
+  <logger name="org.eclipse.jetty">
+    <level value="warn" />
+  </logger>
+
+  <root>
+    <level value="info" />
+    <appender-ref ref="console" />
+  </root>
+</log4j:configuration>
