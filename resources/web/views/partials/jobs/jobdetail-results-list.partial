@@ -1,0 +1,61 @@
+<div class="task-results">
+    <table class="table table-hover table-results">
+      <thead>
+      <tr>
+        <th>
+          <a ng-click="sortField='suite'; sortReverse = !sortReverse">
+            Suite
+            <span ng-show="sortField == 'suite' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="sortField == 'suite' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+        <th class="text-right" nowrap>
+          <a ng-click="sortField='tasks'; sortReverse = !sortReverse">
+            Tasks
+            <span ng-show="sortField == 'tasks' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="sortField == 'tasks' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+        <th class="text-center" nowrap>
+          <a ng-click="sortField='success'; sortReverse = !sortReverse">
+            Result
+            <span ng-show="sortField == 'success' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="sortField == 'success' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+        <th class="text-right" nowrap>
+          <a ng-click="sortField='startTime'; sortReverse = !sortReverse">
+            Start Time
+            <span ng-show="sortField == 'startTime' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="sortField == 'startTime' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+        <th class="text-right" nowrap>
+          <a ng-click="sortField='duration'; sortReverse = !sortReverse">
+            Duration
+            <span ng-show="sortField == 'duration' && !sortReverse" class="glyphicon glyphicon-sort-by-attributes"></span>
+            <span ng-show="sortField == 'duration' && sortReverse" class="glyphicon glyphicon-sort-by-attributes-alt"></span>
+          </a>
+        </th>
+      </tr>
+      </thead>
+      <tr ng-repeat="suite in suites | orderBy:sortField:sortReverse">
+        <td class="wrappable">
+          <div>
+          <span class="fa fa-external-link" style="cursor:pointer" aria-hidden="true" data-toggle="modal" data-target="#suitedetail" ng-click="loadSuiteDetail(suite.suite)"></span>
+          <span>{{ suite.suite }}</span>
+        </td>
+        <td class="text-right">{{ suite.tasks }}</td>
+        <td class="text-center" ng-show="suite.complete">
+          <span class="label label-success" ng-show="suite.success">OK</span>
+          <span class="label label-danger" ng-show="!suite.success">FAILED</span>
+        </td>
+        <td class="text-right startTime" nowrap="nowrap">
+          <span>{{ suite.startTime | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+        </td>
+        <td class="text-right" nowrap="nowrap">
+          <span>{{ suite.duration | duration:'hh:mm:ss:ssss' }}</span>
+        </td>
+      </tr>
+    </table>
+</div>

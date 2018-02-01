@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html ng-app="Toxic">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Toxic | {{ page }}</title>
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/assets/css/ionicons.min.css">
+  <link rel="stylesheet" href="/assets/css/AdminLTE.css">
+  <link rel="stylesheet" href="/assets/css/skins/skin-black-light.min.css">
+  <link rel="stylesheet" href="/assets/css/toxic.css">
+  <link rel="stylesheet" href="/assets/css/markdown.css">
+  <link rel="icon" ng-href="/assets/img/favicon_{{ overallHealth }}.png?v={{ updateStamp }}" type="image/png" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+</head>
+
+<body class="hold-transition skin-black-light sidebar-mini">
+
+<!-- Status Controller: Broadcasts connect/disconnect events -->
+<div ng-controller="StatusController" ng-hide="connected" class="status"></div>
+
+<!-- Socket Controller: Maintains Web Socket Connections -->
+<div ng-controller="SocketController" ng-hide="true"></div>
+
+<div class="wrapper">
+
+  <!-- Main Header -->
+  <header class="main-header">
+
+    <!-- Logo -->
+    <a ui-sref="dashboard" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <!-- <img class="logo-mini" ng-src="/assets/img/toxic_{{ overallHealth }}.png" /> -->
+      <span class="logo-mini"><b>T</b></span>
+      <!-- logo for regular state and mobile devices -->
+      <img class="logo-lg" ng-src="/assets/img/toxic_{{ overallHealth }}.png" />
+      <!-- <span class="logo-lg"><b>T</b>oxic</span> -->
+    </a>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-static-top" role="navigation">
+      <!-- Sidebar toggle button-->
+      <a class="sidebar-toggle" data-toggle="push-menu" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+      <!-- Navbar Right Menu -->
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          
+          <!-- Notifications Menu -->
+          <li class="dropdown notifications-menu">
+            <!-- Menu toggle button -->
+            <a data-target="nil" class="dropdown-toggle" data-toggle="dropdown">
+              <i class="fa fa-bell-o"></i>
+            </a>
+            <ul class="dropdown-menu">
+              <li class="header">There are {{ environment.notifications.length }} notifications.</li>
+              <li>
+                <!-- Inner Menu: contains the notifications -->
+                <ul class="menu">
+                  <li ng-repeat="n in environment.notifications | orderBy:'timestamp':true | limitTo:10 "><!-- start notification -->
+                    <a alt="{{ message }}">
+                      <i class="fa fa-clock-o"></i> {{ n.message }} <br /><small>{{ n.timestamp | date:'yyyy-MM-dd HH:mm:ss Z' }}</small>
+                    </a>
+                  </li>
+                  <!-- end notification -->
+                </ul>
+              </li>
+              <!-- <li class="footer"><a>View all</a></li> -->
+            </ul>
+          </li>
+
+          <!-- User Account Menu -->
+          <li class="dropdown user user-menu" ng-hide="false" ng-controller="AuthController">
+
+            <!-- Menu Toggle Button -->
+            <a data-target="nil" class="dropdown-toggle" data-toggle="dropdown" ng-if="authenticated">
+              <img ng-src="/api/user/{{ user.id }}/avatar/24" class="user-image" alt="" />
+              <span class="hidden-xs">{{ user.profile.first_name }} {{ user.profile.last_name }}</span>
+            </a>
+
+            <a data-target="nil" class="dropdown-toggle" data-toggle="dropdown" ng-if="!authenticated">
+              <span class="fa fa-user" ng-if="!authenticated"></span>
+            </a>
+
+            <ul class="dropdown-menu" ng-if="!authenticated">
+              <li class="user-body">
+                
+                <div class="form-box" id="login-box">
+                  <h4>{{ authType }} Authentication</h4>
+                  <div class="pull-right"><span class="ion ion-slack"></span></div>
+                  <p>Authenticate to obtain additional privileges.</p>
+                  <form>
+                    <div class="body bg-gray">
+                      <div class="form-group">
+                        <input type="text" id="auth" name="userid" ng-model="auth" class="form-control input-lg" placeholder="User ID" />
+                      </div>
+                    </div>
+                    <div class="footer">
+                      <button type="submit" class="btn bg-blue btn-block" ng-click="requestAuth(auth, authType)" data-toggle="dropdown">Request Token</button>
+                    </div>
+                  </form>
+                </div>                
+              </li>
+            </ul>
+
+            <ul class="dropdown-menu" ng-if="authenticated">
+              <!-- The user image in the menu -->
+              <li class="user-header">
+                <img ng-src="/api/user/{{ user.id }}/avatar/72" class="img-circle bordered" alt="{{ user.profile.first_name }} {{ user.profile.last_name }}" ng-if="authenticated" />
+                <p>
+                  {{ user.profile.first_name }} {{ user.profile.last_name }}
+                </p>
+              </li>
+              <li class="user-body">
+                Welcome back, {{ user.profile.first_name }}.
+              </li>
+              
+              <!-- Menu Footer-->
+              <li class="user-footer" ng-if="false">
+                <div class="pull-right">
+                  <a  class="btn btn-flat btn-primary">Sign out</a>
+                </div>
+              </li>
+            </ul>
+
+          </li>
+
+          <!-- Control Sidebar Toggle Button -->
+          <li>
+            <a data-target="nil" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+
+      <!-- search form (Optional) -->
+      <form action="#" method="get" class="sidebar-form" ng-hide="true">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Search...">
+          <span class="input-group-btn">
+              <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+              </button>
+            </span>
+        </div>
+      </form>
+      <!-- /.search form -->
+
+      <!-- Sidebar Menu -->
+        <ul class="sidebar-menu">
+            <li ng-class="{'active': page=='Dashboard'}">
+                <a ui-sref="dashboard">
+                    <i class="fa fa-line-chart"></i> <span>Dashboard</span>
+                </a>
+            </li>
+            <li ng-class="{'active': page=='Wallboard'}">
+                <a ui-sref="wallboard">
+                    <i class="fa fa-desktop"></i> <span>Wallboard</span>
+                </a>
+            </li>
+            <li ng-class="{'active': page=='Projects'}">
+                <a ui-sref="projects">
+                    <i class="fa fa-tasks"></i> <span>Projects</span>
+                </a>
+            </li>
+            <li ng-class="{'active': page=='About'}">
+                <a ui-sref="about">
+                    <i class="fa fa-info"></i> <span>About</span>
+                </a>
+            </li>
+        </ul>
+      <!-- /.sidebar-menu -->
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <h1 class="ng-cloak">
+        {{ page }}
+        <small>{{ subpage }}</small>
+      </h1>
+      <ol class="breadcrumb">
+        <li><a ui-sref="dashboard"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li class="active">{{ page }}</li>
+      </ol>
+    </section>
+
+    <!-- Main content -->
+    <section class="content container-fluid">
+
+    <!-- Notification Controller: Status notifications -->
+      <div ng-controller="NotificationController" >
+          <div class="ng-cloak callout callout-warning" ng-show="!connected">
+              <h4>Disconnected</h4>
+              <p>The host could not be reached. Retrying automatically...</p>
+          </div>
+      </div>
+
+      <!-- Nav Controller: Manages different notifications -->
+      <div ng-controller="NavController">
+          <div class="ng-cloak alert alert-danger alert-dismissable" ng-if="errorMessage">
+              <i class="fa fa-ban"></i>
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-close="dismissError()">&times;</button>
+              {{ errorMessage }}
+          </div>
+          <div class="ng-cloak alert alert-info alert-dismissable" ng-if="alertMessage" style="margin-top:10px">
+              <i class="fa fa-info"></i>
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-close="dismissAlert()">&times;</button>
+              {{ alertMessage }}
+          </div>
+          <div class="ng-cloak alert alert-warning alert-dismissable" ng-if="warningMessage" style="margin-top:10px">
+              <i class="glyphicon glyphicon-exclamation-sign"></i>
+              <button type="button" class="close" data-dismiss="alert" aria-hidden="true" ng-close="dismissWarning()">&times;</button>
+              {{ warningMessage }}
+          </div>
+      </div>
+
+      <!-- Main content view -->
+      <div ui-view></div>
+
+    </section>
+    <!-- /.content -->
+
+
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+      Toxic UI version: {{ appVersion }}
+    </div>
+    <!-- Default to the left -->
+  </footer>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+
+    <!-- Create the tabs -->
+    <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+      <li class="active"><a data-target="#control-sidebar-recent-jobs-tab" data-toggle="tab"><i class="fa fa-history"></i></a></li>
+      <li class=""><a data-target="#control-sidebar-feedback-tab" data-toggle="tab"><i class="fa fa-info"></i></a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <!-- Home tab content -->
+      
+      <div class="tab-pane active" id="control-sidebar-recent-jobs-tab">
+        <h3 class="control-sidebar-heading">Recent Jobs</h3>
+        <ul class="control-sidebar-menu">
+          
+          <li ng-repeat="job in latestProjects | orderBy:'completedDate' : true | limitTo: 10">
+            <a ui-sref="job({ id: job.id })" data-toggle="control-sidebar">
+              <i class="menu-icon fa fa-gears" ng-class="{ 'bg-green': job.failed==0, 'bg-red': job.failed>0 }"></i>
+
+              <div class="menu-info">
+                <h4 class="control-sidebar-subheading">{{ job.id }}</h4>
+                <p>{{ job.status }} 
+                  <span ng-if="job.status == 'COMPLETED'"> on {{ job.completedDate | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+                </p>
+              </div>
+            </a>
+          </li>
+        </ul>
+        <!-- /.control-sidebar-menu -->
+
+      </div>
+      <!-- /.tab-pane -->
+
+      <!-- Settings tab content -->
+      <div class="tab-pane" id="control-sidebar-feedback-tab">
+          <h3 class="control-sidebar-heading">Feedback</h3>
+
+          <div class="form-group">
+            <p>
+              Your feedback to help us improve is always welcome, but your 
+              contributions are even more welcome.
+            </p>
+
+            <p>Contribute today: <a href="https://console.aws.amazon.com/codecommit/home?region=us-east-1#/repository/toxic/browse/HEAD/--/" target="_blank">Toxic</a></p>
+          </div>
+          <!-- /.form-group -->
+      </div>
+      <!-- /.tab-pane -->
+    </div>
+  </aside>
+  <!-- /.control-sidebar -->
+
+  <!-- Add the sidebar's background. This div must be placed
+  immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+
+</div>
+<!-- ./wrapper -->
+
+
+<!-- REQUIRED JS SCRIPTS -->
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/adminlte.min.js"></script>
+
+
+<!-- CUSTOM JS SCRIPTS -->
+<script src="/assets/lib/Chart.bundle.min.js"></script>
+<script src="/assets/lib/angular.min.js"></script>
+<script src="/assets/lib/angular-route.min.js"></script>
+<script src="/assets/lib/angular-ui-router.min.js"></script>
+<script src="/assets/lib/angular-filter.min.js"></script>
+<script src="/assets/lib/angular-busy.min.js"></script>
+<script src="/assets/lib/angular-duration-format.js"></script>
+<script src="/assets/lib/angular-cookies.min.js"></script>
+<script src="/assets/lib/ui-bootstrap-tpls-0.13.0.min.js"></script>
+<script src="/assets/lib/marked.js"></script>
+<script src="/assets/lib/angular-md.min.js"></script>
+<script src="/app/js/app.js"></script>
+<script src="/app/js/routes.js"></script>
+<script src="/app/filters/bytes.js"></script>
+<script src="/app/filters/regex.js"></script>
+<script src="/app/directives/on-enter-key.js"></script>
+<script src="/app/directives/toxic-d3.js"></script>
+<script src="/app/controllers/AboutCtrl.js"></script>
+<script src="/app/controllers/AuthCtrl.js"></script>
+<script src="/app/controllers/DashboardCtrl.js"></script>
+<script src="/app/controllers/WallboardCtrl.js"></script>
+<script src="/app/controllers/JobDetailCtrl.js"></script>
+<script src="/app/controllers/JobListCtrl.js"></script>
+<script src="/app/controllers/NavCtrl.js"></script>
+<script src="/app/controllers/NotificationCtrl.js"></script>
+<script src="/app/controllers/ProjectCtrl.js"></script>
+<script src="/app/controllers/ProjectListCtrl.js"></script>
+<script src="/app/controllers/SocketCtrl.js"></script>
+<script src="/app/controllers/StatusCtrl.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Permanent auth token to access the Slack community
+slack.token={{ slack_token }}
+
+# These aren't sensitive, however, they're needed as a bootstrap to load the main toxic properties, so this
+# is a good place for them to reside since the secure props are loaded up front.
+configRepoUrl=ssh://{{ git_repo_hostname }}/{{ git_uri_toxic_config_repo }}
+configRepoType=toxic.job.GitRepository
+
+# SMTP configuration, optional
+smtpUsername={{ smtp_username }}
+smtpPassword={{ smtp_password }}

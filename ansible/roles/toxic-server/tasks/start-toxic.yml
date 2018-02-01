@@ -1,0 +1,5 @@
+- name: Toxic watchdog cron entry
+  cron:
+    job: "{{ toxic_home }}/current/bin/start_toxic_server.sh"
+    minute: "*"
+    user: toxic

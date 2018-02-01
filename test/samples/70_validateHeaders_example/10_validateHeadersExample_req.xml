@@ -1,0 +1,4 @@
+<!-- This example illustrates that the response file can omit
+     the HTTP headers if there is no value in validating those
+     on every XML response.  The Toxic HttpValidator is able
+     to infer that the headers need not be validated. -->

@@ -1,0 +1,52 @@
+<div>
+
+  <form class="form-inline">
+      <div class="row">
+        <div class="col-xs-10">
+          Show
+          &nbsp;&nbsp;
+          <input type="number" min="1" max="9999" id="logNumLines" class="form-control input-sm" ng-model="log_tab.num_lines" ng-change="updateLog()" />
+
+          Lines From
+          &nbsp;&nbsp;
+
+          <select class="form-control input-sm" ng-init="log_tab.tail=logOptions[1]" ng-model="log_tab.tail" ng-change="updateLog()" ng-options="option.name for option in logOptions">
+          </select>
+          &nbsp;&nbsp;
+
+          <label>
+              <span>Refresh automatically</span>
+              <input type="checkbox" ng-model="log_tab.auto_refresh" ng-click="loadLog()" id="scrollLock">
+          </label>
+
+          &nbsp;&nbsp;
+
+          <label ng-show="log_tab.tail == 1 && log_tab.auto_refresh">
+            <span>Stay at bottom</span>
+            <input type="checkbox" ng-disabled="log_tab.tail != 1" ng-model="log_tab.pin_to_bottom">
+          </label>
+        </div>
+
+        <div class="col-xs-2">
+          <input type="text" placeholder="Filter" id="logFilter" class="form-control input-sm"
+               ng-model="log_tab.filter"
+               ng-change="updateLogFilter()"
+               on-enter-key="applyLogFilter(log_tab.log, false)"/>
+        </div>
+      </div>
+  </form>
+
+  <br />
+
+  <div class="well well-sm">
+    <div class="raw log" id="log" ng-mouseover="disableScroll()" ng-mouseout="enableScroll()">{{ log_tab.log }}</div>
+  </div>
+  <div>
+    <a href="/api/job/{{job.id}}/log/{{job.id}}.log">
+      <button class="btn btn-primary">
+        <span class="fa fa-download"></span> Download Log ({{ job.logSize | bytes }})
+      </button>
+    </a>
+  </div>
+  
+</div>

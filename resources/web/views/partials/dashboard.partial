@@ -1,0 +1,146 @@
+<div ng-controller="DashboardController">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Job Trends</h3>
+            <div class="chart-tip">Shows daily job metrics, providing job trends at a quick glance.</div>
+          </div>
+          <div class="box-body">
+            <canvas id="timechart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Time-Consuming Projects (-7d)</h3>
+            <span class="chart-option">Limit: <select ng-model="topDurationLimit" ng-change="onChangeTopDurationLimit(topDurationLimit)" ng-options="x for x in chartLimits"></select></span>
+            <div class="chart-tip">Projects with the longest average job duration (in minutes).</div>
+          </div>
+          <div class="box-body">
+            <canvas id="topDuration"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Top Committers (-7d)</h3>
+            <span class="chart-option">Limit: <select ng-model="topCommittersLimit" ng-change="onChangeTopCommittersLimit(topCommittersLimit)" ng-options="x for x in chartLimits"></select></span>
+            <div class="chart-tip">Most frequent repository committers.</div>
+          </div>
+          <div class="box-body">
+            <canvas id="topCommitters"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="box box-primary">
+          <div class="box-header with-border">
+            <h3 class="box-title">Top Projects (-7d)</h3>
+            <span class="chart-option">Limit: <select ng-model="topProjectsLimit" ng-change="onChangeTopProjectsLimit(topProjectsLimit)" ng-options="x for x in chartLimits"></select></span>
+            <div class="chart-tip">Most frequent jobs by project.</div>
+          </div>
+          <div class="box-body">
+            <canvas id="topProjects"></canvas>
+          </div>
+        </div>
+      </div>
+      <script>app.updateCharts();</script>
+
+      </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-light-blue"><i class="ion ion-loop"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">Running Jobs</span>
+              <span class="info-box-number">{{ environment.runningJobCount }}</span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-aqua"><i class="ion ion-compass"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">Operating System</span>
+              <span class="info-box-number">{{ environment.os }} {{ environment.version }} ({{ environment.arch }})</span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-blue"><i class="ion ion-ios-gear-outline"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">CPUs</span>
+              <span class="info-box-number">{{ environment.procs }}</span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-green"><i class="ion ion-code-working"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">Load</span>
+              <span class="info-box-number">{{ environment.load | number: 2 }}</span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-red"><i class="ion ion-speedometer"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">Heap ({{ environment.heapUsedMb | number:2 }} MB / {{ environment.heapMaxMb | number:2 }} MB)</span>
+              <span class="info-box-number">{{ environment.heapPerc | number:2 }}<small>%</small></span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+          <div class="info-box">
+            <span class="info-box-icon bg-navy"><i class="ion ion-cube"></i></span>
+
+            <div class="info-box-content">
+              <span class="info-box-text">Containers</span>
+              <span class="info-box-more">Docker Engine Version: {{ environment.docker.serverVersion }}</span>
+              <span class="info-box-more">Storage Driver: {{ environment.docker.storageDriver }}</span>
+              <span class="info-box-more" ng-if="environment.docker.dataSpaceUsed">Storage: {{ environment.docker.dataSpaceUsed }} ({{ environment.docker.dataSpaceAvailable }} free)</span>
+              <span class="info-box-more" ng-if="!environment.docker.dataSpaceUsed">Storage: N/A</span>
+            </div>
+            <!-- /.info-box-content -->
+          </div>
+          <!-- /.info-box -->
+        </div>
+    </div>    
+</div>

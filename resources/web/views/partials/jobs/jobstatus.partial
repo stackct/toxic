@@ -1,0 +1,20 @@
+<div class="progress active" ng-if="['ABANDONED','COMPLETED'].indexOf(job.status)==-1">
+  <div class="progress-bar" role="progressbar" style="width:{{ job.status == 'COMPLETED' ? 100 : Math.min((job.duration / (environment.jobMetrics.projectMetrics[job.project].avgDuration * 60000)) * 100,100) | number:0 }}%" ng-class="{
+    'progress-bar-aqua'       : job.status=='PENDING', 
+    'progress-bar-light-blue' : job.status=='INITIALIZING',
+    'progress-bar-grey'       : job.status=='ABANDONED',
+    'progress-bar-green'      : (['ABANDONED','INITIALIZING','PENDING'].indexOf(job.status)==-1 && job.failed==0 && (job.prevFailed==0 || job.status=='COMPLETED')), 
+    'progress-bar-yellow'     : (['ABANDONED','INITIALIZING','PENDING','COMPLETED'].indexOf(job.status)==-1 && job.failed==0 && job.prevFailed>0), 
+    'progress-bar-red'        : (['ABANDONED','INITIALIZING','PENDING'].indexOf(job.status)==-1 && job.failed!=0),
+    'progress-bar-striped'    : (['PENDING','INITIALIZING','RUNNING','ENDING'].indexOf(job.status) != -1)
+  }"
+  ng-attr-title="{{
+  (job.status == 'RUNNING' && job.lastCompleted.name) ?
+    'Last completed: ' + job.lastCompleted.suite + ' / ' + job.lastCompleted.name : ''
+  }}">
+    <small>{{ Math.min((job.duration / (environment.jobMetrics.projectMetrics[job.project].avgDuration * 60000)) * 100,100)| number:0 }}%</small>
+  </div>
+</div>
+
+<span class="label" ng-if="job.status == 'COMPLETED'" ng-class="{ 'bg-green': job.failed==0, 'bg-red': job.failed!=0 }">{{ job.status }}</span>
+<span class="label bg-gray" ng-if="job.status == 'ABANDONED'">{{ job.status }}</span>

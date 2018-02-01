@@ -1,0 +1,147 @@
+img.logo-mini {
+  width: 40%;
+}
+
+img.logo-lg {
+  width: 60%;
+  margin-top:4%;
+  margin-left:4%;
+}
+
+.well .log {
+  height: 600px;
+  font-size: .75em;
+}
+
+.raw {
+  padding: 8px;
+  white-space:pre;
+  overflow-x: auto;
+  overflow-y: auto;
+  font-family: "Courier New";
+  background-color: #444;
+  color: #eee;
+}
+
+.changeset {
+  padding: 8px;
+  white-space:pre;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-family: "Courier";
+  background-color: #fff;
+  color: #333;
+}
+
+pre {
+  font-size: 10px;
+  white-space: pre-wrap !important;
+}
+
+.wrappable {
+  white-space: normal !important;
+}
+
+.login-panel > .image > img {
+  width: 90px;
+  height: 90px;
+}
+
+.environment-flex-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.environment-flex-container div.flex-box {
+  padding: 4px;
+  margin: 0px;
+  min-width:250px;
+  flex: 1 0 0; /* flex-grow, flex-shrink, flex-basis */
+}
+
+/* Dashboard */
+.dashboard-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.dashboard-container div.flex-box {
+  min-width:265px;
+  margin-left: 2px;
+  margin-top:0px;
+  flex: 0 1 10%; /* flex-grow, flex-shrink, flex-basis */
+}
+
+.dashboard-box {
+  min-height:80px;
+  margin: 1px 0px 1px 1px;
+}
+
+.dashboard-box h1 {
+  text-align: center;
+  font-weight: normal;
+  font-size: 16px;
+  padding: 0px;
+  margin: 0px;
+}
+
+.fixed-body {
+  overflow-y: hidden !important;
+}
+
+table#projects { table-layout: fixed; }
+
+table#projects thead tr th:nth-child(1) {
+  width: 23%;
+}
+table#projects thead tr th:nth-child(2) {
+  width: 27%;
+}
+table#projects thead tr th:nth-child(3) {
+  width: 15%;
+}
+table#projects thead tr th:nth-child(4) {
+  width: 12%;
+}
+table#projects thead tr th:nth-child(5) {
+  width: 13%;
+}
+table#projects thead tr th:nth-child(6) {
+  width: 10%;
+}
+.paused {
+  font-style: italic;
+}
+
+.image-tag {
+  margin-left:4px;
+  margin-right:4px;
+  font-weight: bold;
+}
+
+.footer {
+  border-top: solid 1px silver;
+  padding: 5px;
+  text-align: center;
+}
+
+.bordered {
+  border: solid 2px white;
+}
+
+/* cloak it up */
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+.chart-option {
+  float: right !important;
+}
+
+.chart-tip {
+  color: darkGray;
+}

@@ -1,0 +1,6 @@
+---
+- include: install-dependencies.yml
+- include: install-toxic.yml
+- include: install-docker.yml
+- include: configure-permissions.yml
+- include: start-toxic.yml

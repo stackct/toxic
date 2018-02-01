@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+x-amz-id-2: %%
+x-amz-request-id: %%
+Date: %%
+Last-Modified: Wed, 18 May 2011 19:17:01 GMT
+ETag: "1ef72d45c7f3a319f6c9ef3f16c7e3d9"
+Accept-Ranges: bytes
+Content-Type: text/html
+Content-Length: 76
+Connection: close
+Server: AmazonS3
+
+<html>
+  <body>
+    Independent Purchasing Cooperative
+  </body>
+</html>

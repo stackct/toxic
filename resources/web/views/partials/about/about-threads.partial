@@ -1,0 +1,3 @@
+<div class="well well-sm">
+  <div class="raw log">{{ about.threadDump }}</div>
+</div>

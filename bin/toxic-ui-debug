@@ -1,0 +1,2 @@
+export TOXIC_JRE_OPTIONS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=9001"
+toxic-ui "$@"

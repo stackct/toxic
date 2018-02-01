@@ -1,0 +1,15 @@
+# The defaults shown below represent how it would look if the Git reposority
+# was hosted in AWS CodeCommit.
+toxic_home: /opt/toxic_home
+toxic_data: /data
+git_repo_hostname: git.mycompany.invalid
+git_ssh_key_id: AKAIABCDEFEDCBA123
+git_ssh_key_file: ~/.ssh/id_rsa_codecommit
+
+# The following repository should contain a jobs/toxic.properties containing all 
+# the autoJobUrl.X=.../some.job definitions for auto-triggered jobs. Typically
+# the .job files themselves are located in the same jobs/ subdir. Ex:
+#  jobManager.autoJobUrl.1=jobs/mybuild-ci.job
+git_uri_toxic_config_repo: /v1/repos/toxic-conf
+
+terraform_version: 0.11.2

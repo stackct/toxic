@@ -1,0 +1,4 @@
+#!/bin/bash
+. $(dirname $0)/toxic-common.sh
+cmd="${baseToxicCmd} toxic.Main $otherArgs"
+eval $cmd

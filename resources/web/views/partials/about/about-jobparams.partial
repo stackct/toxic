@@ -1,0 +1,17 @@
+<div>
+  The below parameters can be included in a job file to override their default 
+  values.  The doDir parameter is required, and specifies the directory
+  containing the Toxic instruction files.
+  <br/>
+  <br/>
+  <table class="table table-hover table-condensed">
+    <tr>
+      <th>Parameter</th>
+      <th>Description</th>
+    </tr>
+    <tr ng-repeat="(param, value) in about.jobParams">
+      <td>{{ param }}</td>
+      <td>{{ value }}</td>
+    </tr>
+  </table>
+</div>

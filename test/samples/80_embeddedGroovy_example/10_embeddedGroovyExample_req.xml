@@ -1,0 +1,13 @@
+`
+// This is an example of how a single XML file can also contain groovy that will either
+// manipulate the XML before it's submitted to the server, or perform other functions
+// prior to sending the XML.  The actual code below is not glamorous but simple serves
+// to illustrate how this is accomplished.
+log.info("Groovy code goes here.")
+def t = 123 + 456
+
+// Be sure to return an empty string otherwise a "null" string will be injected into 
+// the XML.
+return ""
+`
+Hello World!  This is the submitted text.

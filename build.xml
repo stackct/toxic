@@ -1,0 +1,95 @@
+<project name="toxic" xmlns:if="ant:if" default="test">
+  <property name="groovy.version" value="2.4.5" />
+  <property name="gen" location="gen"/>
+  <property name="lib" location="lib"/>
+  <property name="conf" location="conf"/>
+  <property name="res" location="resources"/>
+  <property name="src" location="src"/>
+  <property name="src-test" location="test"/>
+  <property name="class" location="gen/classes"/>
+  <property name="unit" location="gen/unit"/>
+  <property name="version" value="0.0.1"/>
+  <property name="version.properties" value="${class}/${ant.project.name}-version.properties"/>
+  
+  <path id="cp.compile">
+    <fileset dir="${lib}">
+      <include name="*.jar" />
+    </fileset>
+    <pathelement location="${class}" />
+    <pathelement location="${conf}" />
+    <pathelement location="${res}" />
+  </path>
+  
+  <path id="cp.test">
+    <path refid="cp.compile" />
+    <pathelement location="${gen}/unit" />
+  </path>
+  
+  <target name="clean">
+    <delete dir="${gen}" />
+  </target>
+  
+  <target name="init">
+    <mkdir dir="${class}" />
+    <mkdir dir="${unit}" />
+    
+    <tstamp>
+      <format property="build.date" pattern="yyyy/M/dd"/>
+      <format property="build.time" pattern="HH:mm:ss"/>
+    </tstamp>
+    
+    <echo file="${version.properties}">
+      version=${version}
+      buildDate=${build.date}
+      buildTime=${build.time}
+    </echo>    
+
+  </target>
+  
+  <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="cp.compile"/>
+
+  <target name="compile" depends="init">
+    <groovyc srcdir="${src}" destdir="${class}" classpathref="cp.compile">
+      <javac debug="on" deprecation="true"/>
+    </groovyc>
+    <groovyc srcdir="${src-test}/unit" destdir="${unit}" classpathref="cp.compile">
+      <javac debug="on" deprecation="true"/>
+    </groovyc>
+  </target>
+  
+  <target name="jar" depends="compile">
+    <jar destfile="${gen}/toxic.jar" basedir="${class}"/>
+  </target>
+
+  <target name="test" depends="compile" description="Run unit tests">
+    <delete dir="${unit}/RESULTS" />
+    <mkdir dir="${unit}/RESULTS" />
+    <mkdir dir="${unit}/RESULTS/html" />
+
+    <junit printsummary="true" haltonerror="false" haltonfailure="false" fork="true" forkmode="once" failureproperty="testFailed" showoutput="false">
+      <sysproperty key="${ant.project.name}_home" value='${basedir}'/>
+      <formatter type="xml" usefile="true" />
+      <batchtest todir="${unit}/RESULTS">
+        <fileset dir="${unit}">
+          <include name="**/*Test.class" />
+        </fileset>
+      </batchtest>
+      <classpath refid="cp.test" />
+    </junit>
+    
+    <antcall target="test-groovy-junit-reports"/>
+  </target>
+  
+  <target name="test-groovy-junit-reports">
+    <echo message=""/>
+    <junitreport todir="${unit}/RESULTS">
+      <fileset dir="${unit}/RESULTS">
+        <include name="TEST-*.xml" />
+      </fileset>
+      <report todir="${unit}/RESULTS/html" />
+    </junitreport>
+    <echo message=""/>
+    <echo message="See a pretty junit report at ${basedir}/${unit}/RESULTS/html/index.html" />
+    <fail if="testFailed" message="Unit test(s) failed. See reports!" />
+  </target>
+</project>

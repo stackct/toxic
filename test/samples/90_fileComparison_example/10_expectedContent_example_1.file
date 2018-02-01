@@ -1,0 +1,7 @@
+`
+// This Groovy code, while simple below, could actually fetch a file from a 
+// local or remote file system and return the contents which will be compared
+// with the other similar name files in this directory.
+// Ex: return new File("/tmp/foo.bar").text
+return "this is a test.\nLine 2,\nline 3.\n"
+`

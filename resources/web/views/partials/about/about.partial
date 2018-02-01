@@ -1,0 +1,39 @@
+<div ng-controller="AboutController">
+
+  <ul ng-init="tab = 0" class="nav nav-tabs">
+    <li ng-class="{active:tab===0}"><a href ng-click="tab = 0">Getting Started</a></li>
+    <li ng-class="{active:tab===1}"><a href ng-click="tab = 1">Job Parameters</a></li>
+    <li ng-class="{active:tab===2}"><a href ng-click="tab = 2">System Parameters</a></li>
+    <li ng-class="{active:tab===3}"><a href ng-click="tab = 3">Thread Dump</a></li>
+    <li ng-class="{active:tab===4}"><a href ng-click="tab = 4">Log</a></li>
+  </ul>
+
+  <div style="height:1px;"></div>
+
+  <div>
+    <div class="box box-success">
+      <div class="box-body table-responsive">
+
+        <div class="box-body">
+            <div>
+              <p ng-show="tab === 0">
+                <ng-include src="'/views/partials/about/about-general.partial'" />
+              </p>
+              <p ng-show="tab === 1">
+                <ng-include src="'/views/partials/about/about-jobparams.partial'" />
+              </p>
+              <p ng-show="tab === 2">
+                <ng-include src="'/views/partials/about/about-sysparams.partial'" />
+              </p>
+              <p ng-show="tab === 3">
+                <ng-include src="'/views/partials/about/about-threads.partial'" />
+              </p>
+              <p ng-show="tab === 4">
+                <ng-include src="'/views/partials/about/about-log.partial'" />
+              </p>
+            </div>
+        </div>
+
+      </div>
+    </div>
+</div>
