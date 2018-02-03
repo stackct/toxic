@@ -13,7 +13,8 @@ RUN apk update && apk add bash curl docker git openjdk8 openssh openssl \
     && docker -v \
     && addgroup -g 2000 toxic \
     && adduser -u 2000 -G toxic -D toxic \ 
-    && adduser toxic docker
+    && adduser toxic docker \
+    && mkdir -p /opt/toxic/log
 
 ARG CACHE_ITERATION=0
 
