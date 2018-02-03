@@ -13,8 +13,7 @@ RUN apk update && apk add bash curl docker git openjdk8 openssh openssl \
     && docker -v \
     && addgroup -g 2000 toxic \
     && adduser -u 2000 -G toxic -D toxic \ 
-    && adduser toxic docker \
-    && mkdir -p /opt/toxic/log
+    && adduser toxic docker
 
 ARG CACHE_ITERATION=0
 
@@ -25,10 +24,12 @@ COPY lib /opt/toxic/lib/
 COPY resources /opt/toxic/resources/
 COPY gen/toxic.jar /opt/toxic/lib/
 
+RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml \
+    && sed -i 's/${TOXIC_HOME}/\/data/' /opt/toxic/conf/log4j.xml
+
 VOLUME ["/data"]
-VOLUME ["/conf"]
 EXPOSE 8001
 USER toxic
 
-ENTRYPOINT ["/opt/toxic/bin/toxic-ui", "-j", "/data/jobs"]
-CMD ["-s", "/conf/toxic-secure.properties", "-p", "toxic.properties"]
+ENTRYPOINT ["/opt/toxic/bin/toxic-ui", "-j", "/data"]
+CMD ["-s", "/opt/toxic/conf/toxic-secure.properties", "-p", "toxic.properties"]
