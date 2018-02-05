@@ -10,10 +10,14 @@
   <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
   <link rel="stylesheet" href="/assets/css/ionicons.min.css">
   <link rel="stylesheet" href="/assets/css/AdminLTE.css">
-  <link rel="stylesheet" href="/assets/css/skins/skin-black-light.min.css">
+  <link rel="stylesheet" href="/assets/css/skins/skin-green.min.css">
   <link rel="stylesheet" href="/assets/css/toxic.css">
   <link rel="stylesheet" href="/assets/css/markdown.css">
   <link rel="icon" ng-href="/assets/img/favicon_{{ overallHealth }}.png?v={{ updateStamp }}" type="image/png" />
+  <link href="https://fonts.googleapis.com/css?family=Encode+Sans" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -26,7 +30,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 </head>
 
-<body class="hold-transition skin-black-light sidebar-mini">
+<body class="hold-transition skin-green sidebar-mini">
 
 <!-- Status Controller: Broadcasts connect/disconnect events -->
 <div ng-controller="StatusController" ng-hide="connected" class="status"></div>
@@ -43,10 +47,12 @@
     <a ui-sref="dashboard" class="logo">
       <!-- mini logo for sidebar mini 50x50 pixels -->
       <!-- <img class="logo-mini" ng-src="/assets/img/toxic_{{ overallHealth }}.png" /> -->
-      <span class="logo-mini"><b>T</b></span>
+      <span class="logo-mini"><b>t</b></span>
       <!-- logo for regular state and mobile devices -->
-      <img class="logo-lg" ng-src="/assets/img/toxic_{{ overallHealth }}.png" />
-      <!-- <span class="logo-lg"><b>T</b>oxic</span> -->
+      
+      <span class="logo-lg text-left"><b>toxic</b></span>
+      <!-- <img class="logo-lg" ng-src="/assets/img/toxic_{{ overallHealth }}.png" /> -->
+      <!-- <span class="logo-lg" style="font-family: 'PT Sans', sans-serif;"><b>t</b>oxic</span> -->
     </a>
 
     <!-- Header Navbar -->
