@@ -1,7 +1,15 @@
 <div ng-controller="ProjectListController">
-  <div class="box-body text-right">
-    <input ng-model="projectFilter" type="search" placeholder="&#xf0b0;" style="font-family: FontAwesome, 'Source Sans Pro'" />
+  
+  
+  <div class="row">
+    <div class="col-xs-2">
+      <input ng-model="projectFilter" class="form-control" type="search" placeholder="&#xf0b0;" style="font-family: FontAwesome, 'Source Sans Pro'" />
+    </div>
+    <div class="col-xs-10"></div>
   </div>
+  
+  <br />
+  
   <div class="box box-success" ng-repeat="group in latestGroups | orderBy: group">
       <div class="box-header">
         <h3 class="box-title">
