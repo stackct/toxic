@@ -32,4 +32,4 @@ EXPOSE 8001
 USER toxic
 
 ENTRYPOINT ["/opt/toxic/bin/toxic-ui", "-j", "/data"]
-CMD ["-s", "/opt/toxic/conf/toxic-secure.properties", "-p", "toxic.properties"]
+CMD ["-s", "/conf/toxic-secure.properties", "-p", "toxic.properties"]
