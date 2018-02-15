@@ -46,9 +46,9 @@ class Auth {
   
   static def identify(props, req, resp, token) {
     def data = [authenticated:false, auth: (req?.getHeader('X-Forwarded-For') ?: req?.remoteHost)]
-    def auth = req.getHeader("X-User")
+    def auth = req.getHeader("X-Auth-Request-User") ?: req.getHeader("X-User")
     if (auth) {
-      log.debug("Identified user from X-User header; user=${auth}")
+      log.debug("Identified user from X header; user=${auth}")
     } else {
       token = token ?: getCookie(req, "authtoken")
       auth = validateToken(props, "session", token, getSessionExp(props))
