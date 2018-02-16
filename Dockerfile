@@ -24,8 +24,7 @@ COPY lib /opt/toxic/lib/
 COPY resources /opt/toxic/resources/
 COPY gen/toxic.jar /opt/toxic/lib/
 
-RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml \
-    && sed -i 's/${TOXIC_HOME}/\/data/' /opt/toxic/conf/log4j.xml
+RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml
 
 VOLUME ["/data"]
 EXPOSE 8001

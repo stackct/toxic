@@ -53,3 +53,6 @@ docker/artifacts
 
 # Ant autocomplete 
 .ant-targets-build.xml
+
+# Secret stuff
+secret*
