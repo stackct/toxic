@@ -1,0 +1,48 @@
+# Default values for toxic.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Set this to true to configure additional resources required in a local
+# development environment.
+minikube: false
+
+# toxic container settings
+toxic:
+  image:
+    repository: toxic
+    tag: latest
+    pullPolicy: IfNotPresent
+    resources: {}
+  storage:
+    storageClass: standard
+    storageSize: 10Gi
+
+# filebeat container settings
+filebeat:
+  image:
+    repository: docker.elastic.co/beats/filebeat
+    tag: 6.2.1
+    pullPolicy: IfNotPresent
+    resources: {}
+
+service:
+  type: ClusterIP
+  port: 8001
+
+ingress:
+  enabled: true
+  path: /
+  hosts:
+    - toxic.local
+  tls:
+   - secretName: toxic-tls
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+logstash:
+  hosts:
+    - "logstash:5000"

@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-config
+data:
+  filebeat.yml: |
+    filebeat.registry_file: /tmp/filebeat_registry
+    filebeat.prospectors:
+    - type: log
+      enabled: true
+      paths:
+        - "/opt/toxic/log/*.log"
+      multiline.pattern: '^[[:space:]]'
+      multiline.match: after
+    output.logstash:
+      hosts: 
+{{ toYaml .Values.logstash.hosts | indent 8 }}
+      index: toxic
+      timeout: 15
+    logging.level: info
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: toxic-data-pvc
+spec:
+  storageClassName: {{ .Values.toxic.storage.storageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.toxic.storage.storageSize }}
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "toxic.fullname" . }}
+  labels:
+    app: {{ template "toxic.name" . }}
+    chart: {{ template "toxic.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "toxic.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "toxic.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      securityContext: 
+        runAsUser: 2000
+        fsGroup: 2000
+      volumes:
+        - name: shared-log
+          emptyDir: {}
+        - name: data
+          persistentVolumeClaim:
+            claimName: toxic-data-pvc
+        - name: toxic-ssh-volume
+          secret:
+            secretName: toxic-ssh-secrets
+            defaultMode: 0400
+        - name: toxic-app-volume
+          secret:
+            secretName: toxic-app-secrets
+        - name: filebeat-config
+          configMap:
+            name: filebeat-config
+            items:
+            - key: filebeat.yml
+              path: filebeat.yml
+      containers:
+        - name: toxic
+          image: "{{ .Values.toxic.image.repository }}:{{ .Values.toxic.image.tag }}"
+          imagePullPolicy: {{ .Values.toxic.image.pullPolicy }}
+          ports:
+            - containerPort: 8001
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8001
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8001
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: shared-log
+              mountPath: /opt/toxic/log/
+            - name: toxic-ssh-volume
+              readOnly: true
+              mountPath: /home/toxic/.ssh/
+            - name: toxic-app-volume
+              readOnly: true
+              mountPath: /conf/
+          resources:
+{{ toYaml .Values.toxic.image.resources | indent 12 }}
+        - name: filebeat
+          image: "{{ .Values.filebeat.image.repository }}:{{ .Values.filebeat.image.tag }}"
+          imagePullPolicy: {{ .Values.filebeat.image.pullPolicy }}
+          securityContext: 
+            runAsUser: 0
+          volumeMounts:
+            - name: filebeat-config
+              mountPath: /usr/share/filebeat/filebeat.yml
+              subPath: filebeat.yml
+            - name: shared-log
+              mountPath: /opt/toxic/log/
+          resources:
+{{ toYaml .Values.filebeat.image.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

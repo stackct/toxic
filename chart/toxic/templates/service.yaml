@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "toxic.fullname" . }}
+  labels:
+    app: {{ template "toxic.name" . }}
+    chart: {{ template "toxic.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 8001
+      targetPort: 8001
+      protocol: TCP
+      # name: http
+  selector:
+    app: {{ template "toxic.name" . }}
+    release: {{ .Release.Name }}
