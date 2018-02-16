@@ -45,4 +45,4 @@ affinity: {}
 
 logstash:
   hosts:
-    - "logstash:5000"
+    - "logit-logstash:5000"
