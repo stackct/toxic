@@ -25,3 +25,7 @@ One significant drawback to Toxic's upbringing is that it was never a formal pro
 Toxic contains a DSL (domain-specific language) that enables expressive tests to be written leveraging Toxic primitive tasks.
 
 * [Pickle - Testing DSL](docs/pickle.md)
+
+## Deployment
+
+* [Helm Deployment](docs/deployment.md)

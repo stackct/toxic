@@ -56,3 +56,6 @@ docker/artifacts
 
 # Secret stuff
 secret*
+
+# Custom Helm values
+values-*
