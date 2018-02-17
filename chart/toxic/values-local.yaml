@@ -4,8 +4,8 @@ minikube: true
 
 # To access the service locally with minikube, a NodePort service type
 # is required, and ingress needs to be disabled.
-ingress:
-  enabled: false
-
-service:
-  type: NodePort
+toxic:
+  service:
+    type: NodePort
+  ingress:
+    enabled: false

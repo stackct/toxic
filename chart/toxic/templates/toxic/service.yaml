@@ -8,12 +8,27 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  type: {{ .Values.service.type }}
+  type: {{ .Values.toxic.service.type }}
   ports:
     - port: 8001
       targetPort: 8001
       protocol: TCP
-      # name: http
   selector:
     app: {{ template "toxic.name" . }}
     release: {{ .Release.Name }}
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: logstash
+  labels:
+    app: {{ template "toxic.name" . }}
+    chart: {{ template "toxic.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ExternalName
+  externalName: logstash.{{ .Values.filebeat.logstash.namespace }}.svc.cluster.local
+  ports:
+  - port: 5000
