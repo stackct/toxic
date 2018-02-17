@@ -16,6 +16,15 @@ toxic:
   storage:
     storageClass: standard
     storageSize: 10Gi
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: true
+    path: /
+    hosts:
+      - toxic.local
+    tls:
+    - secretName: toxic-tls
 
 # filebeat container settings
 filebeat:
@@ -24,25 +33,10 @@ filebeat:
     tag: 6.2.1
     pullPolicy: IfNotPresent
     resources: {}
-
-service:
-  type: ClusterIP
-  port: 8001
-
-ingress:
-  enabled: true
-  path: /
-  hosts:
-    - toxic.local
-  tls:
-   - secretName: toxic-tls
+  logstash:
+    namespace: logit
 
 nodeSelector: {}
-
 tolerations: []
-
 affinity: {}
 
-logstash:
-  hosts:
-    - "logit-logstash:5000"
