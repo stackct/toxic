@@ -1,7 +1,5 @@
-{{- if .Values.toxic.ingress.enabled -}}
 {{- $fullName := include "toxic.fullname" . -}}
-{{- $servicePort := "8001" -}}
-{{- $ingressPath := .Values.toxic.ingress.path -}}
+{{- $servicePort := .Values.toxic.service.port -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -12,29 +10,23 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
   annotations:
-    kubernetes.io/tls-acme: "true"
-    nginx.ingress.kubernetes.io/auth-signin: https://$host/oauth2/start
-    nginx.ingress.kubernetes.io/auth-url: https://$host/oauth2/auth
+    nginx.ingress.kubernetes.io/auth-signin: https://{{ .Values.oauth2.host }}/oauth2/start
+    nginx.ingress.kubernetes.io/auth-url: https://{{ .Values.oauth2.host }}/oauth2/auth
     nginx.ingress.kubernetes.io/auth-response-headers: X-Auth-Request-User, X-Auth-Request-Email
+    nginx.ingress.kubernetes.io/auth-request-redirect: https://{{ .Values.toxic.ingress.host }}
 spec:
 {{- if .Values.toxic.ingress.tls }}
   tls:
-  {{- range .Values.toxic.ingress.tls }}
     - hosts:
-      {{- range .hosts }}
-        - {{ . }}
-      {{- end }}
-      secretName: {{ .secretName }}
-  {{- end }}
+        - {{ .Values.toxic.ingress.host }}
+      secretName: {{ .Values.toxic.ingress.tls.secretName }}
 {{- end }}
   rules:
-  {{- range .Values.toxic.ingress.hosts }}
-    - host: {{ . }}
+    - host: {{ .Values.toxic.ingress.host }}
       http:
         paths:
-          - path: {{ $ingressPath }}
+          - path: /
             backend:
               serviceName: {{ $fullName }}
               servicePort: {{ $servicePort }}
-  {{- end }}
-{{- end }}
+

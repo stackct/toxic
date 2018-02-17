@@ -1,8 +1,6 @@
 1. Get the application URL by running these commands:
 {{- if .Values.toxic.ingress.enabled }}
-{{- range .Values.toxic.ingress.hosts }}
-  http{{ if $.Values.toxic.ingress.tls }}s{{ end }}://{{ . }}{{ $.Values.toxic.ingress.path }}
-{{- end }}
+  http{{ if $.Values.toxic.ingress.tls }}s{{ end }}://{{ $.Values.toxic.ingress.host }}{{ $.Values.toxic.ingress.path }}
 {{- else if contains "NodePort" .Values.toxic.service.type }}
   If running on Minikube:
     minikube service {{ template "toxic.fullname" . }}

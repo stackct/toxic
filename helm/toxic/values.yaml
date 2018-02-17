@@ -4,7 +4,11 @@
 
 # Set this to true to configure additional resources required in a local
 # development environment.
-minikube: false
+minikube: true
+
+# OAuth provider
+oauth2: 
+  host: sso.local
 
 # toxic container settings
 toxic:
@@ -17,14 +21,13 @@ toxic:
     storageClass: standard
     storageSize: 10Gi
   service:
-    type: ClusterIP
+    type: NodePort
+    port: 8001
   ingress:
-    enabled: true
-    path: /
-    hosts:
-      - toxic.local
+    enabled: false
+    host: toxic.local
     tls:
-    - secretName: toxic-tls
+      secretName: toxic-tls
 
 # filebeat container settings
 filebeat:
@@ -39,4 +42,3 @@ filebeat:
 nodeSelector: {}
 tolerations: []
 affinity: {}
-
