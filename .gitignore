@@ -58,4 +58,4 @@ docker/artifacts
 secret*
 
 # Custom Helm values
-values-*
+values-*.yaml
