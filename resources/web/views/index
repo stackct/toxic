@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/assets/css/toxic.css">
   <link rel="stylesheet" href="/assets/css/markdown.css">
   <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
+  <link rel=icon href=/assets/img/favicon.png>
 
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
