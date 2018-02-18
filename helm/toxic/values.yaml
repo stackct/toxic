@@ -27,7 +27,6 @@ toxic:
     host: toxic.local
     tls:
       secretName: toxic-tls
-      placeholderNamespace: default
       placeholderService: default-backend
       placeholderPort: 80
 

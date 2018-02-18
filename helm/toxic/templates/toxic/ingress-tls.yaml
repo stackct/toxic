@@ -23,7 +23,6 @@ spec:
         paths:
           - path: /tls-placeholder
             backend:
-              namespace: {{ .Values.toxic.ingress.tls.placeholderName }}
               serviceName: {{ .Values.toxic.ingress.tls.placeholderService }}
               servicePort: {{ .Values.toxic.ingress.tls.placeholderPort }}
 
