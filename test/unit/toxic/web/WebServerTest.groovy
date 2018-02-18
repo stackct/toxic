@@ -103,6 +103,7 @@ public class WebServerTest {
     assert routes['/api/user/:id']                                != null
     assert routes['/api/user/:id/avatar/:size']                   != null
     assert routes['/api/about']                                   != null
+    assert routes['/metrics']                                     != null
 
     server.sparkService.webSocketHandlers.with { ws ->
       assert ws['/ws/echo'].handler instanceof EchoHandler
