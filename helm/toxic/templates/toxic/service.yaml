@@ -7,6 +7,7 @@ metadata:
     chart: {{ template "toxic.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    tier: metrics
 spec:
   type: {{ .Values.toxic.service.type }}
   ports:
