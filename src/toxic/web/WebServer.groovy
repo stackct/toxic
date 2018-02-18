@@ -413,9 +413,9 @@ public class WebServer implements Runnable {
       resp.type("text")
 
       def metrics = [
-        running_jobs: jobManager.runningJobs.size(),
-        pending_jobs: jobManager.pendingJobs.size(),
-        completed_jobs: jobManager.completedJobs.size()
+        toxic_running_jobs: jobManager.runningJobs.size(),
+        toxic_pending_jobs: jobManager.pendingJobs.size(),
+        toxic_completed_jobs: jobManager.completedJobs.size()
       ]
 
       def sb = new StringBuilder()
