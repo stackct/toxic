@@ -408,6 +408,24 @@ public class WebServer implements Runnable {
 
       makeResponse(map)
     }
+
+    addRoute("/metrics") { req, resp ->
+      resp.type("text")
+
+      def metrics = [
+        running_jobs: jobManager.runningJobs.size(),
+        pending_jobs: jobManager.pendingJobs.size(),
+        completed_jobs: jobManager.completedJobs.size()
+      ]
+
+      def sb = new StringBuilder()
+
+      metrics.each { k,v ->
+        sb.append("${k} ${v}\n")
+      }
+
+      makeResponse(sb.toString(), false)
+    }
   }
   
   boolean isPresentableKey(def k) {
