@@ -8,6 +8,7 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     metrics: true
+    consumer: internal
 spec:
   type: {{ .Values.toxic.service.type }}
   ports:
