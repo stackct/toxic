@@ -24,7 +24,6 @@ toxic:
     type: NodePort
     port: 8001
   ingress:
-    enabled: false
     host: toxic.local
     tls:
       secretName: toxic-tls
@@ -41,6 +40,7 @@ filebeat:
     resources: {}
   logstash:
     namespace: logit
+    port: 5000
 
 nodeSelector: {}
 tolerations: []

@@ -10,7 +10,7 @@ metadata:
 spec:
   type: {{ .Values.toxic.service.type }}
   ports:
-    - port: 8001
+    - port: {{ .Values.toxic.service.port }}
       targetPort: 8001
       protocol: TCP
   selector:
@@ -31,4 +31,4 @@ spec:
   type: ExternalName
   externalName: logstash.{{ .Values.filebeat.logstash.namespace }}.svc.cluster.local
   ports:
-  - port: 5000
+  - port: {{ .Values.filebeat.logstash.port }}
