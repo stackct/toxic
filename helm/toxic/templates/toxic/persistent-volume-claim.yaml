@@ -9,6 +9,6 @@ spec:
   resources:
     requests:
       storage: {{ .Values.toxic.storage.storageSize }}
-        selector:
-          matchLabel:
-            app: "toxic"
+  selector:
+    matchLabels:
+      app: "toxic"
