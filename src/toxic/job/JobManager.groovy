@@ -859,6 +859,40 @@ public class JobManager implements Runnable,Publisher {
     return results
   }
 
+  public Map getMetrics() {
+    def metrics = [
+      toxic_jobs_pending:0, 
+      toxic_jobs_running:0, 
+      toxic_jobs_succeeded:0, 
+      toxic_jobs_failed:0,
+      toxic_jobs_completed:0, 
+      toxic_jobs_total:0
+    ]
+
+    def jobs = allJobs()
+
+    jobs.each { job ->
+      if (job.currentStatus == JobStatus.RUNNING) {
+        metrics['toxic_jobs_running']++
+      }
+      if (job.currentStatus == JobStatus.PENDING) {
+        metrics['toxic_jobs_pending']++
+      }
+      if (job.currentStatus == JobStatus.COMPLETED) {
+        if (job.failed) {
+          metrics['toxic_jobs_failed']++
+        } else {
+          metrics['toxic_jobs_succeeded']++
+        }
+        metrics['toxic_jobs_completed']++
+      }
+
+      metrics['toxic_jobs_total']++
+    }
+
+    return metrics
+  }
+
   private def getCommitUser(commit) {
     if (groupCommitsForUsersWithSimilarNames){
       return getCommitUserUnmodified(commit)
