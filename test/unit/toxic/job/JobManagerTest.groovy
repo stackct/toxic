@@ -1111,6 +1111,39 @@ another=there
   }
 
   @Test
+  public void should_get_flattened_metrics() {
+    JobManager.considerOnlySuccessfulJobsForAvgDuration = true
+    def jobManager = new JobManager("http://fakeUrl")
+
+    def job = new Job()
+    job.currentStatus = JobStatus.PENDING
+    jobManager.jobs << job
+
+    job = new Job()
+    job.currentStatus = JobStatus.RUNNING
+    jobManager.jobs << job
+
+    job = new Job()
+    job.currentStatus = JobStatus.COMPLETED
+    job.failed = 1
+    jobManager.jobs << job
+
+    job = new Job()
+    job.currentStatus = JobStatus.COMPLETED
+    job.failed = 0
+    jobManager.jobs << job
+
+    def metrics = jobManager.getMetrics()
+
+    assert metrics['toxic_jobs_total'] == 4
+    assert metrics['toxic_jobs_pending'] == 1
+    assert metrics['toxic_jobs_running'] == 1
+    assert metrics['toxic_jobs_completed'] == 2
+    assert metrics['toxic_jobs_succeeded'] == 1
+    assert metrics['toxic_jobs_failed'] == 1
+  }
+
+  @Test
   public void should_shutdown_and_cancel() {
     def jm = new JobManager("test")
     jm.running = true

@@ -412,22 +412,12 @@ public class WebServer implements Runnable {
     addRoute("/metrics") { req, resp ->
       resp.type("text")
 
-      def metrics = [
-        toxic_running_jobs: jobManager.runningJobs.size(),
-        toxic_pending_jobs: jobManager.pendingJobs.size(),
-        toxic_completed_jobs: jobManager.completedJobs.size()
-      ]
-
       def sb = new StringBuilder()
-
-      metrics.each { k,v ->
-        sb.append("${k} ${v}\n")
-      }
-
+      jobManager.getMetrics().each { k,v -> sb.append("${k} ${v}\n")} 
       makeResponse(sb.toString(), false)
     }
   }
-  
+
   boolean isPresentableKey(def k) {
     k = k.toString()
     return !k.startsWith("groovyshell") && (!(k in ['job', 'jobManager', 'eventManager']))
