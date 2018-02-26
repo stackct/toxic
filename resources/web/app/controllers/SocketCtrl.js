@@ -75,6 +75,15 @@ app.controller('SocketController', function($rootScope, $scope, $location, visib
       $rootScope.updateStamp = doomsday.getTime();
     }
 
+    switch ($rootScope.overallHealth) {
+      case "doom":
+      case "gloom":
+        $rootScope.bodyLayout = "skin-red";
+        break;
+      default:
+        $rootScope.bodyLayout = "skin-green";
+    }
+    
     $rootScope.$apply();
   });
 

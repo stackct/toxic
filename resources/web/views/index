@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/assets/css/ionicons.min.css">
   <link rel="stylesheet" href="/assets/css/AdminLTE.css">
   <link rel="stylesheet" href="/assets/css/skins/skin-green.min.css">
+  <link rel="stylesheet" href="/assets/css/skins/skin-red.min.css">
   <link rel="stylesheet" href="/assets/css/toxic.css">
   <link rel="stylesheet" href="/assets/css/markdown.css">
   <link href="https://fonts.googleapis.com/css?family=PT+Sans" rel="stylesheet">
@@ -27,7 +28,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 </head>
 
-<body class="hold-transition skin-green sidebar-mini">
+<body class="hold-transition sidebar-mini {{ bodyLayout }}">
 
 <!-- Status Controller: Broadcasts connect/disconnect events -->
 <div ng-controller="StatusController" ng-hide="connected" class="status"></div>
