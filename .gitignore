@@ -30,8 +30,8 @@ tags
 # Visual Studio Code
 /.vscode/
 
-# Mac specific files
-/.DS_Store/
+# Mac files
+.DS_Store
 
 # Custom security properties
 toxic-secure.properties
