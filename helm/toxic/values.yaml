@@ -20,6 +20,7 @@ toxic:
   storage:
     storageClass: standard
     storageSize: 10Gi
+    shareName: changeme
   service:
     type: NodePort
     port: 8001
