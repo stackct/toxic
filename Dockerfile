@@ -9,7 +9,7 @@ ENV DOCKER_BUCKET download.docker.com
 ENV DOCKER_VERSION 17.12.0-ce
 ENV DOCKER_SHA256 05ceec7fd937e1416e5dce12b0b6e1c655907d349d52574319a1e875077ccb79
 
-RUN apk update && apk add bash curl docker git openjdk8 openssh openssl \
+RUN apk update && apk add bash curl docker git openjdk8 openssh openssl make \
     && docker -v \
     && addgroup -g 2000 toxic \
     && adduser -u 2000 -G toxic -D toxic \ 
