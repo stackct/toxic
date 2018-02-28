@@ -112,8 +112,8 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     }
 
     log.debug("git command result +++ local=${local}; remote=${remote}; cmd=${cmd}; exitValue=${proc.exitValue()}")
-
-    if (stderr) {
+    
+    if (proc.exitValue() != 0) {
       log.debug("git command returned stderr; local=${local}; remote=${remote}; cmd=${cmd}; exitValue=${proc.exitValue()}; stderr=${stderr.toString()}")
 
       if (!failQuietly) {
