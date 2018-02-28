@@ -28,7 +28,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     collectChanges().with { changes ->
       if (changes) {
         checkoutTargetBranch()
-        exec("git pull")
+        exec("git pull", false)
       }
 
       return changes
@@ -113,8 +113,12 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
 
     log.debug("git command result +++ local=${local}; remote=${remote}; cmd=${cmd}; exitValue=${proc.exitValue()}")
 
-    if (stderr && !failQuietly) {
-      throw new GitCommandException(stderr.toString())
+    if (stderr) {
+      log.warn("git command returned stderr; local=${local}; remote=${remote}; cmd=${cmd}; exitValue=${proc.exitValue()}; stderr=${stderr.toString()}")
+
+      if (!failQuietly) {
+        throw new GitCommandException(stderr.toString())
+      }
     }
 
     [output:stdout.toString(), error:stderr.toString(), exitValue: proc.exitValue()]
