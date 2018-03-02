@@ -18,6 +18,11 @@ docker: clean
 	docker tag ${APP_NAME} ${APP_NAME}:${BUILD_VERSION}
 	rm -fr extract
 
+push: docker
+	docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
+	docker tag ${APP_NAME} ${DOCKER_REGISTRY}/${APP_NAME}
+	docker push ${DOCKER_REGISTRY}/${APP_NAME}
+
 package: docker
 
 run:

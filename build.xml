@@ -66,12 +66,16 @@
     <mkdir dir="${unit}/RESULTS" />
     <mkdir dir="${unit}/RESULTS/html" />
 
+    <property name="test.class" value="" />
+    <property name="test.formatter" value="xml" />
+    <property name="test.useFile" value="true" />
+
     <junit printsummary="true" haltonerror="false" haltonfailure="false" fork="true" forkmode="once" failureproperty="testFailed" showoutput="false">
       <sysproperty key="${ant.project.name}_home" value='${basedir}'/>
-      <formatter type="xml" usefile="true" />
+      <formatter type="${test.formatter}" usefile="${test.useFile}" />
       <batchtest todir="${unit}/RESULTS">
         <fileset dir="${unit}">
-          <include name="**/*Test.class" />
+          <include name="**/${test.class}*Test.class" />
         </fileset>
       </batchtest>
       <classpath refid="cp.test" />
