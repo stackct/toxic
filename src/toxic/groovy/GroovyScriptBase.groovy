@@ -127,7 +127,7 @@ abstract class GroovyScriptBase extends Script {
     err = err != null ? err : getErrorBuffer()
     resetBuffers()
 
-    logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmd)}")
+    logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmd, memory['sanitize.terms'] ?: [])}")
     execExitCode =  monitorProc(logger, Runtime.runtime.exec(cmd))
     return execExitCode
   }
@@ -160,7 +160,7 @@ abstract class GroovyScriptBase extends Script {
     def env = pb.environment()
     env << envVars
 
-    logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmdAndArgs.join(' '))}")
+    logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmdAndArgs.join(' '), memory['sanitize.terms'] ?: [])}")
     execExitCode = monitorProc(logger, pb.start(), logOutput, timeoutSecs)
     return execExitCode
   }

@@ -12,12 +12,16 @@ public class GroovyScriptBaseTest {
   def infos = []
   def debugs = []
   def errors = []
+  def memory = [:]
   
   @Before
   void before() {
     compiler = new CompilerConfiguration()
     compiler.setScriptBaseClass("toxic.groovy.GroovyScriptBase")
-    shell = new GroovyShell(this.class.classLoader, new Binding(), compiler)
+
+    def binding = new Binding()
+    binding.setVariable("memory", memory)
+    shell = new GroovyShell(this.class.classLoader, binding, compiler)
 
     def logger = new Object() {
       void warn(msg) { warns << msg }
@@ -75,6 +79,19 @@ public class GroovyScriptBaseTest {
 
     // But should still capture it
     assert (shell.out.contains("password=foo"))
+  }
+
+  @Test
+  public void testExecWithEnvLoggingExtraTermsSuppressed() {
+    memory['sanitize.terms'] = ['secret']
+
+    // Should not log cmd output
+    assert 0 == shell.evaluate("execWithEnvNoLogging(['echo','secret=hideme'],[:])")
+    assert infos[0] == "Executing shell command; cmd=echo secret=***"
+    assert infos[1].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
+
+    // But should still capture it
+    assert (shell.out.contains("secret=hideme"))
   }
 
   @Test

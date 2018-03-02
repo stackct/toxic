@@ -2,7 +2,9 @@
 package toxic
 
 public class Sanitizer {
-  static def sanitize(String content) {
-    return content.replaceAll(/(pass|password|Pass|Password)=.+?(;\s|;$|$)/, "\$1=***\$2")
+  private static terms = ['pass', 'password']
+
+  static def sanitize(String content, List extras = []) {
+    return content.replaceAll("(?i)(${(terms + extras).join('|')})=.+?(;\\s|;\$|\$)", "\$1=***\$2")
   }
 }
