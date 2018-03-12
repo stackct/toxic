@@ -3,7 +3,7 @@ WORKDIR /src
 COPY . .
 
 RUN apk update && apk add apache-ant git
-RUN ant clean test jar
+RUN ant clean test package
 RUN mkdir /build \
       && cp -r ./bin /build \
       && cp -r ./conf /build \

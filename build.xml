@@ -57,7 +57,7 @@
     </groovyc>
   </target>
   
-  <target name="jar" depends="compile">
+  <target name="package" depends="compile">
     <jar destfile="${gen}/toxic.jar" basedir="${class}"/>
   </target>
 
