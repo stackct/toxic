@@ -1,6 +1,7 @@
 package process
 
 import org.junit.*
+import org.junit.Ignore
 import org.junit.rules.*
 import groovy.mock.interceptor.*
 import static org.junit.Assert.*
@@ -22,7 +23,7 @@ class ProcessRunningStdInTest {
       PosixFilePermission.OWNER_READ,
       PosixFilePermission.OWNER_WRITE,
       PosixFilePermission.OWNER_EXECUTE,
-      PosixFilePermission.GROUP_READ,,
+      PosixFilePermission.GROUP_READ,
       PosixFilePermission.GROUP_EXECUTE,
       PosixFilePermission.OTHERS_READ,
       PosixFilePermission.OTHERS_EXECUTE
