@@ -10,7 +10,7 @@ clean:
 docker: clean
 	-docker rm -f ${APP_NAME}-extract 2>/dev/null
 	mkdir -p ${OUTPUT_DIR}/${APP_NAME}-extract/publish
-	docker build --no-cache -f ${APP_DIR}/Dockerfile.build -t ${APP_NAME}:build ${APP_DIR}
+	docker build --no-cache -f ${APP_DIR}/Dockerfile.java.build -t ${APP_NAME}:build ${APP_DIR}
 	docker create --name ${APP_NAME}-extract ${APP_NAME}:build
 	docker cp ${APP_NAME}-extract:/build ${OUTPUT_DIR}/${APP_NAME}-publish
 	-docker rm -f ${APP_NAME}-extract 2>/dev/null

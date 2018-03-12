@@ -93,7 +93,7 @@
       <report todir="${unit}/RESULTS/html" />
     </junitreport>
     <echo message=""/>
-    <echo message="See a pretty junit report at ${basedir}/${unit}/RESULTS/html/index.html" />
+    <echo message="See a pretty junit report at ${unit}/RESULTS/html/index.html" />
     <fail if="testFailed" message="Unit test(s) failed. See reports!" />
   </target>
 </project>
