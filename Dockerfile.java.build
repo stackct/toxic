@@ -1,0 +1,13 @@
+FROM alpine:latest
+WORKDIR /src
+COPY . .
+
+RUN apk update && apk add apache-ant git
+RUN ant clean test jar
+RUN mkdir /build \
+      && cp -r ./bin /build \
+      && cp -r ./conf /build \
+      && cp -r ./docs /build \
+      && cp -r ./lib /build \
+      && cp -r ./resources /build \
+      && cp ./gen/*.jar /build/lib/
