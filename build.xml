@@ -75,7 +75,7 @@
       <formatter type="${test.formatter}" usefile="${test.useFile}" />
       <batchtest todir="${unit}/RESULTS">
         <fileset dir="${unit}">
-          <include name="**/${test.class}*Test.class" />
+          <include name="**/${test.class}Test.class" />
         </fileset>
       </batchtest>
       <classpath refid="cp.test" />
