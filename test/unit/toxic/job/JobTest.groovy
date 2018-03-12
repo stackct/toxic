@@ -265,7 +265,7 @@ public class JobTest {
 
   @Test
   public void should_serialize_job_to_simple_map_with_bad_date() {
-
+    TimeZone.setDefault(TimeZone.getTimeZone('UTC'))
     def dtSubmitted = new Date() - 3
     def dtStarted = null
     def dtCompleted = null
