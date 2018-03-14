@@ -76,6 +76,7 @@ public class JobManagerTest {
     }
     JobManager.metaClass = null
     Job.metaClass = null
+    ClassLoader.metaClass = null
   }
   
   @Test
@@ -114,6 +115,22 @@ public class JobManagerTest {
     
     assert scheduled == ['fake.job':props]
     assert urlProps.Authorization == "Basic dXNlcjpwYXNz"
+  }
+
+  @Test
+  public void should_fetch_auto_repo_urls_without_default_job_props() {
+    jobManager.mgrprops["jobManager.autoRepoUrl.1"] = "ssh://somewhere.com/repos/fake"
+    jobManager.defaultJobProps = null
+    def scheduled = jobManager.fetchAutomatedJobs()
+    assert scheduled == ['fake.job':"job.repoUrl=ssh://somewhere.com/repos/fake"]
+  }
+
+  @Test
+  public void should_fetch_auto_repo_urls_with_default_job_props() {
+    jobManager.mgrprops["jobManager.autoRepoUrl.1"] = "ssh://somewhere.com/repos/fake"
+    jobManager.defaultJobProps = "foo=bar"
+    def scheduled = jobManager.fetchAutomatedJobs()
+    assert scheduled == ['fake.job':"job.repoUrl=ssh://somewhere.com/repos/fake\nfoo=bar"]
   }
 
   @Test
@@ -701,6 +718,30 @@ public class JobManagerTest {
     assert jobProps.unsecuredProp == 'blah'
     assert jobProps.notARealProp == [:]
     assert jobProps.eventManager == EventManager.instance
+  }
+
+  @Test
+  void should_not_set_default_job_props_when_file_not_found() {
+    String name
+    ClassLoader.metaClass.'static'.getSystemResourceAsStream = { String actualName ->
+      name = actualName
+      return null
+    }
+    jobManager = new JobManager("http://fakeUrl")
+    assert null == jobManager.defaultJobProps
+    assert 'toxic.job' == name
+  }
+
+  @Test
+  void should_default_job_properties_when_found_on_classpath() {
+    String name
+    ClassLoader.metaClass.'static'.getSystemResourceAsStream = { String actualName ->
+      name = actualName
+      return new ByteArrayInputStream("foo=bar".getBytes())
+    }
+    jobManager = new JobManager("http://fakeUrl")
+    assert "foo=bar" == jobManager.defaultJobProps
+    assert 'toxic.job' == name
   }
   
   @Test
