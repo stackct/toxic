@@ -20,6 +20,7 @@ public class JobManager implements Runnable,Publisher {
   private boolean shutdownSoon = false
   private int pollInterval
   private String jobDirectory
+  private String defaultJobProps
   private List<Job> jobs = []
   private List<Job> archive = []
   private ThreadPoolExecutor jobPool
@@ -45,6 +46,7 @@ public class JobManager implements Runnable,Publisher {
       }
     }
     this.jobPool = new ThreadPoolExecutor(1, 1, 60000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue(), factory)
+    this.defaultJobProps = ClassLoader.getSystemResourceAsStream('toxic.job')?.text
   }
   
   def loadSecureProperties(String filename) {
@@ -259,6 +261,14 @@ public class JobManager implements Runnable,Publisher {
     log.trace("Starting to fetch automated jobs")
     def begin = System.currentTimeMillis()
     def map = new HashMap<String, String>()
+    map += fetchAutoJobUrls()
+    map += fetchAutoRepoUrls()
+    log.trace("Finished fetching automated jobs; elapsedMs=${System.currentTimeMillis()-begin}")
+    return map
+  }
+
+  private Map<String, String> fetchAutoJobUrls() {
+    def map = new HashMap<String, String>()
     this.mgrprops?.forProperties("jobManager.autoJobUrl.") { name, url ->
       try {
         def jobName = url
@@ -269,7 +279,20 @@ public class JobManager implements Runnable,Publisher {
         log.error("Failed to retrieve job from URL; url=${url}; reason=${findReason(e)}", e)
       }
     }
-    log.trace("Finished fetching automated jobs; elapsedMs=${System.currentTimeMillis()-begin}")
+    return map
+  }
+
+  private Map<String, String> fetchAutoRepoUrls() {
+    def map = new HashMap<String, String>()
+    this.mgrprops?.forProperties("jobManager.autoRepoUrl.") { name, url ->
+      def idx = url.lastIndexOf("/")
+      def jobName = url[(idx+1)..-1] + '.job'
+      String props = "job.repoUrl=${url}"
+      if(defaultJobProps) {
+        props += "\n${defaultJobProps}"
+      }
+      map[jobName] = props
+    }
     return map
   }
 
