@@ -5,7 +5,7 @@ ARG OUTPUT_DIR
 
 COPY ${OUTPUT_DIR} /opt/toxic
 
-RUN apk update && apk add bash curl docker git openjdk8 openssh openssl make \
+RUN apk update && apk add bash curl docker libxslt git openjdk8 openssh openssl make \
     && docker -v \
     && addgroup -g 2000 toxic \
     && adduser -u 2000 -G toxic -D toxic \ 
