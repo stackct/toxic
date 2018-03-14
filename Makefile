@@ -25,7 +25,9 @@ push: docker
 
 package: docker
 
+dist: docker
+
 run:
 	cd ${APP_DIR}; dotnet run
 
-.PHONY: clean build publish package docker run test
+.PHONY: clean build publish package dist docker run test
