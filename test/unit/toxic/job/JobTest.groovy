@@ -411,6 +411,28 @@ public class JobTest {
   }
 
   @Test
+  void should_load_job_details_from_repo_when_initializing() {
+    def job = mockJob(null, null, null)
+    File tempDir
+    try {
+      tempDir = File.createTempDir()
+      File propFile = new File(tempDir, 'toxic.job')
+      propFile.createNewFile()
+
+      job.projectWorkDir = tempDir
+      job.initialize()
+      assert null == job.properties.get('foo')
+
+      propFile.text = 'foo=bar'
+      job.initialize()
+      assert 'bar' == job.properties.get('foo')
+    }
+    finally {
+      tempDir?.deleteDir()
+    }
+  }
+
+  @Test
   void should_repeat() {
     def job = mockJob(null, null, null)
     assert !job.shouldRepeat()

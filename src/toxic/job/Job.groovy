@@ -307,6 +307,21 @@ public class Job implements Callable, Comparable, Publisher {
     return args.findAll { it }.collect { "-" + it }.toArray(new String[0])
   }
 
+  private String[] loadJobDetailsFromRepo(String[] args) {
+    File repoPropsFile = new File(projectWorkDir, 'toxic.job')
+    if(repoPropsFile.exists()) {
+      String contents = repoPropsFile.text
+      if(contents) {
+        String[] newArgs = args.plus(contents.split("\n"))
+        newArgs = newArgs.findAll { it }.collect { "-" + it }.toArray(new String[0])
+        def newProps = Main.loadProperties(newArgs)
+        this.properties.putAll(newProps)
+        return newArgs
+      }
+    }
+    return args
+  }
+
   protected initialize() {
     def args = loadJobDetails()
 
@@ -320,6 +335,7 @@ public class Job implements Callable, Comparable, Publisher {
     
     attachRepository()
     updateRepository()
+    args = loadJobDetailsFromRepo(args)
     callScripts("job.init.script.")
 
     // Load again since the init scripts likely changed the doDir path, thus we need to
