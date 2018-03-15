@@ -10,7 +10,7 @@
   <property name="unit" location="gen/unit"/>
   <property name="version" value="0.0.1"/>
   <property name="version.properties" value="${class}/${ant.project.name}-version.properties"/>
-  
+
   <path id="cp.compile">
     <fileset dir="${lib}">
       <include name="*.jar" />
@@ -61,6 +61,21 @@
     <jar destfile="${gen}/toxic.jar" basedir="${class}"/>
   </target>
 
+  <target name="single-test" depends="compile" description="Run single unit test">
+    <property name="test.class" value="*" />
+    <property name="test.methods" value="*" />
+    <property name="test.formatter" value="plain" />
+    <property name="test.useFile" value="false" />
+
+    <junit printsummary="true" haltonerror="true" haltonfailure="true">
+      <sysproperty key="TOXIC_HOME" value="${basedir}"/>
+      <formatter type="${test.formatter}" usefile="${test.useFile}" />
+      <test name="${test.class}" methods="${test.methods}" />
+      <classpath refid="cp.test" />
+    </junit>
+
+  </target>
+
   <target name="test" depends="compile" description="Run unit tests">
     <delete dir="${unit}/RESULTS" />
     <mkdir dir="${unit}/RESULTS" />
@@ -71,7 +86,7 @@
     <property name="test.useFile" value="true" />
 
     <junit printsummary="true" haltonerror="false" haltonfailure="false" fork="true" forkmode="once" failureproperty="testFailed" showoutput="false">
-      <sysproperty key="${ant.project.name}_home" value='${basedir}'/>
+      <sysproperty key="TOXIC_HOME" value="${basedir}"/>
       <formatter type="${test.formatter}" usefile="${test.useFile}" />
       <batchtest todir="${unit}/RESULTS">
         <fileset dir="${unit}">
@@ -83,7 +98,7 @@
     
     <antcall target="test-groovy-junit-reports"/>
   </target>
-  
+
   <target name="test-groovy-junit-reports">
     <echo message=""/>
     <junitreport todir="${unit}/RESULTS">
