@@ -22,9 +22,23 @@ public class GitRepositoryTest {
   }
 
   @Test
+  public void should_clone_repository_with_submodules() {
+    withRepoMock(true) { common ->
+      withRepoMock(false) { local -> 
+        withRepoMock(true) { remote -> 
+          addSubmodule(common, remote)
+          new GitRepository(local, remote, null).init()
+          assert new File("${local}/common/FROM_COMMON").exists()
+        }
+      }
+    }
+  }
+
+  @Test
   public void should_update_repository() {
     withRepoMock { local ->
       withRepoMock(true) { remote ->
+
         addCommit(remote)
 
         def repo = new GitRepository(local, remote, null)
@@ -37,6 +51,26 @@ public class GitRepositoryTest {
         def changes = repo.update()
 
         assert changes.size() == 3
+      }
+    }
+  }
+
+  @Test
+  public void should_update_repository_with_submodules() {
+    withRepoMock(true) { common ->
+      withRepoMock { local ->
+        withRepoMock(true) { remote ->
+          addCommit(remote)
+          addSubmodule(common, remote)
+
+          def repo = new GitRepository(local, remote, null)
+          repo.init()
+          
+          addCommit(common, "FROM_COMMON_NEW")
+          repo.update()
+          
+          assert new File("${local}/common/FROM_COMMON_NEW").exists()
+        }
       }
     }
   }
@@ -300,10 +334,10 @@ public class GitRepositoryTest {
     localExec("git init", dir)
   }
 
-  private void addCommit(dir) {
+  private void addCommit(dir, filename="foo.${UUID.randomUUID()}") {
     repoCommits[dir] = repoCommits[dir] ?: []
     
-    def newFile = new File(dir, "foo.${UUID.randomUUID()}")
+    def newFile = new File(dir, filename)
     newFile.write("bar")
     
     localExec('git config user.name "John Doe"', dir)
@@ -314,6 +348,13 @@ public class GitRepositoryTest {
     
     repoCommits[dir] << lastCommit?.output.trim()
  }
+
+ private void addSubmodule(sub, dir) {
+  addCommit(sub, "FROM_COMMON")
+  localExec("git submodule add ${sub} common", dir)
+  localExec("git add .", dir)
+  localExec("git commit -m submodule", dir)
+}
 
   private void destroyMockRepo(dir) {
     new File(dir).deleteDir()
