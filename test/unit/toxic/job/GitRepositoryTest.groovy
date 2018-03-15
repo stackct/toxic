@@ -334,14 +334,18 @@ public class GitRepositoryTest {
     localExec("git init", dir)
   }
 
+  private void config(dir) {
+    localExec('git config user.name "John Doe"', dir)
+    localExec('git config user.email johndoe@example.com', dir)
+  }
+
   private void addCommit(dir, filename="foo.${UUID.randomUUID()}") {
     repoCommits[dir] = repoCommits[dir] ?: []
     
     def newFile = new File(dir, filename)
     newFile.write("bar")
     
-    localExec('git config user.name "John Doe"', dir)
-    localExec('git config user.email johndoe@example.com', dir)
+    config(dir)
     localExec('git add .', dir)
     localExec('git commit -m "commit"', dir)
     def lastCommit = localExec('git --no-pager log -n1 --format=%H', dir)
@@ -351,6 +355,7 @@ public class GitRepositoryTest {
 
  private void addSubmodule(sub, dir) {
   addCommit(sub, "FROM_COMMON")
+  config(dir)
   localExec("git submodule add ${sub} common", dir)
   localExec("git add .", dir)
   localExec("git commit -m submodule", dir)
