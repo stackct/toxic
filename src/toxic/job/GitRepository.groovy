@@ -28,8 +28,10 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     collectChanges().with { changes ->
       if (changes) {
         checkoutTargetBranch()
-        exec("git pull", false)
+        exec("git pull --recurse-submodules", false)
       }
+      
+      exec("git submodule update --init --recursive --remote --rebase", false)
 
       return changes
     }
@@ -88,7 +90,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
 
   protected boolean init() {
     if (!initialized) {
-      exec("git clone ${remote} ${this.local}", true).exitValue == 0
+      exec("git clone --recurse-submodules ${remote} ${this.local}", true).exitValue == 0
     }
   }
 
