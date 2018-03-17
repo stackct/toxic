@@ -1226,6 +1226,7 @@ another=there
     assert !jm.configRepo
 
     GitRepository.metaClass.exec = {String cmd, boolean failQuietly -> [:] }
+    GitRepository.metaClass.exec = {List cmd, boolean failQuietly -> [:] }
 
     jm.mgrprops.configRepoType = "toxic.job.GitRepository"
     jm.mgrprops.configRepoUrl = "ssh://somewhere"

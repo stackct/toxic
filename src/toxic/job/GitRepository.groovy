@@ -31,7 +31,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
         exec("git pull --recurse-submodules", false)
       }
       
-      exec("git submodule update --init --recursive --remote --rebase", false)
+      exec(['git', 'submodule', 'foreach', 'git checkout master && git pull --rebase'], false)
 
       return changes
     }
@@ -99,24 +99,29 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
   }
 
   protected Map exec(String cmd, boolean failQuietly = false) {
-    log.debug("executing git command +++ local=${local}; remote=${remote}; branch=${branch}; cmd=${cmd}")
+    exec(cmd.split(" ") as List, failQuietly)
+  }
+
+  protected Map exec(List cmdAndArgs, boolean failQuietly = false) {
+    def cmds = cmdAndArgs
+
+    log.debug("executing git command +++ local=${local}; remote=${remote}; branch=${branch}; cmd=${cmdAndArgs}")
 
     def stdout = new StringBuffer()
     def stderr = new StringBuffer()
     def proc
-    synchronized(this) {
-      def cmds = cmd.split(" ")
 
+    synchronized(this) {
       ProcessBuilder pb = new ProcessBuilder(cmds)
       pb.directory(new File(local))
       proc = pb.start()
       proc.waitForProcessOutput(stdout, stderr)
     }
 
-    log.debug("git command result +++ local=${local}; remote=${remote}; cmd=${cmd}; exitValue=${proc.exitValue()}")
+    log.debug("git command result +++ local=${local}; remote=${remote}; cmd=${cmds}; exitValue=${proc.exitValue()}")
     
     if (proc.exitValue() != 0) {
-      log.debug("git command returned stderr; local=${local}; remote=${remote}; cmd=${cmd}; exitValue=${proc.exitValue()}; stderr=${stderr.toString()}")
+      log.debug("git command returned stderr; local=${local}; remote=${remote}; cmd=${cmds}; exitValue=${proc.exitValue()}; stderr=${stderr.toString()}")
 
       if (!failQuietly) {
         throw new GitCommandException(stderr.toString())
