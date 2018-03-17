@@ -52,16 +52,19 @@
     <groovyc srcdir="${src}" destdir="${class}" classpathref="cp.compile">
       <javac debug="on" deprecation="true"/>
     </groovyc>
+  </target>
+
+  <target name="compile-test" depends="init">
     <groovyc srcdir="${src-test}/unit" destdir="${unit}" classpathref="cp.compile">
       <javac debug="on" deprecation="true"/>
     </groovyc>
   </target>
-  
+
   <target name="package" depends="compile">
     <jar destfile="${gen}/toxic.jar" basedir="${class}"/>
   </target>
 
-  <target name="single-test" depends="compile" description="Run single unit test">
+  <target name="single-test" depends="compile-test" description="Run single unit test">
     <property name="test.class" value="*" />
     <property name="test.methods" value="*" />
     <property name="test.formatter" value="plain" />
@@ -76,7 +79,7 @@
 
   </target>
 
-  <target name="test" depends="compile" description="Run unit tests">
+  <target name="test" depends="compile-test" description="Run unit tests">
     <delete dir="${unit}/RESULTS" />
     <mkdir dir="${unit}/RESULTS" />
     <mkdir dir="${unit}/RESULTS/html" />

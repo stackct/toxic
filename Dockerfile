@@ -1,9 +1,9 @@
 FROM alpine:latest
 LABEL Description="Task Execution Engine"
 
-ARG OUTPUT_DIR
+ARG DIST_DIR_NAME
 
-COPY ${OUTPUT_DIR} /opt/toxic
+COPY ${DIST_DIR_NAME} /opt/toxic
 
 RUN apk update && apk add bash curl docker git openjdk8 openssh openssl make \
     && docker -v \
