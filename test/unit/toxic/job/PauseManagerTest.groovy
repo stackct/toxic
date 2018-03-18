@@ -5,22 +5,25 @@ import toxic.notification.*
 import groovy.mock.interceptor.*
 import util.*
 
+@Mixin(NotificationCenterTestMixin)
 public class PauseManagerTest {
   def subscriber
   def notifications
 
   @Before
   public void before() {
+    resetNotifications()
     def events = [EventType.PROJECT_PAUSED, EventType.PROJECT_UNPAUSED]
     notifications = [:]
     events.each { e -> notifications[e] = [] }
-    subscriber = [handle: { n -> notifications[n.type] << n }] as Subscriber
+    subscriber = [handle: { n -> addNotification(n) }] as Subscriber
     NotificationCenter.instance.subscribe(subscriber, events)
   }
 
   @After
   public void after() {
     PauseManager.instance.reset()
+    stopNotifications()
   }
 
   @Test
@@ -84,9 +87,7 @@ public class PauseManagerTest {
         pm.unpauseProject(jobManager, "foo")
       }
 
-      // Wait for notifications to be sent
-      long startTime = System.currentTimeMillis()
-      Wait.on { -> notifications.size() >= 2 || System.currentTimeMillis() - startTime > 5000 }.start()
+      Wait.on { -> notifications.size() >= 2 }.until(5000).start()
 
       assert notifications[EventType.PROJECT_PAUSED][0].data.project in ['foo', 'bar']
       assert notifications[EventType.PROJECT_PAUSED][0].data.paused == true
@@ -98,7 +99,7 @@ public class PauseManagerTest {
     }
   }
 
-  def mockDir(Closure c) {
+  private void mockDir(Closure c) {
     File tempDir
     try {
       tempDir = File.createTempDir()
@@ -107,5 +108,9 @@ public class PauseManagerTest {
     finally {
       tempDir?.deleteDir()
     }
+  }
+
+  synchronized private addNotification(n) {
+    notifications[n.type] << n
   }
 }

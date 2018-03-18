@@ -66,7 +66,6 @@ class Wait {
     this
   }
 
-
   public Wait every(int interval) {
     this.interval = interval
     this
