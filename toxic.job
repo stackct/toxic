@@ -1,1 +1,1 @@
-#job.end.script.1=if(memory['job'].failed == 0){memory['jobManager'].shutdown(); return true} else{return false}
+job.end.script.1=if(memory['job'].failed == 0){memory['jobManager'].shutdown(); return true} else{return false}
