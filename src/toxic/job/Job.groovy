@@ -312,8 +312,9 @@ public class Job implements Callable, Comparable, Publisher {
     if(repoPropsFile.exists()) {
       String contents = repoPropsFile.text
       if(contents) {
-        String[] newArgs = args.plus(contents.split("\n"))
+        String[] newArgs = contents.split("\n")
         newArgs = newArgs.findAll { it }.collect { "-" + it }.toArray(new String[0])
+        newArgs = args.plus(newArgs)
         def newProps = Main.loadProperties(newArgs)
         this.properties.putAll(newProps)
         return newArgs
