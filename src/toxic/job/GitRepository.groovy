@@ -28,9 +28,11 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     collectChanges().with { changes ->
       if (changes) {
         checkoutTargetBranch()
-        exec("git pull --recurse-submodules", false)
+        exec("git pull", false)
       }
       
+      // Handle submodules (if any)
+      exec("git submodule update --recursive --remote --init")
       exec(['git', 'submodule', 'foreach', 'git checkout master && git pull --rebase'], false)
 
       return changes
