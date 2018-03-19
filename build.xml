@@ -9,8 +9,6 @@
   <property name="class" location="${output}/classes"/>
   <property name="unit" location="${output}/unit"/>
   <property name="results" location="${output}/unit/RESULTS"/>
-  <property name="version" value="0.0.1"/>
-  <property name="version.properties" value="${class}/${ant.project.name}-version.properties"/>
 
   <path id="cp.compile">
     <fileset dir="${lib}">
@@ -33,18 +31,6 @@
   <target name="init">
     <mkdir dir="${class}" />
     <mkdir dir="${unit}" />
-    
-    <tstamp>
-      <format property="build.date" pattern="yyyy/M/dd"/>
-      <format property="build.time" pattern="HH:mm:ss"/>
-    </tstamp>
-    
-    <echo file="${version.properties}">
-      version=${version}
-      buildDate=${build.date}
-      buildTime=${build.time}
-    </echo>    
-
   </target>
   
   <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="cp.compile"/>

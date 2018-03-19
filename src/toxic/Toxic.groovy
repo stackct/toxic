@@ -1,21 +1,40 @@
 
 package toxic
 
+import util.DateTime
+
 public class Toxic {
 
-  static Properties props = new Properties()
+  static def props
 
   static {
-    def propsFilename = "/" + Toxic.class.simpleName.toLowerCase() + "-version.properties"
-    def versionStream = Toxic.class.getResourceAsStream(propsFilename)
-    
-    if (versionStream) {
-      props.load(versionStream)
+    reset()
+  }
+
+  static void reset() {
+    props = [:]
+    loadVersion()
+    loadBuildDate()
+  }
+
+  static void loadVersion() {
+    String versionString = loadResourceFile('VERSION')
+    if(versionString) {
+      props.version = versionString
     }
-    else {
-      println "Hey, go and run 'ant fetch-version' to create the ${propsFilename} file"
-      System.exit(1)
+  }
+
+  static void loadBuildDate() {
+    String buildDateTimeString = loadResourceFile('BUILDDATE')
+    if(buildDateTimeString) {
+      Date buildDateTime = DateTime.parseZulu(buildDateTimeString, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+      props.buildDate = DateTime.format(buildDateTime, 'yyyy-MM-dd')
+      props.buildTime = DateTime.format(buildDateTime, 'HH:mm:ss')
     }
+  }
+
+  static loadResourceFile(String name) {
+    ClassLoader.getSystemResourceAsStream(name)?.text
   }
 
   public static String getVersion() {

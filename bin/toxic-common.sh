@@ -36,6 +36,7 @@ classpath="$classpath:${TOXIC_HOME}/conf"
 classpath="$classpath:${TOXIC_HOME}/resources"
 classpath="$classpath:${TOXIC_HOME}/gen/classes"
 classpath="$classpath:${TOXIC_HOME}/lib/*"
+classpath="$classpath:${TOXIC_HOME}"
 
 if [ -n "${TOXIC_HEAP_MAX}" ]; then
   TOXIC_JRE_OPTIONS="${TOXIC_JRE_OPTIONS} -Xmx${TOXIC_HEAP_MAX}"
