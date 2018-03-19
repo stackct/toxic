@@ -1,13 +1,14 @@
 <project name="toxic" xmlns:if="ant:if" default="test">
   <property name="groovy.version" value="2.4.5" />
-  <property name="gen" location="gen"/>
+  <property name="output" location="gen"/>
   <property name="lib" location="lib"/>
   <property name="conf" location="conf"/>
   <property name="res" location="resources"/>
   <property name="src" location="src"/>
   <property name="src-test" location="test"/>
-  <property name="class" location="gen/classes"/>
-  <property name="unit" location="gen/unit"/>
+  <property name="class" location="${output}/classes"/>
+  <property name="unit" location="${output}/unit"/>
+  <property name="results" location="${output}/unit/RESULTS"/>
   <property name="version" value="0.0.1"/>
   <property name="version.properties" value="${class}/${ant.project.name}-version.properties"/>
 
@@ -22,11 +23,11 @@
   
   <path id="cp.test">
     <path refid="cp.compile" />
-    <pathelement location="${gen}/unit" />
+    <pathelement location="${unit}" />
   </path>
   
   <target name="clean">
-    <delete dir="${gen}" />
+    <delete dir="${output}" />
   </target>
   
   <target name="init">
@@ -54,14 +55,14 @@
     </groovyc>
   </target>
 
-  <target name="compile-test" depends="init">
+  <target name="compile-test" depends="init,compile">
     <groovyc srcdir="${src-test}/unit" destdir="${unit}" classpathref="cp.compile">
       <javac debug="on" deprecation="true"/>
     </groovyc>
   </target>
 
   <target name="package" depends="compile">
-    <jar destfile="${gen}/toxic.jar" basedir="${class}"/>
+    <jar destfile="${output}/toxic.jar" basedir="${class}"/>
   </target>
 
   <target name="single-test" depends="compile-test" description="Run single unit test">
@@ -80,9 +81,10 @@
   </target>
 
   <target name="test" depends="compile-test" description="Run unit tests">
-    <delete dir="${unit}/RESULTS" />
-    <mkdir dir="${unit}/RESULTS" />
-    <mkdir dir="${unit}/RESULTS/html" />
+    <echo message="output=${output}; results=${results}" />
+    <delete dir="${results}" failonerror="false" />
+    <mkdir dir="${results}" />
+    <mkdir dir="${results}/html" />
 
     <property name="test.class" value="*" />
     <property name="test.formatter" value="xml" />
@@ -91,7 +93,7 @@
     <junit printsummary="true" haltonerror="false" haltonfailure="false" fork="true" forkmode="once" failureproperty="testFailed" showoutput="false">
       <sysproperty key="TOXIC_HOME" value="${basedir}"/>
       <formatter type="${test.formatter}" usefile="${test.useFile}" />
-      <batchtest todir="${unit}/RESULTS">
+      <batchtest todir="${results}">
         <fileset dir="${unit}">
           <include name="**/${test.class}Test.class" />
         </fileset>
@@ -104,14 +106,14 @@
 
   <target name="test-groovy-junit-reports">
     <echo message=""/>
-    <junitreport todir="${unit}/RESULTS">
-      <fileset dir="${unit}/RESULTS">
+    <junitreport todir="${results}">
+      <fileset dir="${results}">
         <include name="TEST-*.xml" />
       </fileset>
-      <report todir="${unit}/RESULTS/html" />
+      <report todir="${results}/html" />
     </junitreport>
     <echo message=""/>
-    <echo message="See a pretty junit report at ${unit}/RESULTS/html/index.html" />
+    <echo message="See a pretty junit report at ${results}/html/index.html" />
     <fail if="testFailed" message="Unit test(s) failed. See reports!" />
   </target>
 </project>
