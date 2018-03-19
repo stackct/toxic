@@ -27,7 +27,11 @@ while [[ $# != 0 ]]; do
   shift
 done
 
-classpath="$classpath:/conf"
+if [ -n "${classpath}" ]; then
+  classpath="${classpath}:"
+fi
+
+classpath="$classpath/conf"
 classpath="$classpath:${TOXIC_HOME}/conf"
 classpath="$classpath:${TOXIC_HOME}/resources"
 classpath="$classpath:${TOXIC_HOME}/gen/classes"
