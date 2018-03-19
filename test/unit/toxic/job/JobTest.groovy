@@ -421,10 +421,12 @@ public class JobTest {
 
       job.projectWorkDir = tempDir
       job.initialize()
+      int propertiesCount = job.properties.size()
       assert null == job.properties.get('foo')
 
       propFile.text = 'foo=bar'
       job.initialize()
+      assert propertiesCount+1 == job.properties.size()
       assert 'bar' == job.properties.get('foo')
     }
     finally {
