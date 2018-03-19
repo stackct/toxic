@@ -24,6 +24,7 @@ public class PauseManagerTest {
   public void after() {
     PauseManager.instance.reset()
     stopNotifications()
+    resetNotifications()
   }
 
   @Test
@@ -87,7 +88,7 @@ public class PauseManagerTest {
         pm.unpauseProject(jobManager, "foo")
       }
 
-      Wait.on { -> notifications.size() >= 2 }.until(5000).start()
+      Wait.on { -> getNotificationCount() == 3}.until(1).start()
 
       assert notifications[EventType.PROJECT_PAUSED][0].data.project in ['foo', 'bar']
       assert notifications[EventType.PROJECT_PAUSED][0].data.paused == true
@@ -108,6 +109,10 @@ public class PauseManagerTest {
     finally {
       tempDir?.deleteDir()
     }
+  }
+
+  synchronized private getNotificationCount() {
+    return notifications.collect { type,items -> items.size() }.sum()
   }
 
   synchronized private addNotification(n) {
