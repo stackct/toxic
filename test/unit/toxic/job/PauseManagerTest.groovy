@@ -88,7 +88,7 @@ public class PauseManagerTest {
         pm.unpauseProject(jobManager, "foo")
       }
 
-      Wait.on { -> getNotificationCount() == 3}.until(1).start()
+      Wait.on { -> getNotificationCount() == 3}.until(5000).start()
 
       assert notifications[EventType.PROJECT_PAUSED][0].data.project in ['foo', 'bar']
       assert notifications[EventType.PROJECT_PAUSED][0].data.paused == true
