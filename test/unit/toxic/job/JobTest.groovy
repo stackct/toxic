@@ -78,7 +78,8 @@ public class JobTest {
       new TaskResult([id:'5', family:'bar', name:'e', type:'type', success:false, startTime:10, stopTime:15]),
       new TaskResult([id:'6', family:'wee', name:'f', type:'type', success:true,  startTime:16, stopTime:18]),
       new TaskResult([id:'7', family:'wee', name:'g', type:'type', success:true,  startTime:19, stopTime:21]),
-      new TaskResult([id:'8', family:'wee', name:'h', type:'type', success:true,  startTime:22, stopTime:24])
+      new TaskResult([id:'8', family:'wee', name:'h', type:'type', success:true,  startTime:22, stopTime:24]),
+      new TaskResult([id:'9', family:'bee', name:'i', type:'type', success:true,  startTime:0, stopTime:0])
     ]
     
     // Prime the simple results map with our faked injected results
@@ -287,7 +288,10 @@ public class JobTest {
     def dtCompleted = df.parse('2015-05-01 00:00:35.000')
 
     def job = mockJob(dtSubmitted, dtStarted, dtCompleted)
-    job.results << new TaskResult([id:'9', family:'bee', name:'i', type:'type', success:true,  startTime:0, stopTime:0])
+
+    assert job.toSuiteBreakdown(0, 0) == [
+        [suite: 'bee', family: 'bee', tasks: 1, complete: true, success: true, startTime: 0, duration: 0]
+    ]
 
     assert job.toSuiteBreakdown(1, 20) == [
       [suite: 'foo', family: 'foo', tasks: 3, complete: true, success: false, startTime: 1, duration: 4,],
