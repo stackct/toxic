@@ -701,7 +701,7 @@ public class Job implements Callable, Comparable, Publisher {
 
   public List toSuiteBreakdown(long fromMillis, long toMillis) {
     def res = simpleResults.collect { suite, tasks ->
-      def et = tasks.findAll { it.stopTime > fromMillis && 
+      def et = tasks.findAll { it.stopTime >= fromMillis &&
                                it.stopTime <= toMillis }
       !et ? null :
       [
