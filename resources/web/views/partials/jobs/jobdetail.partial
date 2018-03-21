@@ -65,12 +65,7 @@
       </a>
     </li>
     <li ng-class="{active:tab===4}">
-      <a href ng-click="tab = 4; loadImages()">
-        <span class="fa fa-archive"></span> Images
-      </a>
-    </li>
-    <li ng-class="{active:tab===5}">
-      <a href ng-click="tab = 5; loadDocs()">
+      <a href ng-click="tab = 4; loadDocs()">
         <span class="fa fa-paperclip"></span> Docs
       </a>
     </li>
