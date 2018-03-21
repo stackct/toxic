@@ -91,9 +91,6 @@
             <ng-include src="'/views/partials/jobs/jobdetail-artifacts.partial'" />
           </p>
           <p ng-show="tab === 4">
-            <ng-include src="'/views/partials/jobs/jobdetail-images.partial'" />
-          </p>
-          <p ng-show="tab === 5">
             <ng-include src="'/views/partials/jobs/jobdetail-docs.partial'" />
           </p>
         </div>
