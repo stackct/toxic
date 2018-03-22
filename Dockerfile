@@ -27,5 +27,7 @@ VOLUME ["/data"]
 EXPOSE 8001
 USER toxic
 
+ENV PATH="/opt/toxic/bin:${PATH}"
+
 ENTRYPOINT ["/opt/toxic/bin/toxic-ui", "-j", "/data"]
 CMD ["-s", "/conf/toxic-secure.properties", "-p", "toxic.properties"]
