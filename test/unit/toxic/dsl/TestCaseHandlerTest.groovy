@@ -217,12 +217,13 @@ class TestCaseHandlerTest {
     """
     mockFile(input) { file ->
       def props = [functions: functions]
+      props.output1 = 'existing.property.dont.remove'
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       props.output1 = 'value1'
       props.output2 = 'value2'
       TestCaseHandler.stepComplete(props)
       assert ['output1': 'value1', 'output2': 'value2'] == props.testCases[0].steps[0].outputs
-      assert !props.containsKey('output1')
+      assert 'existing.property.dont.remove' == props.output1
       assert !props.containsKey('output2')
 
       assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
@@ -235,6 +236,50 @@ class TestCaseHandlerTest {
 
       assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
       TestCaseHandler.stepComplete(props)
+
+      assert null == new TestCaseHandler(dirItem, props).nextFile(file)
+    }
+  }
+
+  @Test
+  void should_preserve_existing_properties() {
+    DirItem dirItem = new DirItem('something.test')
+    Function fn1 = new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    Function fn2 = new Function(path: 'fn_2', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    def functions = ['fn_1': fn1, 'fn_2': fn2]
+
+    def input = """
+      test "test1" {
+        description "test1 description"
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+        step "fn_2", "step1", {
+            arg1 3
+            arg2 4
+        }
+      }
+    """
+    mockFile(input) { file ->
+      def props = [functions: functions]
+
+      props.arg1 = "existing.arg1"
+
+      assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      assert 1 == props.arg1
+      assert 2 == props.arg2
+      TestCaseHandler.stepComplete(props)
+
+      assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      assert 3 == props.arg1
+      assert 4 == props.arg2
+      TestCaseHandler.stepComplete(props)
+
+      assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
+      assert 'existing.arg1' == props.arg1
+      TestCaseHandler.stepComplete(props)
+      assert !props.containsKey('arg2')
 
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
     }

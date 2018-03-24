@@ -16,6 +16,7 @@ class TestCaseHandler extends LinkHandler {
     props.stepIndex = 0
     props.testCases = TestCase.parse(file.text).findAll { shouldInclude(it) }
     props.step = new StepOutputResolver(props)
+    props.backup = props.clone()
 
     props.testCases.each { testCase ->
       testCase.steps.each { step ->
@@ -63,7 +64,7 @@ class TestCaseHandler extends LinkHandler {
       function.validateRequiredArgsArePresent(step.args)
       step.args.each { k, v ->
         function.validateArgIsDefined(k)
-        props[k] = Step.interpolate(props, v)
+        setWithBackup(k, Step.interpolate(props, v), props, props.backup)
       }
     }
   }
@@ -71,7 +72,7 @@ class TestCaseHandler extends LinkHandler {
   static void removeStepArgsFromMemory(props) {
     Step step = currentStep(props.testCases, props.stepIndex)
     step?.args?.keySet().each {
-      props.remove(it)
+      removeWithRestore(it, props, props.backup)
     }
   }
 
@@ -80,7 +81,7 @@ class TestCaseHandler extends LinkHandler {
     if(step) {
       props.functions["${step.function}"].outputs.each {
         step.outputs[it] = props[it]
-        props.remove(it)
+        removeWithRestore(it, props, props.backup)
       }
     }
   }
@@ -98,5 +99,21 @@ class TestCaseHandler extends LinkHandler {
       }
     }
     step
+  }
+
+  private static void setWithBackup(key, newVal, props, backup) {
+    if (props[key]) {
+      backup[key] = props[key]
+    }
+    props[key] = newVal
+  }
+
+  private static void removeWithRestore(key, props, backup) {
+    if (backup[key]) {
+      props[key] = backup[key]
+      backup.remove(key)
+    } else {
+      props.remove(key)
+    }
   }
 }
