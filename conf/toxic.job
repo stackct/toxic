@@ -1,4 +1,4 @@
-make.target=dist
+make.target=all
 job.trigger.repoCommit=true
 job.init.script.0=new File("${memory['project.workDir']}/gen/job").mkdirs()
 job.init.script.1=new File("${memory['project.workDir']}/gen/job/build.groovy").text="assert 0 == execWithEnv(['make', '${memory['make.target']}'], [ARTIFACTS_DIR:'${memory.job.jobDir}/artifacts'], 1200, '${memory['project.workDir']}', null)"
