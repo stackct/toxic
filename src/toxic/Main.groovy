@@ -155,10 +155,17 @@ public class Main {
     // Optionally load the properties located in parent directories, which means
     // we need to recreate the properties in the new order.
     if (toxicProps.parentProps == "true") {
-      def doDir = toxicProps.doDir
+      def doDirs = []
+      toxicProps.keySet().each {
+        if(it.startsWith("doDir")) {
+          doDirs << toxicProps[it]
+        }
+      }
       toxicProps.clear()
       loadPropertiesFile(toxicProps, "toxic.properties", true)
-      loadParentProperties(toxicProps, doDir)
+      doDirs.each {
+        loadParentProperties(toxicProps, it)
+      }
 
       // Load the properties from an optional properties file.
       stdArgs.each {
