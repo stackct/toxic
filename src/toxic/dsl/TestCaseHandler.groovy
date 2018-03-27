@@ -102,14 +102,14 @@ class TestCaseHandler extends LinkHandler {
   }
 
   private static void setWithBackup(key, newVal, props, backup) {
-    if (props[key]) {
+    if (props.containsKey(key)) {
       backup[key] = props[key]
     }
     props[key] = newVal
   }
 
   private static void removeWithRestore(key, props, backup) {
-    if (backup[key]) {
+    if (backup.containsKey(key)) {
       props[key] = backup[key]
       backup.remove(key)
     } else {
