@@ -35,5 +35,15 @@ public class MainTest {
     props.logConf = "foo.xml"
     Main.configureLogging(props)
     assert log4jResource == "foo.xml"
-  }  
+  }
+
+  @Test
+  void should_load_parent_properties_from_multiple_do_dirs() {
+    def doDirs = []
+    Main.metaClass.'static'.loadParentProperties = { ToxicProperties props, def doDir ->
+      doDirs << doDir
+    }
+    Main.loadProperties(['-doDir=/foo', '-doDir1=/bar', '-doDir2=/foobar'] as String[])
+    assert ['/foo', '/bar', '/foobar'] == doDirs
+  }
 }
