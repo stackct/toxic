@@ -5,13 +5,11 @@ ARG DIST_DIR_NAME
 
 COPY ${DIST_DIR_NAME} /opt/toxic
 
-RUN apk update && apk add bash curl docker gcc git jq libffi-dev make musl-dev openjdk8 openssh openssl-dev openssl python-dev py-pip \
+RUN apk update && apk add bash curl docker git jq openjdk8 openssh openssl make \
     && docker -v \
     && addgroup -g 2000 toxic \
-    && adduser -u 2000 -G toxic -D toxic \ 
+    && adduser -u 2000 -G toxic -D toxic \
     && adduser toxic docker
-
-RUN pip install --no-cache-dir --upgrade pip wheel azure-cli
 
 RUN curl https://kubernetes-helm.storage.googleapis.com/helm-v2.8.2-linux-amd64.tar.gz -o /tmp/helm.tar.gz \
 	&& tar -zxvf /tmp/helm.tar.gz -C /tmp \
