@@ -347,7 +347,7 @@ memory.deployTestSuite = { sshHost, sshUser, sshKey ->
 }
 
 memory.initRemoteTests = { sshHost, sshUser, sshKey ->
-  memory.execRemote(sshHost, "sudo su - toxic -c 'mkdir -p ~/gen/results'", sshUser, sshKey)
+  memory.execRemote(sshHost, "sudo su - toxic -c 'mkdir -p ~/gen/test'", sshUser, sshKey)
 }
 
 memory.execRemote = { def host, def cmd, def user = null, key = null, timeout = 1800000, boolean bypassProxy=true ->
