@@ -16,8 +16,10 @@ class DepResolver {
   DepResolver(String artifact, def props) {
     validateProps(props)
     this.url = createUrl(props['pickle.repoUrl'], artifact, props['pickle.ext'])
-    this.username = props['pickle.repoUsername']
-    this.password = props['pickle.repoPassword']
+    if(props.containsKey('pickle.repoUsername') && props.containsKey('pickle.repoPassword')) {
+      this.username = props['pickle.repoUsername']
+      this.password = props['pickle.repoPassword']
+    }
     this.depsDir = new File(props.homePath, createDepsPath(artifact))
   }
 

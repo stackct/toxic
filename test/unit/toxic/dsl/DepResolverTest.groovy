@@ -6,6 +6,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.apache.commons.io.IOUtils
 import org.junit.Test
+import toxic.ToxicProperties
 
 import static org.junit.Assert.fail
 
@@ -33,6 +34,17 @@ class DepResolverTest {
     depResolver = new DepResolver('foo-1.0.0.zip', props)
     assert 'http://localhost/foo-1.0.0.zip.tgz' == depResolver.url
     assert '/tmp/gen/deps/foo-1.0.0.zip' == depResolver.depsDir.absolutePath
+  }
+
+  @Test
+  void should_construct_without_username_and_password() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties['pickle.repoUrl'] = 'http://localhost'
+    toxicProperties['pickle.ext'] = 'tgz'
+    toxicProperties['homePath'] = '/tmp'
+    DepResolver depResolver = new DepResolver('foo', toxicProperties)
+    assert null == depResolver.username
+    assert null == depResolver.password
   }
 
   @Test
