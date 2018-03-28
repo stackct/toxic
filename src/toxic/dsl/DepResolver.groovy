@@ -7,16 +7,17 @@ import org.apache.commons.compress.utils.IOUtils
 import org.apache.commons.io.FilenameUtils
 
 class DepResolver {
+  static def supportedExts = ['.tgz']
   String url
   String username
   String password
   File depsDir
 
   DepResolver(String artifact, def props) {
-    this.url = "${props.depsResolverBaseUrl}/${artifact}"
+    this.url = createUrl(props.depsResolverBaseUrl, artifact, props['pickle.ext'])
     this.username = props.depsResolverUsername
     this.password = props.depsResolverPassword
-    this.depsDir = new File(props.homePath, "gen/deps/${artifact.take(artifact.lastIndexOf('.')) ?: artifact}")
+    this.depsDir = new File(props.homePath, createDepsPath(artifact))
   }
 
   void resolve() {
@@ -64,6 +65,32 @@ class DepResolver {
       }
       IOUtils.copy(inputStream, new FileOutputStream(file))
     }
+  }
+
+  private String createUrl(String baseUrl, String artifact, String defaultExt) {
+    String ext = ''
+    if(!supportedArtifact(artifact) && defaultExt) {
+      ext = ".${defaultExt}"
+    }
+    "${baseUrl}/${artifact}${ext}"
+  }
+
+  private String createDepsPath(String artifact) {
+    String artifactDirName = artifact
+    if(supportedArtifact(artifact)) {
+      artifactDirName = artifact.take(artifact.lastIndexOf('.'))
+    }
+    "gen/deps/${artifactDirName}"
+  }
+
+  boolean supportedArtifact(String artifact) {
+    boolean supported = false
+    supportedExts.each {
+      if(artifact.endsWith(it)) {
+        supported = true
+      }
+    }
+    supported
   }
 
   static String fileExtension(File file) {

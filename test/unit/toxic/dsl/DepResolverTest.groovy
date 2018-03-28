@@ -10,14 +10,27 @@ import org.junit.Test
 class DepResolverTest {
   @Test
   void should_construct() {
-    DepResolver depResolver = new DepResolver('foo', [homePath: '/tmp'])
+    def props = [depsResolverBaseUrl: 'http://localhost', homePath: '/tmp', 'pickle.ext': 'tgz']
+
+    DepResolver depResolver = new DepResolver('foo', props)
+    assert 'http://localhost/foo.tgz' == depResolver.url
     assert '/tmp/gen/deps/foo' == depResolver.depsDir.absolutePath
 
-    depResolver = new DepResolver('foo.tgz', [homePath: '/tmp'])
+    depResolver = new DepResolver('foo.tgz', props)
+    assert 'http://localhost/foo.tgz' == depResolver.url
     assert '/tmp/gen/deps/foo' == depResolver.depsDir.absolutePath
 
-    depResolver = new DepResolver('foo-1.0.0.tgz', [homePath: '/tmp'])
+    depResolver = new DepResolver('foo-1.0.0', props)
+    assert 'http://localhost/foo-1.0.0.tgz' == depResolver.url
     assert '/tmp/gen/deps/foo-1.0.0' == depResolver.depsDir.absolutePath
+
+    depResolver = new DepResolver('foo-1.0.0.tgz', props)
+    assert 'http://localhost/foo-1.0.0.tgz' == depResolver.url
+    assert '/tmp/gen/deps/foo-1.0.0' == depResolver.depsDir.absolutePath
+
+    depResolver = new DepResolver('foo-1.0.0.zip', props)
+    assert 'http://localhost/foo-1.0.0.zip.tgz' == depResolver.url
+    assert '/tmp/gen/deps/foo-1.0.0.zip' == depResolver.depsDir.absolutePath
   }
 
   @Test
