@@ -9,6 +9,18 @@ import org.junit.Test
 
 class DepResolverTest {
   @Test
+  void should_construct() {
+    DepResolver depResolver = new DepResolver('foo', [homePath: '/tmp'])
+    assert '/tmp/gen/deps/foo' == depResolver.depsDir.absolutePath
+
+    depResolver = new DepResolver('foo.tgz', [homePath: '/tmp'])
+    assert '/tmp/gen/deps/foo' == depResolver.depsDir.absolutePath
+
+    depResolver = new DepResolver('foo-1.0.0.tgz', [homePath: '/tmp'])
+    assert '/tmp/gen/deps/foo-1.0.0' == depResolver.depsDir.absolutePath
+  }
+
+  @Test
   void should_resolve_from_secure_repo() {
     withResolver { DepResolver depResolver ->
       withTarGz { File file ->
@@ -40,14 +52,13 @@ class DepResolverTest {
       withTarGz { File file ->
         withFileUrl(file) { def requestProps ->
           depResolver.resolve()
-          File outputDir = new File(depResolver.destDir, depResolver.artifact)
-          assert 2 == outputDir.listFiles().size()
+          assert 2 == depResolver.depsDir.listFiles().size()
 
-          File fnDir = new File(outputDir, 'functions')
+          File fnDir = new File(depResolver.depsDir, 'functions')
           assert 1 == fnDir.listFiles().size()
           assert 'function test{}' == new File(fnDir, 'test.fn').text
 
-          File libDir = new File(outputDir, 'library')
+          File libDir = new File(depResolver.depsDir, 'library')
           assert 1 == libDir.listFiles().size()
           assert 'assert 1==1' == new File(libDir, 'test.groovy').text
         }
@@ -60,12 +71,11 @@ class DepResolverTest {
     withResolver { DepResolver depResolver ->
       withTarGz { File file ->
         withFileUrl(file) { def requestProps ->
-          File outputDir = new File(depResolver.destDir, depResolver.artifact)
-          new File(outputDir, 'previousFnDir').mkdirs()
+          new File(depResolver.depsDir, 'previousFnDir').mkdirs()
           depResolver.resolve()
-          assert 2 == outputDir.listFiles().size()
-          assert new File(outputDir, 'functions').exists()
-          assert new File(outputDir, 'library').exists()
+          assert 2 == depResolver.depsDir.listFiles().size()
+          assert new File(depResolver.depsDir, 'functions').exists()
+          assert new File(depResolver.depsDir, 'library').exists()
         }
       }
     }
@@ -75,12 +85,8 @@ class DepResolverTest {
     File tempDir
     try {
       tempDir = File.createTempDir()
-      DepResolver depResolver = new DepResolver(url: 'http://localhost'
-          , username: 'foo'
-          , password: 'bar'
-          , destDir: tempDir
-          , artifact: 'foobar'
-      )
+      def props = [depsResolverBaseUrl:'http://localhost', depsResolverUsername: 'foo', depsResolverPassword: 'bar', homePath: tempDir]
+      DepResolver depResolver = new DepResolver('foobar.tgz', props)
       c(depResolver)
     }
     finally {
