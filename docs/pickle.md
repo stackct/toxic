@@ -166,6 +166,28 @@ test "A user can place an order" {
 }
 ```
 
+A version may be supplied within the artifact name to pin a test suite to a particular version.
+The default and preferred usage is to always pull latest.
+```groovy
+// NOT a preferred usage
+dep "ARTIFACT_NAME-1.0.0", "ALIAS (OPTIONAL)"
+```
+
+Pickle will attempt to resolve dependencies by appending a file extension suffix to the artifact name prior to resolving.
+The default file extension is configured with the pickle.ext toxic property.
+The dependency repo url is configured with the depsResolverBaseUrl property and optional basic auth is used when the depsResolverUsername and depsResolverPassword are supplied.
+The deps resolver properties should be set in the local developers ${HOME}/.toxic/global.properties file
+```
+depsResolverBaseUrl=http://localhost:8081/repository/pickle
+depsResolverUsername=pickle
+depsResolverPassword=foo
+```
+
+To resolve a non-default package, the file extension can be supplied in the artifact name.
+```groovy
+dep "ARTIFACT_NAME.tgz", "ALIAS (OPTIONAL)"
+```
+
 Dependencies can be resolved to local directories by specifying the path to the dir when running Toxic:
 ```plain
 toxic -deps.foo=/path/to/foo/toxic -doDir=toxic/tests
