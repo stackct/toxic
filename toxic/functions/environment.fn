@@ -1,0 +1,16 @@
+function "DeployEnvironment" {
+  description "Deploys an environment" 
+  path "{{ libPath }}/environment/deploy"
+
+  arg "spec", true
+  arg "namespace", true
+}
+
+function "DeleteEnvironment" {
+  description "Deletes an environment" 
+  path "{{ libPath }}/environment/delete"
+
+  arg "spec", true
+  arg "namespace", true
+  arg "artifactsDir", true
+}

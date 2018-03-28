@@ -1,0 +1,1 @@
+println "DEBUG: ${memory.value}"
