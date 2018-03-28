@@ -12,7 +12,7 @@ import static org.junit.Assert.fail
 class DepResolverTest {
   @Test
   void should_construct() {
-    def props = [depsResolverBaseUrl: 'http://localhost', homePath: '/tmp', 'pickle.ext': 'tgz']
+    def props = ['pickle.repoUrl': 'http://localhost', homePath: '/tmp', 'pickle.ext': 'tgz']
 
     DepResolver depResolver = new DepResolver('foo', props)
     assert 'http://localhost/foo.tgz' == depResolver.url
@@ -42,7 +42,7 @@ class DepResolverTest {
       fail('Expected exception')
     }
     catch(DependencyResolutionException e) {
-      assert 'Missing required property -depsResolverBaseUrl' == e.message
+      assert 'Missing required property -pickle.repoUrl' == e.message
     }
   }
 
@@ -111,7 +111,7 @@ class DepResolverTest {
     File tempDir
     try {
       tempDir = File.createTempDir()
-      def props = [depsResolverBaseUrl:'http://localhost', depsResolverUsername: 'foo', depsResolverPassword: 'bar', homePath: tempDir]
+      def props = ['pickle.repoUrl':'http://localhost', 'pickle.repoUsername': 'foo', 'pickle.repoPassword': 'bar', homePath: tempDir]
       DepResolver depResolver = new DepResolver('foobar.tgz', props)
       c(depResolver)
     }

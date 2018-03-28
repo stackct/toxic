@@ -175,12 +175,12 @@ dep "ARTIFACT_NAME-1.0.0", "ALIAS (OPTIONAL)"
 
 Pickle will attempt to resolve dependencies by appending a file extension suffix to the artifact name prior to resolving.
 The default file extension is configured with the pickle.ext toxic property.
-The dependency repo url is configured with the depsResolverBaseUrl property and optional basic auth is used when the depsResolverUsername and depsResolverPassword are supplied.
+The dependency repo url is configured with the pickle.repoUrl property and optional basic auth is used when the pickle.repoUsername and pickle.repoPassword are supplied.
 The deps resolver properties should be set in the local developers ${HOME}/.toxic/global.properties file
 ```
-depsResolverBaseUrl=http://localhost:8081/repository/pickle
-depsResolverUsername=pickle
-depsResolverPassword=foo
+pickle.repoUrl=http://localhost:8081/repository/pickle
+pickle.repoUsername=pickle
+pickle.repoPassword=foo
 ```
 
 To resolve a non-default package, the file extension can be supplied in the artifact name.

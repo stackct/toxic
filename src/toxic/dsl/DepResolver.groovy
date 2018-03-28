@@ -15,15 +15,15 @@ class DepResolver {
 
   DepResolver(String artifact, def props) {
     validateProps(props)
-    this.url = createUrl(props.depsResolverBaseUrl, artifact, props['pickle.ext'])
-    this.username = props.depsResolverUsername
-    this.password = props.depsResolverPassword
+    this.url = createUrl(props['pickle.repoUrl'], artifact, props['pickle.ext'])
+    this.username = props['pickle.repoUsername']
+    this.password = props['pickle.repoPassword']
     this.depsDir = new File(props.homePath, createDepsPath(artifact))
   }
 
   void validateProps(def props) {
-    if(!props.depsResolverBaseUrl) {
-      throw new DependencyResolutionException('Missing required property -depsResolverBaseUrl')
+    if(!props['pickle.repoUrl']) {
+      throw new DependencyResolutionException('Missing required property -pickle.repoUrl')
     }
   }
 
