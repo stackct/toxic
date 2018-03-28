@@ -2,7 +2,6 @@ package toxic.dsl
 
 import toxic.dir.DirItem
 import toxic.dir.LinkHandler
-import toxic.ivy.IvyClient
 
 class DepHandler extends LinkHandler {
   DepHandler(DirItem item, Object props) {
@@ -47,12 +46,12 @@ class DepHandler extends LinkHandler {
   }
 
   void resolveRemote(Dep dep) {
-    IvyClient ivyClient = new IvyClient(dep.artifactId, props)
+    DepResolver depResolver = new DepResolver(dep.artifactId, props)
     if(!props.useDepsCache) {
-      ivyClient.resolve()
+      depResolver.resolve()
     }
-    props.deps[dep.name] = ivyClient.depsDir
-    addFunctionsChild(ivyClient.depsDir)
+    props.deps[dep.name] = depResolver.depsDir
+    addFunctionsChild(depResolver.depsDir)
   }
 
   void addFunctionsChild(def depsDir) {

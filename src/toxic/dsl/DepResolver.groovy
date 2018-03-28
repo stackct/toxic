@@ -10,8 +10,14 @@ class DepResolver {
   String url
   String username
   String password
-  String destDir
-  String artifact
+  File depsDir
+
+  DepResolver(String artifact, def props) {
+    this.url = "${props.depsResolverBaseUrl}/${artifact}"
+    this.username = props.depsResolverUsername
+    this.password = props.depsResolverPassword
+    this.depsDir = new File(props.homePath, "gen/deps/${artifact.take(artifact.lastIndexOf('.')) ?: artifact}")
+  }
 
   void resolve() {
     extract(retrieve())
@@ -24,8 +30,9 @@ class DepResolver {
       String auth = "Basic " + "${username}:${password}".bytes.encodeBase64()
       urlConnection.setRequestProperty("Authorization", auth)
     }
-    new File(destDir).mkdirs()
-    File artifactFile = new File(destDir, FilenameUtils.getName(url.getPath()))
+    File retrieveDir = depsDir.getParentFile()
+    retrieveDir.mkdirs()
+    File artifactFile = new File(retrieveDir, FilenameUtils.getName(url.getPath()))
     OutputStream outputStream = artifactFile.newOutputStream()
     outputStream << urlConnection.inputStream
     outputStream.close()
@@ -33,12 +40,11 @@ class DepResolver {
   }
 
   private void extract(File file) {
-    File outputDir = new File(destDir, artifact)
-    outputDir.deleteDir()
-    outputDir.mkdirs()
+    depsDir.deleteDir()
+    depsDir.mkdirs()
     switch (fileExtension(file)) {
       case '.tgz':
-        unTarGz(outputDir, file)
+        unTarGz(depsDir, file)
         break
     }
     file.delete()

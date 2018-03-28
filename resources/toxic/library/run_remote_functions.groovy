@@ -312,7 +312,7 @@ memory.deployTestSuite = { sshHost, sshUser, sshKey ->
   cmds << '-czf'
   cmds << tar
   cmds << 'toxic'
-  String depsDirPath = 'gen/toxic/deps'
+  String depsDirPath = 'gen/deps'
   File depsDir = new File(memory.homePath, depsDirPath)
   if(depsDir.isDirectory()) {
     cmds << depsDirPath

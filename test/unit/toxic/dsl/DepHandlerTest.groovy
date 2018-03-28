@@ -2,7 +2,6 @@ package toxic.dsl
 
 import toxic.ToxicProperties
 import toxic.dir.DirItem
-import toxic.ivy.IvyClient
 import groovy.mock.interceptor.MockFor
 import org.junit.After
 import org.junit.Test
@@ -10,7 +9,7 @@ import org.junit.Test
 class DepHandlerTest {
   @After
   void afterr() {
-    IvyClient.metaClass = null
+    DepResolver.metaClass = null
   }
 
   @Test
@@ -43,7 +42,7 @@ class DepHandlerTest {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
       boolean resolved = false
-      IvyClient.metaClass.resolve = {
+      DepResolver.metaClass.resolve = {
         resolved = true
       }
       DirItem dirItem = new DirItem('something.dep')
@@ -57,58 +56,11 @@ class DepHandlerTest {
   }
 
   @Test
-  void should_resolve_ivy_settings_from_props() {
-    String input = 'dep "artifact"'
-    mockFile(input) { file ->
-      boolean resolved = false
-      IvyClient.metaClass.resolve = {
-        resolved = true
-        assert delegate.ivySettingsFile.absolutePath.startsWith('/mockbuildcommonhome')
-      }
-      DirItem dirItem = new DirItem('something.dep')
-      mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        ToxicProperties props = new ToxicProperties()
-        props.homePath = baseDir.absolutePath
-        props.buildCommonPath = '/mockbuildcommonhome'
-
-        assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
-        assert [artifact: artifactsDir] == props.deps
-        assert resolved
-      }
-    }
-  }
-
-  @Test
-  void should_resolve_ivy_settings_from_env() {
-    String input = 'dep "artifact"'
-    mockFile(input) { file ->
-      def systemMock = new MockFor(System)
-      systemMock.demand.getenv(2) { "/\${${it}}" }
-      systemMock.use {
-        boolean resolved = false
-        IvyClient.metaClass.resolve = {
-          resolved = true
-          assert delegate.ivySettingsFile.absolutePath.startsWith('/${BUILD_COMMON_HOME}')
-        }
-        DirItem dirItem = new DirItem('something.dep')
-        mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-          ToxicProperties props = new ToxicProperties()
-          props.homePath = baseDir.absolutePath
-
-          assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
-          assert [artifact: artifactsDir] == props.deps
-          assert resolved
-        }
-      }
-    }
-  }
-
-  @Test
   void should_not_resolve_dep_from_cache_when_disabled() {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
       boolean resolved = false
-      IvyClient.metaClass.resolve = {
+      DepResolver.metaClass.resolve = {
         resolved = true
       }
       DirItem dirItem = new DirItem('something.dep')
@@ -198,7 +150,7 @@ class DepHandlerTest {
     File tempDir
     try {
       tempDir = File.createTempDir()
-      File artifactsDir = new File(tempDir, 'gen/toxic/deps/artifact')
+      File artifactsDir = new File(tempDir, 'gen/deps/artifact')
       File fnDir = new File(artifactsDir, 'functions')
       fnDir.mkdirs()
       File mockFn = new File(fnDir, 'test.fn')
