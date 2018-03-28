@@ -14,3 +14,13 @@ function "DeleteEnvironment" {
   arg "namespace", true
   arg "artifactsDir", true
 }
+
+function "GetServiceUrl" {
+  description "Returns the URL for a Kubernetes Service"
+  path "{{ libPath }}/environment/service/get"
+
+  arg "namespace", true
+  arg "service", true
+
+  output "url"
+}
