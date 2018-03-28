@@ -14,10 +14,17 @@ class DepResolver {
   File depsDir
 
   DepResolver(String artifact, def props) {
+    validateProps(props)
     this.url = createUrl(props.depsResolverBaseUrl, artifact, props['pickle.ext'])
     this.username = props.depsResolverUsername
     this.password = props.depsResolverPassword
     this.depsDir = new File(props.homePath, createDepsPath(artifact))
+  }
+
+  void validateProps(def props) {
+    if(!props.depsResolverBaseUrl) {
+      throw new DependencyResolutionException('Missing required property -depsResolverBaseUrl')
+    }
   }
 
   void resolve() {

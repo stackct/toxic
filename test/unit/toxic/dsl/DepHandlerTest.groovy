@@ -47,7 +47,7 @@ class DepHandlerTest {
       }
       DirItem dirItem = new DirItem('something.dep')
       mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        def props = [homePath:baseDir.absolutePath]
+        def props = [homePath:baseDir.absolutePath, depsResolverBaseUrl: 'http://localhost']
         assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
         assert [artifact: artifactsDir] == props.deps
         assert resolved
@@ -65,7 +65,7 @@ class DepHandlerTest {
       }
       DirItem dirItem = new DirItem('something.dep')
       mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        def props = [useDepsCache: true, homePath:baseDir.absolutePath]
+        def props = [useDepsCache: true, homePath:baseDir.absolutePath, depsResolverBaseUrl: 'http://localhost']
         assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
         assert [artifact: artifactsDir] == props.deps
         assert !resolved
@@ -78,7 +78,7 @@ class DepHandlerTest {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.dep')
-      def props = [useDepsCache: true, homePath:'/home']
+      def props = [useDepsCache: true, homePath:'/home', depsResolverBaseUrl: 'http://localhost']
       assert null == new DepHandler(dirItem, props).nextFile(file)
       assert 0 == dirItem.children.size()
     }

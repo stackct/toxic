@@ -12,6 +12,7 @@ import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.retrieve.RetrieveOptions
 import org.apache.ivy.core.retrieve.RetrieveReport
 import org.apache.ivy.util.filter.ArtifactTypeFilter
+import toxic.dsl.DependencyResolutionException
 
 import java.util.zip.ZipFile
 
