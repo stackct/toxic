@@ -7,6 +7,8 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream
 import org.apache.commons.io.IOUtils
 import org.junit.Test
 
+import static org.junit.Assert.fail
+
 class DepResolverTest {
   @Test
   void should_construct() {
@@ -31,6 +33,17 @@ class DepResolverTest {
     depResolver = new DepResolver('foo-1.0.0.zip', props)
     assert 'http://localhost/foo-1.0.0.zip.tgz' == depResolver.url
     assert '/tmp/gen/deps/foo-1.0.0.zip' == depResolver.depsDir.absolutePath
+  }
+
+  @Test
+  void should_fail_when_base_url_is_not_configured() {
+    try {
+      new DepResolver('foo', [:])
+      fail('Expected exception')
+    }
+    catch(DependencyResolutionException e) {
+      assert 'Missing required property -depsResolverBaseUrl' == e.message
+    }
   }
 
   @Test

@@ -12,10 +12,9 @@ import org.apache.log4j.Level
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
+import toxic.dsl.DependencyResolutionException
 
-import javax.naming.spi.ResolveResult
 import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 class IvyClientTest {

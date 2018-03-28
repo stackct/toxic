@@ -84,7 +84,7 @@ public class Main {
             stream = f.newInputStream()
           }
         }
-      } else if (propFile instanceof File) {
+      } else if (propFile instanceof File && propFile.exists()) {
         props.propertiesFile = propFile
         stream = propFile.newInputStream()
       }
@@ -141,16 +141,8 @@ public class Main {
       System.exit (1)
     }
 
-    // Load the default properties from the supplied toxic.properties file
     def toxicProps = new ToxicProperties()
-    loadPropertiesFile(toxicProps, "toxic.properties", true)
-
-    // Load the properties from an optional properties file.
-    stdArgs.each {
-      loadPropertiesFile(toxicProps, it)
-    }
-    // Apply the overrides
-    toxicProps.putAll(override)
+    loadProperties(toxicProps, stdArgs, override)
 
     // Optionally load the properties located in parent directories, which means
     // we need to recreate the properties in the new order.
@@ -162,17 +154,7 @@ public class Main {
         }
       }
       toxicProps.clear()
-      loadPropertiesFile(toxicProps, "toxic.properties", true)
-      doDirs.each {
-        loadParentProperties(toxicProps, it)
-      }
-
-      // Load the properties from an optional properties file.
-      stdArgs.each {
-        loadPropertiesFile(toxicProps, it)
-      }
-      // Apply the overrides
-      toxicProps.putAll(override)
+      loadProperties(toxicProps, stdArgs, override, doDirs)
     }
 
     // Ensure a properties file was successfully loaded
@@ -182,6 +164,27 @@ public class Main {
     }
 
     return toxicProps
+  }
+
+  static void loadProperties(ToxicProperties toxicProps, def stdArgs, def override, def doDirs = []) {
+    // Load the default properties from the supplied toxic.properties file
+    loadPropertiesFile(toxicProps, "toxic.properties", true)
+
+    // Load users global properties
+    loadPropertiesFile(toxicProps, new File(System.getenv()['HOME'], '.toxic/global.properties'))
+
+    // Load from doDir parent properties
+    doDirs.each {
+      loadParentProperties(toxicProps, it)
+    }
+
+    // Load the properties from an optional properties file
+    stdArgs.each {
+      loadPropertiesFile(toxicProps, it)
+    }
+
+    // Apply the overrides
+    toxicProps.putAll(override)
   }
 
   /**
