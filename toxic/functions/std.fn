@@ -1,0 +1,23 @@
+function "Debug" {
+  description "Prints out debugging information"
+  path "{{ libPath }}/std/debug"
+
+  arg "value"
+}
+
+function "ExportProperty" {
+  description "Set a global property"
+  path "{{ libPath }}/std/property/export"
+
+  arg "key", true
+  arg "value", true
+}
+
+function "RandomString" {
+  description "Generates a random alphanumeric string of the given length"
+  path "{{ libPath }}/std/random_string"
+
+  arg "length", true
+
+  output "value"
+}
