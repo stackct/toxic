@@ -35,6 +35,7 @@ classpath="$classpath/conf"
 classpath="$classpath:${TOXIC_HOME}/conf"
 classpath="$classpath:${TOXIC_HOME}/resources"
 classpath="$classpath:${TOXIC_HOME}/gen/classes"
+classpath="$classpath:${TOXIC_HOME}/gen/build/classes"
 classpath="$classpath:${TOXIC_HOME}/lib/*"
 classpath="$classpath:${TOXIC_HOME}"
 
