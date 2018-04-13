@@ -1,10 +1,14 @@
 // Collect the logs:
-assert 0 == memory.collectLogs()
+memory.collectLogs()
 
 // Delete the charts
 memory.parseEnvironment(memory.spec).charts.each { chart, props ->
-  assert 0 == memory.helmDelete(chart)
+  memory.helmDelete(chart)
 }
 
 // Delete the namespace
-assert 0 == memory.deleteNamespace()
+memory.deleteNamespace()
+
+// Give it time to delete
+// TODO - Improve by checking when deleted, or see if kubectl can only return after completed
+sleep 10000
