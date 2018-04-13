@@ -1,3 +1,5 @@
+import util.Wait
+
 // Collect the logs:
 memory.collectLogs()
 
@@ -9,6 +11,6 @@ memory.parseEnvironment(memory.spec).charts.each { chart, props ->
 // Delete the namespace
 memory.deleteNamespace()
 
-// Give it time to delete
-// TODO - Improve by checking when deleted, or see if kubectl can only return after completed
-sleep 10000
+// Wait for namespace to be deleted
+int wait = 1000 * 60
+Wait.on { -> !memory.namespaceExists() }.every(3000).atMostMs(wait).start()
