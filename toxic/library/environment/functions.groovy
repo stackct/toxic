@@ -143,3 +143,12 @@ memory.getLogs = { String pod, String container, String namespace = memory['name
   execWithEnv([kubectl, '-n', namespace, 'logs', pod, '-c', container])
   return out.toString()
 }
+
+memory.namespaceExists = { String namespace = memory['namespace'] ->
+  execWithEnvNoLogging([kubectl, 'get', 'ns', '-o=json'])
+  def ns = out.toString()
+  
+  new JsonSlurper().parseText(ns).items.any { item ->
+    item.metadata.name == namespace
+  }
+}
