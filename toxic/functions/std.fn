@@ -22,3 +22,13 @@ function "RandomString" {
 
   output "value"
 }
+
+function "VerifyUrls" {
+  description "Verifies a 200 on GET request on a URL or a list of URLs; if waitMs is provided retries every second, up to the give number of waitMs milliseconds for each url, before failing"
+  path "{{ libPath }}/std/verify"
+
+  arg "url"
+  arg "waitMs"
+
+  output "result"
+}
