@@ -13,6 +13,3 @@ memory.parseEnvironment(memory.spec).repositories.each { name, url ->
 memory.parseEnvironment(memory.spec).charts.each { chart, props ->
   assert 0 == memory.helmInstall(chart, props.chart, props.values)
 }
-
-// Sleep while ingress rules get applied to nginx
-sleep 10000
