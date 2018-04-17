@@ -11,7 +11,7 @@ RUN apk update && apk add bash curl docker git jq openjdk8 openssh openssl make 
     && adduser -u 2000 -G toxic -D toxic \
     && adduser toxic docker
 
-RUN curl https://kubernetes-helm.storage.googleapis.com/helm-v2.8.2-linux-amd64.tar.gz -o /tmp/helm.tar.gz \
+RUN curl https://storage.googleapis.com/kubernetes-helm/helm-v2.9.0-rc3-linux-amd64.tar.gz -o /tmp/helm.tar.gz \
 	&& tar -zxvf /tmp/helm.tar.gz -C /tmp \
 	&& mv /tmp/linux-amd64/helm /usr/local/bin/helm \
 	&& rm -rf /tmp/linux-amd64 \
