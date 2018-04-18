@@ -105,6 +105,10 @@ public class WebServerTest {
     assert routes['/api/about']                                   != null
     assert routes['/metrics']                                     != null
 
+    // Assert gzip Content-Encoding
+    assert false == routes['/api/project/:id/latest/:status'].useGzip
+    assert false == routes['/api/job/:id/publish/artifact/:resource'].useGzip
+
     server.sparkService.webSocketHandlers.with { ws ->
       assert ws['/ws/echo'].handler instanceof EchoHandler
       assert ws['/ws/environment'].handler instanceof EnvironmentHandler

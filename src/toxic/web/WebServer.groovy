@@ -149,7 +149,7 @@ public class WebServer implements Runnable {
       makeResponse(jobManager.findLatestJob(req.params(':id'), JobStatus.COMPLETED))
     }
 
-    addRoute("/api/project/:id/latest/:status") { req, resp ->
+    addRoute("/api/project/:id/latest/:status", false) { req, resp ->
       def status = JobStatus.values().find { s -> s.toString().toLowerCase() == req.params(':status') }
       makeResponse(jobManager.findLatestJob(req.params(':id'), status))
     }
@@ -208,7 +208,7 @@ public class WebServer implements Runnable {
       makeResponse([:])
     }
 
-    addPostRoute("/api/job/:id/publish/artifact/:resource") { req, resp ->
+    addPostRoute("/api/job/:id/publish/artifact/:resource", false) { req, resp ->
       Job job = jobManager.findJob(req.params(':id'))
       IOUtils.copy(req.raw().getInputStream(), new FileOutputStream(new File(job.artifactsDir, req.params(':resource'))))
       
@@ -427,12 +427,12 @@ public class WebServer implements Runnable {
     sparkService.webSocket(route, handler)
   }
 
-  protected void addRoute(String route, Closure c) {
-    sparkService.get(route, new ApiRoute(route, c))
+  protected void addRoute(String route, boolean useGzip = true, Closure c) {
+    sparkService.get(route, new ApiRoute(route, c, useGzip))
   }
 
-  protected void addPostRoute(String route, Closure c) {
-    sparkService.post(route, new ApiRoute(route, c))
+  protected void addPostRoute(String route, boolean useGzip = true, Closure c) {
+    sparkService.post(route, new ApiRoute(route, c, useGzip))
   }
 }
 
