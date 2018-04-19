@@ -12,6 +12,7 @@ public class GitRepositoryTest {
   public void should_initialize_repository_on_first_poll_for_changes() {
     withRepoMock { local ->
       withRepoMock(true) { remote ->
+        addCommit(remote)
         def repo = new GitRepository(local, remote, null)
 
         assert repo.initialized == false
@@ -87,6 +88,25 @@ public class GitRepositoryTest {
         repo.checkoutTargetBranch()
 
         assert localExec("git branch", local).output.contains("* master")
+      }
+    }
+  }
+
+  @Test
+  public void should_checkout_the_target_branch_before_fetching_changes() {
+    withRepoMock { local ->
+      withRepoMock(true) { remote ->
+        addCommit(remote)
+        def repo = new GitRepository(local, remote, null)
+        repo.init()
+
+        String branch = 'foobar'
+        switchToNewBranch(remote, branch)
+        addCommit(remote)
+        repo.branch = branch
+
+        def changes = repo.update()
+        assert 1 == changes.size()
       }
     }
   }
@@ -360,6 +380,10 @@ public class GitRepositoryTest {
   localExec("git add .", dir)
   localExec("git commit -m submodule", dir)
 }
+
+  private void switchToNewBranch(dir, name) {
+    localExec("git checkout -b ${name}", dir)
+  }
 
   private void destroyMockRepo(dir) {
     new File(dir).deleteDir()
