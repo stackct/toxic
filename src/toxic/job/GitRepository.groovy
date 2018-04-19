@@ -45,7 +45,13 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     def format = "%H%x09%aD%x09%an%x09%ae%x09%s"
 
     exec("git fetch --all", true)
-    exec("git --no-pager log --format=${format} ..@{u}", true).with { result ->
+    String logBranch = "@{u}"
+    // If we are about to change to a different branch, parse the change log from the remote branch instead of the current branch
+    if(!isOnExpectedBranch()) {
+      verifyRemoteBranchExists()
+      logBranch = remoteBranch()
+    }
+    exec("git --no-pager log --format=${format} ..${logBranch}", true).with { result ->
       if (result.exitValue == 0) {
         parseRevisions(result.output)
       }
@@ -57,14 +63,28 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
   }
 
   public def checkoutTargetBranch(){
-    exec("git checkout --track -B ${this.branch} origin/${this.branch}", true)
-
-    def expectedBranchText = "* ${this.branch}"
-    exec("git branch").with { result ->
-      if (!result.output.contains(expectedBranchText)) {
-        throw new GitCommandException(result.output)
-      }
+    exec("git checkout --track -B ${this.branch} ${remoteBranch()}", true)
+    if (!isOnExpectedBranch()) {
+      throw new GitCommandException(getCurrentBranch())
     }
+  }
+
+  private boolean isOnExpectedBranch() {
+    return getCurrentBranch().contains("* ${this.branch}")
+  }
+
+  private String getCurrentBranch() {
+    exec("git branch").output
+  }
+
+  private void verifyRemoteBranchExists() {
+    if(0 != exec("git rev-parse --verify ${remoteBranch()}", true).exitValue) {
+      throw new GitCommandException("${remoteBranch()} does not exist")
+    }
+  }
+
+  private String remoteBranch() {
+    "origin/${this.branch}"
   }
 
   protected List parseRevisions(String input) {

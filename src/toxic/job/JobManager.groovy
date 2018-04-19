@@ -284,12 +284,18 @@ public class JobManager implements Runnable,Publisher {
 
   private Map<String, String> fetchAutoRepoUrls() {
     def map = new HashMap<String, String>()
-    this.mgrprops?.forProperties("jobManager.autoRepoUrl.") { name, url ->
+    this.mgrprops?.forProperties("jobManager.autoRepoUrl.") { name, uriString ->
+      URI uri = new URI(uriString)
+      String url = uri.toString() - "?${uri.query}"
       def idx = url.lastIndexOf("/")
       def jobName = url[(idx+1)..-1] + '.job'
       String props = "job.repoUrl=${url}"
       if(defaultJobProps) {
         props += "\n${defaultJobProps}"
+      }
+      uri.query?.split('&')?.collectEntries { param -> param.split('=')
+          ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
+        props += "\n${k}=${v}"
       }
       map[jobName] = props
     }

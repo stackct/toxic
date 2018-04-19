@@ -134,6 +134,14 @@ public class JobManagerTest {
   }
 
   @Test
+  public void should_fetch_auto_repo_urls_with_query_parameters() {
+    jobManager.mgrprops["jobManager.autoRepoUrl.1"] = "ssh://somewhere.com/repos/fake?job.repoBranch=foobar"
+    jobManager.defaultJobProps = "foo=bar"
+    def scheduled = jobManager.fetchAutomatedJobs()
+    assert scheduled == ['fake.job':"job.repoUrl=ssh://somewhere.com/repos/fake\nfoo=bar\njob.repoBranch=foobar"]
+  }
+
+  @Test
   public void should_fetch_archived_jobs() {
     def mockFiles = [new File("1.job-0"), new File("2.job-0"), new File("3.job")]
 
@@ -1225,8 +1233,7 @@ another=there
     jm.refreshConfigRepo()
     assert !jm.configRepo
 
-    GitRepository.metaClass.exec = {String cmd, boolean failQuietly -> [:] }
-    GitRepository.metaClass.exec = {List cmd, boolean failQuietly -> [:] }
+    GitRepository.metaClass.exec = {List cmd, boolean failQuietly -> [output:"* ${GitRepository.DEFAULT_BRANCH}"] }
 
     jm.mgrprops.configRepoType = "toxic.job.GitRepository"
     jm.mgrprops.configRepoUrl = "ssh://somewhere"
