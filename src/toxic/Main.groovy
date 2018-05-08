@@ -284,7 +284,8 @@ public class Main {
     if (!props.containsKey("logConf")) {
       props.logConf = "log4j.xml"
     }
-    if (props.logConf) {
+
+    if (props.logConf && !props.containsKey("useDefaultLogging")) {
       configureCustomLogging(props)
     } else {
       configureDefaultLogging()

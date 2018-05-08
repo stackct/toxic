@@ -30,6 +30,17 @@ public class MainTest {
   }  
 
   @Test
+  void should_configure_default_logging() {
+    ToxicProperties props = new ToxicProperties()
+    def defaulted
+    props.useDefaultLogging = "" // just needs the key to exist, value is ignored
+    Main.metaClass.'static'.configureDefaultLogging = { defaulted = true }
+    Main.configureLogging(props)
+    assert defaulted
+  }  
+
+
+  @Test
   void should_configure_custom_logging() {
     ToxicProperties props = new ToxicProperties()
     def log4jResource
