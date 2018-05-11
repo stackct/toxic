@@ -41,14 +41,19 @@ public class HttpValidator extends TextValidator {
    */
   @Override
   protected startingIndexes(String actual, String expected) {
+    def actualIdx = 0
+    def contentBoundaries = ['\n\n', '\r\n\r\n']
+
     // If the expected response does not contain the HTTP result then advance
     // actualIdx pointer to start at the content and skip over the headers.
-    def actualIdx = 0
-    if (!expected.startsWith("HTTP") && actual.contains("\n\n")) {
-      actualIdx = actual.indexOf("\n\n") + 2
+    if (!expected.startsWith("HTTP") && actual.startsWith("HTTP")) {
+      contentBoundaries.each { boundary ->
+        if (actual.contains(boundary)) {
+          actualIdx = actual.indexOf(boundary) + boundary.size()  
+        }
+      }
     }
 
     [actualIdx, 0]
   }
-
 }
