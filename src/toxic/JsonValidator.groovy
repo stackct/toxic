@@ -3,7 +3,7 @@ package toxic
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
 
-class JsonValidator extends TextValidator {
+class JsonValidator extends HttpValidator {
   @Override
   void validate(def actualJson, def expectedJson, def memory) {
     def expected
