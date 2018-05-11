@@ -38,7 +38,7 @@ class JsonValidator extends HttpValidator {
       else if(!actual.containsKey(k)) {
         failures << "Missing expected property; path=${path}\n"
       }
-      else {
+      else if (hasContent(expected[k], actual[k])) {
         validate(expected[k], actual[k], failures, path, memory)
       }
     }
@@ -50,8 +50,10 @@ class JsonValidator extends HttpValidator {
     }
     else {
       expected.eachWithIndex { k, index ->
-        String path = "${basePath}/[${index}]"
-        validate(expected[index], actual[index], failures, path, memory)
+        if (hasContent(k, actual[index])) {
+          String path = "${basePath}/[${index}]"
+          validate(k, actual[index], failures, path, memory)
+        }
       }
     }
   }
@@ -81,6 +83,10 @@ class JsonValidator extends HttpValidator {
     else if(expected != actual) {
       failures << mismatchFailure(expected, actual, path)
     }
+  }
+
+  boolean hasContent(expected, actual) {
+    expected != null || actual != null
   }
 
   String mismatchFailure(def expected, def actual, String path) {

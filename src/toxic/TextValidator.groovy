@@ -24,8 +24,13 @@ public class TextValidator implements Validator {
   }
 
   public void validate(def actualOrig, def expectedOrig, def memory) {
-    def hasContent = (actualOrig != null) && (expectedOrig != null) && (expectedOrig.trim().size() > 0)
-    if (!hasContent) { return }
+    if (actualOrig == null && expectedOrig == null) {
+      return
+    }
+
+    if ((actualOrig == null && expectedOrig != null) || (actualOrig != null && expectedOrig == null)) {
+      throw new ValidationException("Content mismatch; actual=${actualOrig}; expected=${expectedOrig}")
+    }
 
     // "clean-up" text before comparison
     def prepared = prepareText(actualOrig, expectedOrig)
