@@ -10,8 +10,10 @@ class JsonValidator extends TextValidator {
     def actual
 
     try {
+      def (actualIdx, expectedIdx) = startingIndexes(actualJson, expectedJson)
+
       expected = new JsonSlurper().parseText(expectedJson)
-      actual = new JsonSlurper().parseText(actualJson)
+      actual = new JsonSlurper().parseText(actualJson[actualIdx..-1])
     }
     catch(JsonException e) {
       throw new ValidationException(e.message)
