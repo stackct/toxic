@@ -2,6 +2,7 @@
 package toxic
 
 import org.junit.Test
+import static org.junit.Assert.fail
 
 public class TextValidatorTest {
   @Test
@@ -239,11 +240,22 @@ Content-Length: 30
   public void testValidatorNull() {
     def xv = new TextValidator()
     def tp = new ToxicProperties()
-
     def test = "Testing 20%#1%00"
 
-    xv.validate(null, test, tp)
-    xv.validate(test, null, tp)
+    try {
+      xv.validate(null, test, tp)
+      fail("Expected ValidationException")
+    } catch (ValidationException ex) { 
+      assert "Content mismatch; actual=null; expected=${test}" == ex.message
+    }
+
+    try {
+      xv.validate(test, null, tp)
+      fail("Expected ValidationException")
+    } catch (ValidationException ex) { 
+      assert "Content mismatch; actual=${test}; expected=null" == ex.message
+    }
+
     xv.validate(null, null, tp)
   }
 
@@ -254,7 +266,11 @@ Content-Length: 30
 
     def test = "Testing 20%#1%00"
 
-    xv.validate(test, "", tp)
+    try {
+      xv.validate(test, "", tp)
+      assert false : "Expected ValidatorException"
+    } catch (ValidationException ve) {
+    }
 
     try {
       xv.validate("", test, tp)

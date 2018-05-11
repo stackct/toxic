@@ -25,6 +25,55 @@ class JsonValidatorTest {
   }
 
   @Test
+  void should_compare_matching_json_with_null_maps() {
+    String expected = """{
+                      "topic": "fooTopic",
+                      "event": "mainEvent",
+                      "payload": {
+                        "foo": "foo"
+                      },
+                      "empty": null
+                    }"""
+    String actual = """{
+                      "topic": "fooTopic",
+                      "event": "mainEvent",
+                      "payload": {
+                        "foo": "foo"
+                      },
+                      "empty": null
+                    }"""
+
+    expectSuccess(expected, actual)
+  }
+
+  @Test
+  void should_compare_matching_json_with_lists() {
+    String expected = """{
+                      "topic": "fooTopic",
+                      "event": "mainEvent",
+                      "payload": {
+                        "foo": "foo"
+                      },
+                      "empty": ["foo", null, "bar", true]
+                    }"""
+    String actual = """{
+                      "topic": "fooTopic",
+                      "event": "mainEvent",
+                      "payload": {
+                        "foo": "foo"
+                      },
+                      "empty": ["foo", null, "bar", true]
+                    }"""
+
+    expectSuccess(expected, actual)
+  }
+
+  @Test
+  void should_compare_matching_json_with_list_with_nulls() {
+    expectValidationFailure('[null]', '["foo"]', "Content mismatch; path=/[0]; expected=null; actual=foo\n")
+  }
+
+  @Test
   void should_compare_matching_json_ignoring_whitespace() {
     String expected = """{
                       "topic": "fooTopic",
