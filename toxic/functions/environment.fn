@@ -22,5 +22,6 @@ function "GetServiceUrl" {
   arg "namespace", true
   arg "service", true
 
+  output "hostname"
   output "url"
 }
