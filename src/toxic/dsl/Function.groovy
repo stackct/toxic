@@ -41,7 +41,7 @@ class Function extends Parser {
   }
 
   def input(String name, Boolean required=false) {
-    args << new Arg(name: name, required: required)
+    arg(name, required)
   }
 
   def output(String key) {
