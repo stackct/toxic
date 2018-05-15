@@ -78,7 +78,16 @@ public class SqlTask extends CompareTask {
       log.info("Executing statement(s); url=" + props.sqlUrl + ":" + props.sqlUser + ":" + props.sqlPass + "; Driver=" + props.sqlDriver + ":\n" + sql)
     }
 
-    props.sqlConnection.execute(sql)
+    def results = []
+    props.sqlConnection.execute(sql) { boolean isResultSet, def rowResultOrAffectedCount ->
+      if(isResultSet) {
+        results << rowResultOrAffectedCount
+      }
+      else {
+        results << "${rowResultOrAffectedCount} row(s) affected"
+      }
+    }
+    results.join('\n')
   }
 
   protected transmit(request, def memory) {

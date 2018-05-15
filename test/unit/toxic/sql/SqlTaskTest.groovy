@@ -177,4 +177,27 @@ public class SqlTaskTest {
     }
     assert msg.contains("sqlUrl,sqlUser,sqlPass,sqlDriver")
   }
+
+  @Test
+  void should_execute_with_output() {
+    assert '' == mockSqlExecute([])
+    assert '1 row(s) affected' == mockSqlExecute([[false, 1]])
+    assert '1 row(s) affected\n2 row(s) affected' == mockSqlExecute([[false, 1], [false, 2]])
+    assert '[[id:12345]]' == mockSqlExecute([[true, [[id:12345]]]])
+    assert '[[id:1]]\n[[id:2]]' == mockSqlExecute([[true, [[id:1]]], [true, [[id:2]]]])
+    assert '1 row(s) affected\n[[id:2]]' == mockSqlExecute([[false, 1], [true, [[id:2]]]])
+  }
+
+  def mockSqlExecute(def results) {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.sqlConnection = [execute: { String sql, Closure processResults ->
+      results.each {
+        processResults(it[0], it[1])
+      }
+    }]
+
+    SqlTask task = new SqlTask()
+    task.init("test", toxicProperties)
+    task.execute('EXEC stored_procedure')
+  }
 }
