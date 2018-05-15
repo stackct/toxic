@@ -14,7 +14,7 @@ Functions encapsulate a group of Toxic tasks that can run in isolation, and can 
 
 * **path** (Required) - Path to the Toxic task(s)
 * **description** (Required) - A description of the Function
-* **arg** (Optional) - Defines an input argument that can be marked as required or optional. Multiple `arg` blocks are supported.
+* **arg** | **input** (Optional) - Defines an input argument that can be marked as required or optional. Multiple `arg` blocks are supported.
 * **output** (Optional) - Defines an output that can be interpolated in subsequent Steps and/or Assertion statements (see [Interpolation](#interpolation)). Multiple `output` statements are supported.
 
 ```groovy

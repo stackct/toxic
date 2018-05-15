@@ -42,9 +42,9 @@ class FunctionTest {
         path "foo-path"
         description "foo-description"
 
-        arg  "required-arg", true
-        arg  "optional-arg", false
-        arg  "other"
+        arg    "required-arg", true
+        arg    "optional-arg", false
+        input  "other"
 
         output "a"
         output "b"
