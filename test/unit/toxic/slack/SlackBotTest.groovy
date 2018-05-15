@@ -9,6 +9,7 @@ class SlackBotTest {
   @After
   void after() {
     SlackBot.metaClass = null
+    SlackBot.instance.metaClass = null
   }
   
   @Test
@@ -152,5 +153,13 @@ class SlackBotTest {
     assert SlackBot.instance.isSilenced()
     SlackBot.instance.silenceUntil(System.currentTimeMillis() - 10000)
     assert !SlackBot.instance.isSilenced()
+  }
+
+  @Test
+  void shouldGracefullyHandleConnectException() {
+    SlackBot.instance.metaClass.connect = { -> throw new Exception("uh oh") }
+    SlackBot.instance.metaClass.shouldReconnect = { -> true }
+    SlackBot.instance.attemptConnection()
+    // Test passes if no exception is thrown from this test method
   }
 }
