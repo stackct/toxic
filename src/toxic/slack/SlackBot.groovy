@@ -36,8 +36,16 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   public void run() {
     running = true
     while (running) {
-      if (shouldReconnect()) connect()
+      attemptConnection()
       Thread.sleep(10000)
+    }
+  }
+
+  protected void attemptConnection() {
+    try {
+      if (shouldReconnect()) connect()
+    } catch (Exception e) {
+      log.error("Failed to connect to slack; will retry after brief pause; reason=${e.toString()}", e)
     }
   }
   
