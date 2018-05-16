@@ -28,7 +28,7 @@ function "VerifyUrls" {
   path "{{ libPath }}/std/verify"
 
   arg "url"
-  arg "waitMs"
+  arg "waitMs", false
 
   output "result"
 }
