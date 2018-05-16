@@ -30,7 +30,7 @@ class FunctionTest {
       assert fn.args[1].name == 'optional-arg'
       assert fn.args[1].required == false
       assert fn.args[2].name == 'other'
-      assert fn.args[2].required == false
+      assert fn.args[2].required == true
       assert fn.outputs == ['a', 'b'] as Set
     }
   }
@@ -90,7 +90,7 @@ class FunctionTest {
       assert fn.args[1].name == 'optional-arg'
       assert fn.args[1].required == false
       assert fn.args[2].name == 'other'
-      assert fn.args[2].required == false
+      assert fn.args[2].required == true
       assert fn.outputs == ['a', 'b'] as Set
     }
   }
@@ -134,7 +134,7 @@ class FunctionTest {
       assert fn1.args[1].name == 'foo-optional-arg'
       assert fn1.args[1].required == false
       assert fn1.args[2].name == 'foo-other'
-      assert fn1.args[2].required == false
+      assert fn1.args[2].required == true
       assert fn1.outputs == ['foo-a', 'foo-b'] as Set
 
       Function fn2 = fns[1]
@@ -146,7 +146,7 @@ class FunctionTest {
       assert fn2.args[1].name == 'bar-optional-arg'
       assert fn2.args[1].required == false
       assert fn2.args[2].name == 'bar-other'
-      assert fn2.args[2].required == false
+      assert fn2.args[2].required == true
       assert fn2.outputs == ['bar-a', 'bar-b'] as Set
     }
   }
@@ -228,9 +228,9 @@ class FunctionTest {
         return false
       }
     }
-    assert false == validateRequiredArgsArePresent([:], 'required-arg1, required-arg2')
-    assert false == validateRequiredArgsArePresent(['required-arg1':'someValue'], 'required-arg2')
-    assert true == validateRequiredArgsArePresent(['required-arg1':'someValue1', 'required-arg2':'someValue2'])
+    assert false == validateRequiredArgsArePresent([:], 'required-arg1, required-arg2, other')
+    assert false == validateRequiredArgsArePresent(['required-arg1':'someValue'], 'required-arg2, other')
+    assert true == validateRequiredArgsArePresent(['required-arg1':'someValue1', 'required-arg2':'someValue2', 'other':'someValue3'])
   }
 
   @Test
