@@ -1,15 +1,10 @@
 package toxic.json
 
-import org.junit.After
 import org.junit.Test
 import toxic.ToxicProperties
 import toxic.http.HttpTask
 
 class JsonTaskTest {
-  @After
-  void after() {
-    HttpTask.metaClass = null
-  }
 
   @Test
   void should_set_int_response_value_without_quotes() {
@@ -29,13 +24,26 @@ class JsonTaskTest {
     assert 1 == props.bar
   }
 
+  @Test
+  void should_default_content_type_to_json() {
+    def json = '{ "foo": "bar" }'
+    def props = runTask(json, json, json, [httpMethod:'GET'])
+    assert 'application/json' == props['http.header.Content-Type']
+  }
+
   def runTask(String request, String expectedResponse, String actualResponse, def customProps = [:]) {
     def props = mockProps(customProps)
+    
     mockFiles(request, expectedResponse) { requestFile, responseFile ->
-      HttpTask.metaClass.transmit = { req, expectedResp, memory ->
-        actualResponse
+      JsonTask jsonTask = new JsonTask() {
+          @Override
+          protected String transmit(r, e, m) {
+            return actualResponse
+          }
       }
-      JsonTask jsonTask = new JsonTask(input: requestFile, reqContent:request, props: props)
+      jsonTask.input = requestFile
+      jsonTask.reqContent = request
+      jsonTask.props = props
       jsonTask.doTask(props)
     }
     props

@@ -32,4 +32,10 @@ class JsonTask extends HttpTask {
     validator.init(memory)
     validator.validate(actualResponse, expectedResponse, memory)
   }
+
+  @Override
+  protected String headers() {
+    props['http.header.Content-Type'] = 'application/json'
+    return super.headers()
+  }
 }
