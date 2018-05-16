@@ -74,6 +74,8 @@ class HttpTask extends CompareTask {
 
   @Override
   protected String transmit(request, expectedResponse, memory) {
+    setupHttpConnection()
+    
     def result
 
     def ssl = false
@@ -150,7 +152,7 @@ class HttpTask extends CompareTask {
     return result
   }
 
-  void setHttpConnection() {
+  void setupHttpConnection() {
     if (props.httpUri) {
       try {
         def url = new URL(props.httpUri)

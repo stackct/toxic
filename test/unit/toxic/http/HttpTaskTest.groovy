@@ -247,7 +247,7 @@ public class HttpTaskTest {
       ] as ToxicProperties
       
       t.props['httpUri'] = tc.uri
-      t.setHttpConnection()
+      t.setupHttpConnection()
 
       assert t.props['httpHost'] == tc.host, "test case failed; name:'${tc.name}'; field:host; wanted:${tc.host}; got:${t.props['httpHost']}"
       assert t.props['httpPort'] == tc.port, "test case failed; name:'${tc.name}'; field:port"
