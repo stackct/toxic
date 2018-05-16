@@ -100,7 +100,7 @@ public class SplunkTask extends XmlTask {
     return super.transmit(prepare(content), memory)
   }  
 
-  protected String transmit(request, memory) {
+  protected String transmit(request, expectedResponse, memory) {
     def resp = sendToSplunk(memory.splunk_method, reqContent, memory)
     def sid = parseSid(resp)
     if (sid && waitForSid("GET /services/search/jobs/${sid}", memory)) {

@@ -8,7 +8,7 @@ import org.apache.log4j.Logger
 public class ExecTask extends CompareTask {
   protected static Logger slog = Logger.getLogger(this)
 
-  protected transmit(request, def memory) {
+  protected transmit(request, expectedResponse, def memory) {
     def result
 
     if (memory.execVerbose == "true") {

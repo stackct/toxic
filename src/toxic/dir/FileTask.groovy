@@ -42,6 +42,6 @@ public class FileTask extends CompareTask {
     }
   }
 
-  protected transmit(request, def memory) {
+  protected transmit(request, expectedResponse, def memory) {
   }
 }

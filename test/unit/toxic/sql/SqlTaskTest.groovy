@@ -128,7 +128,7 @@ public class SqlTaskTest {
     
     def result 
     sqlMock.use {
-      result = st.transmit("SELECT 123 as A, 456 as B, 789 as C", tp)
+      result = st.transmit("SELECT 123 as A, 456 as B, 789 as C", null, tp)
     }
     assert result == "123,456,789"
   }

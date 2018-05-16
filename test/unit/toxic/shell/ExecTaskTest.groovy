@@ -9,7 +9,7 @@ public class ExecTaskTest {
   public void test_simple_exec() {
     def execTask = new ExecTask()
     def input = "echo hello"
-    def result = execTask.transmit(input, [:])
+    def result = execTask.transmit(input, null, [:])
     assert result.toString().trim() == "hello"
   }
 
@@ -24,7 +24,7 @@ public class ExecTaskTest {
                    exec.arg.4=how
                    exec.arg.5=are
                    """
-    def result = execTask.transmit(input, [:])
+    def result = execTask.transmit(input, null, [:])
     assert result.toString().trim() == "hello there fella how are you"
   }
 
@@ -35,7 +35,7 @@ public class ExecTaskTest {
                    exec.arg.1=2
                    """
     def startTime = System.currentTimeMillis()
-    def result = execTask.transmit(input, [:])
+    def result = execTask.transmit(input, null, [:])
     assert System.currentTimeMillis() - startTime > 2000
   }
   
@@ -47,7 +47,7 @@ public class ExecTaskTest {
                    exec.timeoutSecs=1
                    """
     def startTime = System.currentTimeMillis()
-    def result = execTask.transmit(input, [:])
+    def result = execTask.transmit(input, null, [:])
     assert System.currentTimeMillis() - startTime < 5000
   }
   
@@ -55,7 +55,7 @@ public class ExecTaskTest {
   public void test_failed_exec() {
     def execTask = new ExecTask()
     def input = "ls hello"
-    def result = execTask.transmit(input, [:])
+    def result = execTask.transmit(input, null, [:])
     assert result.toString().contains("exitCode=")
     assert result.toString().contains("stderr=")
     assert result.toString().contains("stdout=")

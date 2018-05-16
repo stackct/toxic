@@ -1,6 +1,7 @@
 package toxic.splunk
 
 import org.junit.*
+import toxic.ToxicProperties
 
 public class SplunkTaskTest {
   @Test(expected=IllegalArgumentException)
@@ -55,12 +56,23 @@ arg2=b&r
   void should_dotask() {
     def transmitted
     def test = new SplunkTask() {
-      protected String transmit(request, memory) { transmitted=true}
+      protected String transmit(request, expectedResponse, memory) { transmitted=true}
+    }
+    def file = File.createTempFile(this.class.name + "should_init", "_req.splunk")
+    file.text = """
+splunk_hostname=%var%
+data=hello there & good bye
+arg2=b&r
+"""
+    try {
+      test.init(file, [:])
+    } finally {
+      file.delete()
     }
     test.reqContent = ""
     test.props = new Properties()
     test.props.xmlHost = "bar"
-    def props = new Properties()
+    def props = new ToxicProperties()
     props.xmlHost = "foo"
     test.doTask(props)
     assert props.xmlHost == "foo"
