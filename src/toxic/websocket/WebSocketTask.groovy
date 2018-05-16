@@ -1,23 +1,17 @@
 package toxic.websocket
 
-import toxic.CompareTask
-import toxic.JsonValidator
-import toxic.TaskResult
 import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
+import toxic.json.JsonTask
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class WebSocketTask extends CompareTask {
+class WebSocketTask extends JsonTask {
   private static final long DEFAULT_TIMEOUT = 3000
 
   @Override
-  List<TaskResult> doTask(Object memory) {
-    def request = parseRequestFile()
-    String expectedResponse = lookupExpectedResponse(input)
-    def expectedResponses = parseResponseJson(expectedResponse)
+  String sendJsonRequest(Object memory, def request, def expectedResponses) {
     def channels = collectChannels(request, expectedResponses)
 
     WebSocketClientEndpoint endpoint = resolveWebSocketClientEndpoint(memory)
@@ -35,12 +29,7 @@ class WebSocketTask extends CompareTask {
       endpoint.close()
     }
 
-    def actualResponse = actualResponseString(actualResponses)
-
-    def validator = new JsonValidator()
-    validator.init(memory)
-    validator.validate(actualResponse, expectedResponse, memory)
-    return null
+    return actualResponseString(actualResponses)
   }
 
   WebSocketClientEndpoint resolveWebSocketClientEndpoint(def memory) {
@@ -54,30 +43,6 @@ class WebSocketTask extends CompareTask {
       return new PhoenixWebSocketClientEndpoint(memory.webSocketClientUri)
     }
     return new WebSocketClientEndpoint(memory.webSocketClientUri)
-  }
-
-  def parseRequestFile() {
-    String requestJson = reqContent
-    // Any unquoted variables, such as map or list references, will be replaced with the String representation of the JSON structure
-    requestJson = requestJson.replaceAll(/(:\s*[^"])(%)([^%]+)(%)([^"])/) { all, begin, openDelimiter, match, closeDelimiter, end ->
-      def value = props[match]
-      "${begin}${JsonOutput.toJson(value)}${end}"
-    }
-    requestJson = prepare(requestJson)
-    new JsonSlurper().parseText(requestJson)
-  }
-
-  @Override
-  String lookupExpectedResponse(File file) {
-    String responseJson = super.lookupExpectedResponse(file)
-    // Quote any unquoted response assignment variables so contents can be correctly parsed as JSON
-    responseJson.replaceAll(/(:\s*[^"])(%=[^%]+%)([^"])/) { all, begin, match, end ->
-      "${begin}\"${match}\"${end}"
-    }
-  }
-
-  def parseResponseJson(responseJson) {
-    new JsonSlurper().parseText(responseJson)
   }
 
   def collectChannels(def request, def responses) {
@@ -118,7 +83,4 @@ class WebSocketTask extends CompareTask {
     }
     DEFAULT_TIMEOUT
   }
-
-  @Override
-  protected transmit(Object request, Object memory) { null }
 }
