@@ -36,7 +36,7 @@ class Function extends Parser {
     this.description = description
   }
 
-  def arg(String name, Boolean required=false) {
+  def arg(String name, Boolean required=true) {
     args << new Arg(name: name, required: required)
   }
 
