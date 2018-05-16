@@ -21,7 +21,7 @@ class JsonTask extends HttpTask {
   String lookupExpectedResponse(File file) {
     String responseJson = super.lookupExpectedResponse(file)
     // Quote any unquoted response assignment variables so contents can be correctly parsed as JSON
-    responseJson = responseJson.replaceAll(/(:\s*[^"])(%=[^%]+%)([^"])/) { all, begin, match, end ->
+    responseJson.replaceAll(/(:\s*[^"])(%=[^%]+%)([^"])/) { all, begin, match, end ->
       "${begin}\"${match}\"${end}"
     }
   }
