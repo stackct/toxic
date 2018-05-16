@@ -1,19 +1,18 @@
 
 package toxic
 
-import toxic.groovy.GroovyTask
-import toxic.xml.XmlTask
 import org.junit.*
+import toxic.http.HttpTask
 
 public class TaskResultTest {
   @Test
   public void should_handle_success() {
-    TaskResult tr = new TaskResult("1", "testdirname", "test_req.xml", XmlTask.class.name)
+    TaskResult tr = new TaskResult("1", "testdirname", "test_req.http", HttpTask.class.name)
     tr.success = true
     assert tr.id == "1"
     assert tr.family == "testdirname"
-    assert tr.name == "test_req.xml"
-    assert tr.type == "toxic.xml.XmlTask"
+    assert tr.name == "test_req.http"
+    assert tr.type == "toxic.http.HttpTask"
     assert tr.success == true
   }
   
@@ -82,9 +81,9 @@ public class TaskResultTest {
     assert !TaskResult.shouldAbort(props, [])
 
     List<TaskResult> tr = []
-    tr << new TaskResult("1", "testdirname", "test_req.xml", XmlTask.class.name)
-    tr << new TaskResult("1", "testdirname", "test_req.xml", XmlTask.class.name)
-    tr << new TaskResult("1", "testdirname", "test_req.xml", XmlTask.class.name)
+    tr << new TaskResult("1", "testdirname", "test_req.http", HttpTask.class.name)
+    tr << new TaskResult("1", "testdirname", "test_req.http", HttpTask.class.name)
+    tr << new TaskResult("1", "testdirname", "test_req.http", HttpTask.class.name)
     tr.each { it.success = true } 
     assert !TaskResult.shouldAbort(props, tr)
 

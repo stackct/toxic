@@ -71,11 +71,11 @@ arg2=b&r
     }
     test.reqContent = ""
     test.props = new Properties()
-    test.props.xmlHost = "bar"
+    test.props.httpHost = "bar"
     def props = new ToxicProperties()
-    props.xmlHost = "foo"
+    props.httpHost = "foo"
     test.doTask(props)
-    assert props.xmlHost == "foo"
+    assert props.httpHost == "foo"
     assert transmitted
   }
 
@@ -83,7 +83,7 @@ arg2=b&r
   void should_add_headers() {
     def test = new SplunkTask()
     test.props = new Properties()
-    test.props["xml.header.foo"] = "bar"
+    test.props["http.header.foo"] = "bar"
     test.props["splunk.header.s1"] = "22"
     def actual = test.headers()
     assert actual.contains("foo: bar")

@@ -90,8 +90,8 @@ public class DirOrganizer implements TaskOrganizer {
   
   /**
    * Returns the task class name for the given filename.
-   * For example, if the filename is 1_req.xml, it will lookup
-   * the property value that maps to the key tmTaskClass.xml.
+   * For example, if the filename is 1_req.http, it will lookup
+   * the property value that maps to the key tmTaskClass.http.
    */
   public def lookupTaskProperty(def name) {
     def key = "doTaskClass."

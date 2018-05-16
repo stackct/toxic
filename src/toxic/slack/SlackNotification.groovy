@@ -1,10 +1,6 @@
 package toxic.slack
 
 import org.apache.log4j.*
-import javax.mail.*
-import javax.mail.internet.*
-import javax.activation.*
-import groovy.xml.*
 import toxic.job.*
 
 public class SlackNotification implements JobNotification {

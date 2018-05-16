@@ -9,7 +9,7 @@ The primary users of this project are devops staff looking to automate tasks, su
 ### Tasks
 
 * Groovy tasks - Arbitrary Groovy script. The most flexible type of task, but requires Java or Groovy coding knowledge.
-* XML tasks - An XML request. This can actually be raw TCP data, but most users will use this task to feed XML or HTML content to a server for automated testing. This task can also look for a corresponding response and perform comparisons to validate that the actual server response matches the expected response.
+* HTTP tasks - An HTTP request. This can actually be raw TCP data, but most users will use this task to feed XML or HTML content to a server for automated testing. This task can also look for a corresponding response and perform comparisons to validate that the actual server response matches the expected response.
 * Properties tasks - key/value pairs following the standard Java Properties format
 * File tasks - Useful for comparing text files to each other.
 * SQL tasks - Useful for running SQL queries against a JDBC database and comparing the results to an expected result.
@@ -17,7 +17,7 @@ The primary users of this project are devops staff looking to automate tasks, su
 
 ### Embedded Groovy
 
-The XML, Properties, and File tasks all allow embedded Groovy script. Each groovy script will have multiple variables exposed by default:
+The HTTP, Properties, and File tasks all allow embedded Groovy script. Each groovy script will have multiple variables exposed by default:
 
 * memory - A map of key/value pairs that have been collected from all prior Properties tasks.
 * log - a Logger for logging interesting information
@@ -30,7 +30,7 @@ foo=123
 bar=`memory.foo + 1000
 ```
 
-Now suppose an XML request task references the `bar` variable, it will be replaced with the value `1123`. Ex: 
+Now suppose an HTTP request task references the `bar` variable, it will be replaced with the value `1123`. Ex:
 
 ```
 <acme value="%bar%"/>
@@ -50,7 +50,7 @@ bar=``memory.foo + 1000``
 
 ### Variables
 
-The XML request can include embedded variables, using a `%myVariable%` syntax. Ex: 
+The HTTP request can include embedded variables, using a `%myVariable%` syntax. Ex:
 
 ```
 <foo bar="%myVariable%"/>
@@ -64,7 +64,7 @@ If `myVariable` equals "Hello", then the actual request sent to the server will 
 
 #### Assignment (%=...%)
 
-Likewise, the XML response can include these same embedded variables and script but also can include content manipulation and variable assignment. For example, if you know the server will respond with an ID that you want to re-use later, you can include this syntax in the response XML: 
+Likewise, the HTTP response can include these same embedded variables and script but also can include content manipulation and variable assignment. For example, if you know the server will respond with an ID that you want to re-use later, you can include this syntax in the response XML:
 
 ```
 <foo bar="%=myVariableID%"/>
@@ -156,19 +156,19 @@ When comparing server responses to an expected response, often you may want to i
 
 #### Character-delimited Text Ignore
 
-Suppose a server responds with an XML response that includes a time and date in an attribute:
+Suppose a server responds with an HTTP response that includes a time and date in an attribute:
 
 ```
 <foo bar="12/31/2011 12:12:13.000 GMT"/>
 ```
 
-If you want to ignore that timestamp value, replace it with %% in your expected XML content:
+If you want to ignore that timestamp value, replace it with %% in your expected HTTP content:
 
 ```
 <foo bar="%%"/>
 ```
 
-When the text validator runs, it will mark those two XML texts are identical.
+When the text validator runs, it will mark those two HTTP texts are identical.
 Suppose, you want to ignore just 6 characters of a TCP server response:
 
 ```
@@ -200,7 +200,7 @@ PKZ3455345_235523xxhw345511035233_%#6%x
 
 #### Variable Length Skip Pattern
 
-By default `%%` skips forward to the next single character match. For an XML structure where angle brackets abound this makes skipping tags impossible. Instead, skipping based on a number of characters allows us to jump to and end tag. The following will search forward for `</or` so if there is an intervening <notes/> tag it will be ignored.
+By default `%%` skips forward to the next single character match. For an HTTP structure where angle brackets abound this makes skipping tags impossible. Instead, skipping based on a number of characters allows us to jump to and end tag. The following will search forward for `</or` so if there is an intervening <notes/> tag it will be ignored.
 
 ```
   %>4%
@@ -209,7 +209,7 @@ By default `%%` skips forward to the next single character match. For an XML str
 
 #### HTTP Headers
 
-HTTP method and headers can optionally be specified in the XML request and response text. If specified in the request, then any dynamically generated method and headers will be omitted. (Dynamically generated headers are specified via the `xml.header.<1-9>` properties). If specified in the expected HTTP response, then the entire server response will be text matched. Otherwise, just the body of the HTTP response will be compared.
+HTTP method and headers can optionally be specified in the HTTP request and response text. If specified in the request, then any dynamically generated method and headers will be omitted. (Dynamically generated headers are specified via the `xml.header.<1-9>` properties). If specified in the expected HTTP response, then the entire server response will be text matched. Otherwise, just the body of the HTTP response will be compared.
 
 This is useful for testing that does not need to be concerned with HTTP headers and instead just needs to focus on the content.
 
@@ -257,7 +257,7 @@ prepareCsv(memory.web1Host)
 prepareCsv(memory.web2Host)
 ```
 
-This script uploads the CSV file to both of the webserver, where the web app might look for them during the XML request mentioned earlier.
+This script uploads the CSV file to both of the webserver, where the web app might look for them during the HTTP request mentioned earlier.
 
 Notice that the SCP call is wrapped by a simple `exec()` closure that is built-in to the Toxic-Groovy Task. This makes it simple to execute system commands. However, there are also task files ending in `.exec` and other methods to accomplish this.
 
@@ -306,10 +306,10 @@ Run the following command to start Toxic and process those tasks:
 bin/toxic -doDir=/home/foo/tasks
 ```
 
-Add verbose XML logging:
+Add verbose HTTP logging:
 
 ```
-bin/toxic -doDir=/home/foo/tasks -xmlVerbose=true
+bin/toxic -doDir=/home/foo/tasks -httpVerbose=true
 ```
 
 Override the default log level:
@@ -327,19 +327,19 @@ bin/toxic -doDir=/home/foo/tasks -foo=1234
 Override an existing variable defined in the `conf/toxic.properties` file:
 
 ```
-bin/toxic -doDir=/home/foo/tasks -xmlHost=1.2.3.4
+bin/toxic -doDir=/home/foo/tasks -httpHost=1.2.3.4
 ```
 
 Specify a command line override value that contains spaces.  Notice this is a double quoted value wrapped with single quotes.
 
 ```
-bin/toxic -doDir=/home/foo/tasks -xmlMethod='"POST /api/orders HTTP/1.1"'
+bin/toxic -doDir=/home/foo/tasks -httpMethod='"POST /api/orders HTTP/1.1"'
 ```
 
 Specify additional properties files, override variables within the default properties file, and execute a specific task file:
 
 ```
-bin/toxic -doDir=/home/foo/tasks/10_demo/01_acme.xml -xmlHost=1.2.3.4 -xmlPort=8080 /home/foo/tasks/tasks.properties
+bin/toxic -doDir=/home/foo/tasks/10_demo/01_acme.xml -httpHost=1.2.3.4 -httpPort=8080 /home/foo/tasks/tasks.properties
 ```
 
 ### Directory-Based Tasks
@@ -513,10 +513,10 @@ Toxic can be configured via a default property file or via a suite-specific prop
 ###############################################################################
 # Default Property Overrides 
 ###############################################################################
-xmlHost=localhost
-xmlPort=6011
-xmlMethod=POST / HTTP/1.1
-xmlVerbose=true
+httpHost=localhost
+httpPort=6011
+httpMethod=POST / HTTP/1.1
+httpVerbose=true
 ...
 ```
 

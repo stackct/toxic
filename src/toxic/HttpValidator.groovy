@@ -15,6 +15,10 @@ s */
 public class HttpValidator extends TextValidator {
   private static Logger log = Logger.getLogger(HttpValidator.class.name)
 
+  /**
+   * TODO All XML logic should be removed from the HttpValidator
+   * and performed in an XmlValidator class.
+   */
   protected  trimMarkup(String s) {
     def result = ""
     s.trim().eachLine {
