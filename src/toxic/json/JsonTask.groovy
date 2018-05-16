@@ -14,8 +14,8 @@ class JsonTask extends HttpTask {
       def value = props[match]
       "${begin}${JsonOutput.toJson(value)}${end}"
     }
-    request = super.prepare(request)
-    new JsonSlurper().parseText(request)
+    
+    super.prepare(request)
   }
 
   @Override
