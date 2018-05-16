@@ -150,10 +150,23 @@ class HttpTask extends CompareTask {
     return result
   }
 
+  void setHttpConnection() {
+    if (props.httpUri) {
+      try {
+        def url = new URL(props.httpUri)
+        def ssl = url.protocol.startsWith('https')
+
+        props['httpHost'] = url.host
+        props['httpPort'] = url.port >= 0 ? url.port : (ssl ? 443 : 80)
+        props['httpSsl'] = ssl.toString()
+      } catch (java.net.MalformedURLException e) {
+        log.warn("Could not parse uri: ${props.httpUri}")
+      }
+    }
+  }
+
   def readHttpBody(input) {
-
     def response = new StringWriter()
-
     def bodyLength = 0
     def line = "Keep going"
     while (line.trim()) {
