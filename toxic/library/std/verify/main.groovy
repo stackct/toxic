@@ -2,8 +2,8 @@ import util.Wait
 
 def verifyUrl = { url, waitMs ->
   def closure = { 
-    localUrl -> execWithEnv(['curl', '-s', '-o', '/dev/null', '-L', '-k', '-w', "%{http_code}", localUrl], [:], 5) 
-    return out.toString()
+    localUrl -> execWithEnv(['curl', '-s', '-o', '/dev/null', '-L', '-k', '-w', "%{http_code}", localUrl]) 
+    return out.toString() in ['200']
   }
   if (waitMs != null) {
     def ok = false
@@ -11,9 +11,9 @@ def verifyUrl = { url, waitMs ->
       ok = closure(url)
       return ok
     }.every(1000).atMostMs(waitMs).start()
-    return ok in ['200']
+    return ok
   } else {
-    return closure(url) in ['200']
+    return closure(url)
   }
 }
 
