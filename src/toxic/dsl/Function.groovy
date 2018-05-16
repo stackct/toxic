@@ -40,7 +40,7 @@ class Function extends Parser {
     args << new Arg(name: name, required: required)
   }
 
-  def input(String name, Boolean required=false) {
+  def input(String name, Boolean required=true) {
     arg(name, required)
   }
 

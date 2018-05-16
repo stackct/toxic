@@ -60,7 +60,7 @@ class FunctionTest {
       assert fn.args[1].name == 'optional-arg'
       assert fn.args[1].required == false
       assert fn.args[2].name == 'other'
-      assert fn.args[2].required == false
+      assert fn.args[2].required == true
       assert fn.outputs == ['a', 'b'] as Set
     }
   }
