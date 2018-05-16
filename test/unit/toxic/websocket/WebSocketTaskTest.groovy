@@ -1,5 +1,6 @@
 package toxic.websocket
 
+import groovy.json.JsonSlurper
 import toxic.ToxicProperties
 import toxic.ValidationException
 import org.junit.Rule
@@ -190,7 +191,7 @@ class WebSocketTaskTest {
     def prepareRequest = { String reqContent, def props ->
       props = mockProps(props)
       def webSocketTask = new WebSocketTask(reqContent: reqContent, props: props)
-      webSocketTask.prepare(reqContent)
+      new JsonSlurper().parseText(webSocketTask.prepare(reqContent))
     }
 
     assert [foo: [fooKey: 'barValue']] == prepareRequest("""{ "foo": %bar% }""", [bar: [fooKey: 'barValue']])
