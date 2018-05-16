@@ -18,7 +18,7 @@ def verifyUrl = { url, waitMs ->
 }
 
 def input = memory['url'] // String or List
-def waitMs = memory['waitMs'] // int, millis to wait for success
+def waitMs = memory['waitMs'] ?: null// int, millis to wait for success
 
 if (input instanceof String) {
   memory['result'] = verifyUrl(input, waitMs) ? 'ok' : 'fail'
