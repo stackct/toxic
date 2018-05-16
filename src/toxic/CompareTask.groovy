@@ -31,12 +31,13 @@ public abstract class CompareTask extends Task {
   }
 
   public List<TaskResult> doTask(def memory) {
-    def request = prepare(reqContent)
-    memory.lastResponse = transmit(request, memory)
-    if (input instanceof File) {
-      def expected = lookupExpectedResponse(input)
-      validate(memory.lastResponse, expected, memory)
+    if (!(input instanceof File)) {
+      throw new IllegalArgumentException("input is not a file; type=${input?.className}")
     }
+    def request = prepare(reqContent)
+    String expected = lookupExpectedResponse(input)
+    memory.lastResponse = transmit(request, expected, memory)
+    validate(memory.lastResponse, expected, memory)
     return null
   }
 
@@ -44,7 +45,7 @@ public abstract class CompareTask extends Task {
     return replace(request)
   }
 
-  protected abstract transmit(request, memory)
+  protected abstract transmit(request, expectedResponse, memory)
 
   protected String lookupExpectedResponse(File srcFile) {
     def expected

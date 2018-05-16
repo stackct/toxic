@@ -163,11 +163,6 @@ class WebSocketTaskTest {
   }
 
   @Test
-  void should_implement_a_no_op_transmit() {
-    assert null == new WebSocketTask().transmit(null, null)
-  }
-
-  @Test
   void should_throw_exception_when_web_socket_client_endpoint_is_not_defined() {
     expectedException.expect(IllegalStateException.class)
     expectedException.expectMessage('Please configure either a webSocketClientUri or webSocketClientEndpoint property')
@@ -195,7 +190,7 @@ class WebSocketTaskTest {
     def prepareRequest = { String reqContent, def props ->
       props = mockProps(props)
       def webSocketTask = new WebSocketTask(reqContent: reqContent, props: props)
-      webSocketTask.parseRequestFile()
+      webSocketTask.prepare(reqContent)
     }
 
     assert [foo: [fooKey: 'barValue']] == prepareRequest("""{ "foo": %bar% }""", [bar: [fooKey: 'barValue']])

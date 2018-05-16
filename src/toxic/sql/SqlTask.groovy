@@ -90,7 +90,7 @@ public class SqlTask extends CompareTask {
     results.join('\n')
   }
 
-  protected transmit(request, def memory) {
+  protected transmit(request, expectedResponse, def memory) {
     synchronized (props) {
       if (!props.sqlConnection || memory.sqlReconnect == "true") {
         props.sqlConnection = Sql.newInstance(props.sqlUrl, props.sqlUser, props.sqlPass, props.sqlDriver)

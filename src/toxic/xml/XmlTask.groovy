@@ -41,6 +41,7 @@ public class XmlTask extends CompareTask {
   /*
    * Returns a string or a byte array depending on whether the body is gzipped
    */
+  @Override
   def prepare(str) {
     def result
     if (str.startsWith("GET") || str.startsWith("POST") || str.startsWith("OPTIONS")
@@ -74,7 +75,8 @@ public class XmlTask extends CompareTask {
     return result
   }
 
-  protected String transmit(request, memory) {
+  @Override
+  protected String transmit(request, expectedResponse, memory) {
     def result
 
     def ssl = false

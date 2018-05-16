@@ -1,6 +1,7 @@
 package toxic.websocket
 
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import toxic.json.JsonTask
 
 import java.util.concurrent.ConcurrentHashMap
@@ -11,7 +12,8 @@ class WebSocketTask extends JsonTask {
   private static final long DEFAULT_TIMEOUT = 3000
 
   @Override
-  String sendJsonRequest(Object memory, def request, def expectedResponses) {
+  protected transmit(def request, def expectedResponse, def memory) {
+    def expectedResponses = new JsonSlurper().parseText(expectedResponse)
     def channels = collectChannels(request, expectedResponses)
 
     WebSocketClientEndpoint endpoint = resolveWebSocketClientEndpoint(memory)
