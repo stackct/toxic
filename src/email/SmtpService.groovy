@@ -77,7 +77,6 @@ class SmtpService {
    * @param templateId notification template ID
    * @param destAddress email address of recipient 
    * @param attributes map of key/value attributes
-   * @return String xml request to be sent to ExactTarget XML endpoint
    */
   public void email(String templateId, String destAddress, Map attributes) {
     validateConfig()

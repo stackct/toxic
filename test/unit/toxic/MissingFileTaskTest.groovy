@@ -1,6 +1,5 @@
 package toxic
 
-import toxic.xml.XmlTask
 import org.junit.Test
 
 class MissingFileTaskTest {

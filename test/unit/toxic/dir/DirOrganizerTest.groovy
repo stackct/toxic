@@ -3,9 +3,10 @@ package toxic.dir
 import log.Log
 import toxic.MissingFileTask
 import toxic.ToxicProperties
-import toxic.xml.XmlTask
 import org.apache.log4j.Level
 import org.junit.*
+import toxic.http.HttpTask
+
 import static org.junit.Assert.fail
 
 public class DirOrganizerTest {
@@ -115,13 +116,13 @@ public class DirOrganizerTest {
   @Test
   void should_return_MissingFileTask_on_missing_files() {
     def org = new DirOrganizer()
-    def ff = new File("fake2.xml")
+    def ff = new File("fake2.http")
     def nf
     DirItem.metaClass.exists = { return true }
     DirItem.metaClass.nextFile = { p -> nf = nf ? null : ff; return nf }
     def props = new ToxicProperties()
     props["doDir"] = "test"
-    props["doTaskClass.xml"]=XmlTask.class.getName()
+    props["doTaskClass.http"]=HttpTask.class.getName()
     org.init(props)
 
     assert org.hasNext()
@@ -137,7 +138,7 @@ public class DirOrganizerTest {
     DirItem.metaClass.nextFile = { p -> nf = nf ? null : ff; return nf }
     def props = new ToxicProperties()
     props["doDir"] = "test"
-    props["doTaskClass.xml"]=XmlTask.class.getName()
+    props["doTaskClass.http"]=HttpTask.class.getName()
     org.init(props)
 
     assert org.hasNext()
@@ -153,7 +154,7 @@ public class DirOrganizerTest {
     DirItem.metaClass.nextFile = { p -> nf = nf ? null : ff; return nf }
     def props = new ToxicProperties()
     props["doDir"] = "test"
-    props["doTaskClass.xml"]=XmlTask.class.getName()
+    props["doTaskClass.http"]=HttpTask.class.getName()
     org.init(props)
 
     assert org.hasNext()

@@ -13,8 +13,8 @@ execution of the job's instructions.
 The following example illustrates a possible job file:
 <br/>
 <pre>
--xmlHost=localhost
--xmlPort=6011
+-httpHost=localhost
+-httpPort=6011
 -doDir=`"${memory['project.workDir']}/toxic/foo"`
 -doDir1=`"${memory['project.workDir']}/toxic/bar"`
 -job.end.script.1="echo Finished!".execute().text

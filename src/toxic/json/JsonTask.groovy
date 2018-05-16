@@ -2,11 +2,11 @@ package toxic.json
 
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import toxic.CompareTask
 import toxic.JsonValidator
 import toxic.ToxicProperties
+import toxic.http.HttpTask
 
-class JsonTask extends CompareTask {
+class JsonTask extends HttpTask {
   @Override
   def prepare(def request) {
     // Any unquoted variables, such as map or list references, will be replaced with the String representation of the JSON structure
@@ -32,10 +32,5 @@ class JsonTask extends CompareTask {
     def validator = new JsonValidator()
     validator.init(memory)
     validator.validate(actualResponse, expectedResponse, memory)
-  }
-
-  @Override
-  protected transmit(def request, def expectedResponse, def memory) {
-    // TODO HTTP post with json
   }
 }

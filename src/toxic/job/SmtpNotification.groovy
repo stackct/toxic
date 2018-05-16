@@ -3,8 +3,6 @@ package toxic.job
 import org.apache.log4j.*
 import javax.mail.*
 import javax.mail.internet.*
-import javax.activation.*
-import groovy.xml.*
 
 public class SmtpNotification implements JobNotification {
   private static Logger log = Logger.getLogger(this)

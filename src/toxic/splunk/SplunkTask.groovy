@@ -1,11 +1,10 @@
 package toxic.splunk
 
-import javax.servlet.http.*
 import toxic.TaskResult
-import toxic.xml.XmlTask
 import org.apache.log4j.Logger
+import toxic.http.HttpTask
 
-public class SplunkTask extends XmlTask {
+public class SplunkTask extends HttpTask {
   protected static Logger slog = Logger.getLogger(SplunkTask.class.name)
   
   public void init(def input, def props) {
@@ -32,10 +31,10 @@ public class SplunkTask extends XmlTask {
   }
   
   public List<TaskResult> doTask(def memory) {
-    def oldProps = memory.findAll { k, v -> k.startsWith("xml") }
-    if (props.splunk_hostname) props.xmlHost = props.splunk_hostname
-    if (props.splunk_port) props.xmlPort = props.splunk_port
-    if (props.splunk_ssl) props.xmlSsl = props.splunk_ssl
+    def oldProps = memory.findAll { k, v -> k.startsWith("http") }
+    if (props.splunk_hostname) props.httpHost = props.splunk_hostname
+    if (props.splunk_port) props.httpPort = props.splunk_port
+    if (props.splunk_ssl) props.httpSsl = props.splunk_ssl
     def ret = super.doTask(memory)
     memory.putAll(oldProps)
     return ret

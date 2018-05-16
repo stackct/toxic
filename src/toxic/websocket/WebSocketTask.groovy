@@ -12,7 +12,7 @@ class WebSocketTask extends JsonTask {
   private static final long DEFAULT_TIMEOUT = 3000
 
   @Override
-  protected transmit(def request, def expectedResponse, def memory) {
+  protected String transmit(request, expectedResponse, memory) {
     def expectedResponses = new JsonSlurper().parseText(expectedResponse)
     def channels = collectChannels(request, expectedResponses)
 
