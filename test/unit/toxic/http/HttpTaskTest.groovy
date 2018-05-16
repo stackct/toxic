@@ -224,4 +224,34 @@ public class HttpTaskTest {
     String http = 'POST / HTTP/1.1\r\ncontent-length: 5\r\n\r\n<ok/>'
     assert http == new HttpTask().readHttpBody(new ByteArrayInputStream(http.getBytes()))
   }
+
+  @Test
+  void should_set_http_connection_properties_from_uri() {
+    def testCases = [
+      [name:'bad uri', uri:'foo', host:'default.invalid', port:9999, ssl:'invalid'],
+      [name:'standard http', uri:'http://foo.com', host:'foo.com', port:80, ssl:'false'],
+      [name:'standard https', uri:'https://foo.com', host:'foo.com', port:443, ssl:'true'],
+      [name:'http on nonstandard port', uri:'http://foo.com:123', host:'foo.com', port:123, ssl:'false'],
+      [name:'https on nonstandard port', uri:'https://foo.com:123', host:'foo.com', port:123, ssl:'true'],
+    ]
+
+    testCases.each { tc ->
+      def t = new HttpTask()
+
+      // Default values, intended to be overridden by a valid httpUri. If the httpUri is invalid,
+      // the values will remain intact.
+      t.props = [
+        httpHost: 'default.invalid',
+        httpPort: 9999,
+        httpSsl: 'invalid'
+      ] as ToxicProperties
+      
+      t.props['httpUri'] = tc.uri
+      t.setHttpConnection()
+
+      assert t.props['httpHost'] == tc.host, "test case failed; name:'${tc.name}'; field:host; wanted:${tc.host}; got:${t.props['httpHost']}"
+      assert t.props['httpPort'] == tc.port, "test case failed; name:'${tc.name}'; field:port"
+      assert t.props['httpSsl'] == tc.ssl, "test case failed; name:'${tc.name}'; field:ssl"
+    }
+  }
 }
