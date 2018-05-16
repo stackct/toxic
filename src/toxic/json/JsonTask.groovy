@@ -1,7 +1,6 @@
 package toxic.json
 
 import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import toxic.JsonValidator
 import toxic.ToxicProperties
 import toxic.http.HttpTask
