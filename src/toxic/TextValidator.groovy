@@ -10,7 +10,6 @@ public class TextValidator implements Validator {
   def nearChars = 10
   def delimiter = "%"
 
-
   protected Logger getLog() {
     return props?.log ?: this.slog
   }
@@ -33,142 +32,97 @@ public class TextValidator implements Validator {
     }
 
     // "clean-up" text before comparison
+    def expectedLineNumber = 1
+
     def prepared = prepareText(actualOrig, expectedOrig)
     def (actual, expected) = prepared
-
-    def expectedLineNumber = 1
-    def expectedSize = expected.size()
-    def actualSize = actual.size()
     def (actualIdx, expectedIdx) = startingIndexes(actual, expected)
 
-    while ((expectedIdx < expectedSize) && (actualIdx < actualSize)) {
-      if('\n' == expected[expectedIdx]) {
+    StringIterator exp = new StringIterator(expected, expectedIdx)
+    StringIterator act = new StringIterator(actual, actualIdx)
+
+    while (exp.remaining && act.remaining) {
+      if('\n' == exp.peek()) {
         expectedLineNumber++
       }
-      def tag = (expectedIdx + 1 < expectedSize) ? expected.substring(expectedIdx, expectedIdx + 2) : null
+
+      // Tags are defined as a delimiter and one of: %,#,>
+      def tag = exp.peek(delimiter.size() + 1)
+
       if (skipValidation(tag)) {
-        expectedIdx += 2
-
-        def actualTerminatingChar
-        if (expectedIdx < expectedSize) {
-          actualTerminatingChar = expected[expectedIdx]
-        }
-
-        // Advance the actual index to the terminating character, or to the end of the
-        // actual content which ever applies.
-        while ((actualIdx < actualSize) && (actual[actualIdx] != actualTerminatingChar)) {
-          actualIdx++
-        }
+        exp.skip(tag)
+        act.skipUntil(exp.peek())
       }
       else if (tag == "${delimiter}>") {
-        // Expected syntax: %>5% where 5 is a the number of chars to skip to.
-        expectedIdx += 2
+        exp.skip(tag)
 
-        // Extract number
-        def countStartIdx = expectedIdx
-        while ((expectedIdx < expectedSize) && (expected[expectedIdx] != "${delimiter}")) {
-          expectedIdx++
-        }
-        // Ensure we didn't exceed the end of the string
-        if (expectedIdx >= expectedSize) {
+        String count = exp.grabUntil(delimiter)
+        if (!count) {
           throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
         }
 
-        def count = new Integer(expected.substring(countStartIdx, expectedIdx))
-        expectedIdx++
+        exp.skip(delimiter)
 
-        def expectedTerminatingString
-        if (expectedIdx < expectedSize) {
-          expectedTerminatingString = expected.substring(expectedIdx, expectedIdx + count)
-        }
-
-        // Advance the actual index to the terminating string, or to the end of the
-        // actual content which ever applies.
-        def actualTerminatingString = actual.substring(actualIdx, actualIdx + count)
-        while ((actualIdx + count < actualSize) && (actualTerminatingString != expectedTerminatingString)) {
-          actualIdx++
-          actualTerminatingString = actual.substring(actualIdx, actualIdx + count)
-        }
+        String terminator = exp.grab(new Integer(count))
+        act.skipUntil(terminator)
+        act.skip(terminator)
       }
       else if (tag == "${delimiter}#") {
-        expectedIdx += 2
+        exp.skip(tag)
 
-        // Extract the count
-        def countStartIdx = expectedIdx
-        while ((expectedIdx < expectedSize) && (expected[expectedIdx] != "${delimiter}")) {
-          expectedIdx++
-        }
-        // Ensure we didn't exceed the end of the string
-        if (expectedIdx >= expectedSize) {
+        String count = exp.grabUntil(delimiter)
+        if (!count) {
           throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
         }
 
-        def count = new Integer(expected.substring(countStartIdx, expectedIdx))
+        exp.skip(delimiter)
+        
+        act.skip(new Integer(count))
 
-        // Advanced the expected index to the next real character (after the trailing delimiteriter)
-        expectedIdx++
-        actualIdx += count
       } else if (isVariableAssignment(tag)) {
-        expectedIdx += 2
+        exp.skip(tag)
 
-        // Extract the variable name.
-        def varNameStartIdx = expectedIdx
-        while ((expectedIdx < expectedSize) && (expected[expectedIdx] != "${delimiter}")) {
-          expectedIdx++
-        }
-
-        // Ensure we didn't exceed the end of the string
-        if (expectedIdx >= expectedSize) {
+        String varName = exp.grabUntil(delimiter)
+        if (!varName) {
           throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
         }
 
-        def varName = expected.substring(varNameStartIdx, expectedIdx)
+        exp.skip(delimiter)
 
-        // Extract the actual content to save into this new variable
-        def contentStartIdx = actualIdx
-        def actualTerminatingChar
-        expectedIdx++
-        if (expectedIdx < expectedSize) {
-          actualTerminatingChar = expected[expectedIdx]
-        }
+        String content = act.grabUntil(exp.peek())
+        performVariableAssignment(varName, content, memory)
 
-        while ((actualIdx < actualSize) && (actual[actualIdx] != actualTerminatingChar)) {
-          actualIdx++
-        }
-
-        if (varName) {
-          def content = actual.substring(contentStartIdx, actualIdx)
-          performVariableAssignment(varName, content, memory)
-
-          // Since we've set a new variable, perform a variable replacement on the
-          // expected text.  Note that the variable assignment must be performed before
-          // any other variable replacements.
-          def r = new VariableReplacer()
-          r.init(props)
-          r.startDelimiter = delimiter
-          r.stopDelimiter = delimiter
-          expected = r.replace(expected)
-          expectedSize = expected.size()
-        }
-      } else if (expected[expectedIdx] != actual[actualIdx]) {
-        def expectedNear = extractNear(expected, expectedIdx)
-        def actualNear = extractNear(actual, actualIdx)
+        // Since we've set a new variable, perform a variable replacement on the
+        // expected text.  Note that the variable assignment must be performed before
+        // any other variable replacements.
+        def r = new VariableReplacer()
+        r.init(props)
+        r.startDelimiter = delimiter
+        r.stopDelimiter = delimiter
+        
+        // Create a new iterator with the replaced values
+        exp = new StringIterator(r.replace(exp.value), exp.idx)
+      } else if (exp.peek() != act.peek()) {
+        def expectedNear = exp.peekAround(nearChars)
+        def actualNear = act.peekAround(nearChars)
+        
         throw new ValidationException("Character mismatch -->" +
-          "\n${'-'.multiply(25)}  ACTUAL  (${actual[actualIdx]}) ${'-'.multiply(25)}\n" +
+          "\n${'-'.multiply(25)}  ACTUAL  (${act.peek()}) ${'-'.multiply(25)}\n" +
           actualNear + "\n" +
-          "\n${'-'.multiply(25)} EXPECTED (${expected[expectedIdx]}) on line ${expectedLineNumber} ${'-'.multiply(25)}\n" +
+          "\n${'-'.multiply(25)} EXPECTED (${exp.peek()}) on line ${expectedLineNumber} ${'-'.multiply(25)}\n" +
           expectedNear)
+
       } else {
-        expectedIdx++
-        actualIdx++
+        exp.skip()
+        act.skip()
       }
     }
 
-    if ((expectedIdx != expectedSize) || (actualIdx < actualSize)) {
+    if (exp.remaining || act.remaining) {
       throw new ValidationException("Content length mismatch -->" +
-          "\n${'-'.multiply(25)}  ACTUAL  (count=${actualSize}) ${'-'.multiply(25)}\n" +
+          "\n${'-'.multiply(25)}  ACTUAL  (count=${act.length}) ${'-'.multiply(25)}\n" +
           actual + "\n" +
-          "\n${'-'.multiply(25)} EXPECTED (count=${expectedSize}) ${'-'.multiply(25)}\n" +
+          "\n${'-'.multiply(25)} EXPECTED (count=${exp.length}) ${'-'.multiply(25)}\n" +
           expected)
     }
   }
@@ -185,12 +139,6 @@ public class TextValidator implements Validator {
    */
   protected startingIndexes(String actual, String expected) {
     [0, 0]
-  }
-
-  protected String extractNear(def expected, int idx) {
-    def startIdx = Math.max(0, idx - nearChars)
-    def endIdx = Math.min(expected.size(), idx + nearChars)
-    return expected.substring(startIdx, endIdx)
   }
 
   String getAssignmentToken() {
