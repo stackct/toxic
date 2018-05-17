@@ -40,6 +40,10 @@ class HttpTask extends CompareTask {
    */
   @Override
   def prepare(str) {
+    // Http props must be setup before headers are added since some headers get their
+    // values from the http setup stage. Ex: Host: header comes from httpUri input prop.
+    setupHttpConnection()
+
     def result
     if (str.startsWith("GET") || str.startsWith("POST") || str.startsWith("OPTIONS")
         || str.startsWith("HEAD") || str.startsWith("DELETE") || str.startsWith("PUT")
@@ -74,8 +78,6 @@ class HttpTask extends CompareTask {
 
   @Override
   protected String transmit(request, expectedResponse, memory) {
-    setupHttpConnection()
-    
     def result
 
     def ssl = false
