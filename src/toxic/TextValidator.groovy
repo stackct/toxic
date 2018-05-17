@@ -53,8 +53,9 @@ public class TextValidator implements Validator {
         exp.skip(tag)
         act.skipUntil(exp.peek())
       }
-      else if (tag == "${delimiter}>") {
-        exp.skip(tag)
+      else if (tag == "${delimiter}>" || tag == "${delimiter}#") {
+        exp.skip(delimiter)
+        String symbol = exp.grab()
 
         String count = exp.grabUntil(delimiter)
         if (!count) {
@@ -63,22 +64,13 @@ public class TextValidator implements Validator {
 
         exp.skip(delimiter)
 
-        String terminator = exp.grab(new Integer(count))
-        act.skipUntil(terminator)
-        act.skip(terminator)
-      }
-      else if (tag == "${delimiter}#") {
-        exp.skip(tag)
-
-        String count = exp.grabUntil(delimiter)
-        if (!count) {
-          throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
+        if (symbol == '>') {
+          String terminator = exp.grab(new Integer(count))
+          act.skipUntil(terminator)
+          act.skip(terminator)
+        } else {
+          act.skip(new Integer(count))
         }
-
-        exp.skip(delimiter)
-        
-        act.skip(new Integer(count))
-
       } else if (isVariableAssignment(tag)) {
         exp.skip(tag)
 
