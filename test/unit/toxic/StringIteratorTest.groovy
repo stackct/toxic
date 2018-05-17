@@ -90,6 +90,10 @@ class StringIteratorTest {
   public void should_grab_specific_number_of_characters() {
     def si = new StringIterator("foobarbaz")
 
+    assert si.grab() == 'f'
+    assert si.remaining == 'oobarbaz'
+    si.reset()
+
     assert si.grab(3) == 'foo'
     assert si.remaining == 'barbaz'
 

@@ -52,7 +52,7 @@ public class StringIterator {
     return this.remaining[0..n-1]
   }
 
-  String grab(int n) {
+  String grab(int n=1) {
     String r = peek(n)
     skip(r)
     
