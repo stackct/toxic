@@ -1,7 +1,7 @@
 // Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
 package toxic
 
-import org.junit.Test
+import org.junit.*
 import static org.junit.Assert.fail
 
 public class TextValidatorTest {
@@ -161,14 +161,14 @@ Content-Length: 30
     }
   }
 
-  @Test
-  public void testExtractNear() {
-    def xv = new TextValidator()
-    def test = "This is a test of the emergency broadcast network"
-    assert xv.extractNear(test, 20) == "test of the emergenc"
-    assert xv.extractNear(test, 0) == "This is a "
-    assert xv.extractNear(test, 48) == "ast network"
-  }
+  // @Test
+  // public void testExtractNear() {
+  //   def xv = new TextValidator()
+  //   def test = "This is a test of the emergency broadcast network"
+  //   assert xv.extractNear(test, 20) == "test of the emergenc"
+  //   assert xv.extractNear(test, 0) == "This is a "
+  //   assert xv.extractNear(test, 48) == "ast network"
+  // }
 
   @Test
   public void testValidateSaveVarAndCompare() {
@@ -310,4 +310,55 @@ Content-Length: 30
     assert tp.foo1 == "34"
     assert tp.foo_count == 2
   }
+
+  @Test
+  void testVariableAssignmentWithSkipUntil() {
+    def xv = new TextValidator()
+    def tp = new ToxicProperties()
+
+    String expected = 'bla=%>5%;foo=%=foo%;%%'
+    String actual   = 'bla=ignore;ignore=this;and=this;foo=42;the_rest'
+    xv.validate(actual, expected, tp)
+
+    assert tp.foo == '42'
+  }
+
+  @Test
+  void testVariableAssignmentWithSkipSpecific() {
+    def xv = new TextValidator()
+    def tp = new ToxicProperties()
+
+    String expected = 'bla=%#15%;foo=%=foo%'
+    String actual   = 'bla=ignore;and=this;foo=42'
+    xv.validate(actual, expected, tp)
+
+    assert tp.foo == '42'
+  }
+
+  @Test
+  @Ignore("not yet supported")
+  void testEmptyStringVariableAssignment() {
+    def xv = new TextValidator()
+    def tp = new ToxicProperties()
+
+    String expected = '%=value%'
+    String actual   = ''
+    xv.validate(actual, expected, tp)
+
+    assert tp.value == ''
+  }
+
+  @Test
+  @Ignore("not yet supported")
+  void testEmptyStringSkipsValidation() {
+    def xv = new TextValidator()
+    def tp = new ToxicProperties()
+
+    String expected = '%%'
+    String actual   = ''
+    xv.validate(actual, expected, tp)
+
+    // If no validation exception is thrown, test passes
+  }
 }
+
