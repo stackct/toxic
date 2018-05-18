@@ -161,15 +161,6 @@ Content-Length: 30
     }
   }
 
-  // @Test
-  // public void testExtractNear() {
-  //   def xv = new TextValidator()
-  //   def test = "This is a test of the emergency broadcast network"
-  //   assert xv.extractNear(test, 20) == "test of the emergenc"
-  //   assert xv.extractNear(test, 0) == "This is a "
-  //   assert xv.extractNear(test, 48) == "ast network"
-  // }
-
   @Test
   public void testValidateSaveVarAndCompare() {
     def xv = new TextValidator()

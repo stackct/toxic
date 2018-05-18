@@ -8,7 +8,7 @@ public class StringIterator {
 
   public StringIterator(String s, int startPosition = 0) {
     this.value = s
-    this.length = s.size()
+    this.length = this.value ? this.value.size() : 0
     this.startPosition = startPosition
     reset()
   }
@@ -81,7 +81,11 @@ public class StringIterator {
     int end   = Math.min(this.length, this.idx + n)
     
     return this.value.substring(start, end)
-  }  
+  }
+
+  boolean isEmpty() {
+    return (this.length == 0)
+  }
 
   @Override
   String toString() {

@@ -41,7 +41,7 @@ public class TextValidator implements Validator {
     StringIterator exp = new StringIterator(expected, expectedIdx)
     StringIterator act = new StringIterator(actual, actualIdx)
 
-    while (exp.remaining && act.remaining) {
+    while (exp.remaining && (act.remaining || act.isEmpty())) {
       if('\n' == exp.peek()) {
         expectedLineNumber++
       }
@@ -53,9 +53,8 @@ public class TextValidator implements Validator {
         exp.skip(tag)
         act.skipUntil(exp.peek())
       }
-      else if (tag == "${delimiter}>" || tag == "${delimiter}#") {
-        exp.skip(delimiter)
-        String symbol = exp.grab()
+      else if (isSkipMatch(tag) || isSkipAhead(tag)) {
+        exp.skip(tag)
 
         String count = exp.grabUntil(delimiter)
         if (!count) {
@@ -64,10 +63,11 @@ public class TextValidator implements Validator {
 
         exp.skip(delimiter)
 
-        if (symbol == '>') {
-          String terminator = exp.grab(new Integer(count))
+        if (isSkipMatch(tag)) {
+          exp.grab(new Integer(count)).with { terminator ->
           act.skipUntil(terminator)
           act.skip(terminator)
+          }
         } else {
           act.skip(new Integer(count))
         }
@@ -75,6 +75,7 @@ public class TextValidator implements Validator {
         exp.skip(tag)
 
         String varName = exp.grabUntil(delimiter)
+        
         if (!varName) {
           throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
         }
@@ -137,12 +138,32 @@ public class TextValidator implements Validator {
     "${delimiter}="
   }
 
+  String getSkipAheadToken() {
+    "${delimiter}#"
+  }
+
+  String getSkipMatchToken() {
+    "${delimiter}>"
+  }
+
   boolean skipValidation(def value) {
     value instanceof String && value.trim() == "${delimiter}${delimiter}"
   }
 
-  boolean isVariableAssignment(def value) {
-    value instanceof String && assignmentToken == value.trim().take(assignmentToken.size())
+  boolean isVariableAssignment(Object o) {
+    false
+  }
+
+  boolean isVariableAssignment(String s) {
+    s.take(assignmentToken.size()) == assignmentToken
+  }
+
+  boolean isSkipAhead(String s) {
+    s == skipAheadToken
+  }
+
+  boolean isSkipMatch(String s) {
+    s == skipMatchToken
   }
 
   void performVariableAssignment(String varName, def content, def memory) {
@@ -156,9 +177,13 @@ public class TextValidator implements Validator {
         throw new ContentMismatchException(memory[varNameParts[1]], content)
       }
     }
+
     varName = varNameParts[0]
 
-    if (log.isDebugEnabled()) log.debug("Saving text snippet into memory; snippet=" + content + "; variable=" + varName)
+    if (log.isDebugEnabled()) {
+      log.debug("Saving text snippet into memory; snippet=" + content + "; variable=" + varName)
+    }
+
     memory[varName] = content
   }
 }
