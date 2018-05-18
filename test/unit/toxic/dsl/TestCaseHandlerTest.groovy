@@ -172,6 +172,47 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  public void should_run_single_test_case() {
+    DirItem dirItem = new DirItem('something.test')
+    def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
+    assert [] == dirItem.children
+
+    def input = """
+      test "test1" {
+        description "test1 description"
+        tags 'foo'
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+      }
+      test "test2" {
+        description "test1 description"
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+      }
+      test "test3" {
+        description "test1 description"
+        tags 'bar'
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+      }
+    """
+    mockFile(input) { file ->
+      def props = [functions: functions, tags:'test1,test2', test:'test3']
+
+      new TestCaseHandler(dirItem, props).nextFile(file)
+      assert 2 == dirItem.children.size()
+      assert props.testCases.size() == 1
+      assert props.testCases[0].name == 'test3'
+    }
+  }
+
+  @Test
   void should_return_next_file() {
     DirItem dirItem = new DirItem('something.test')
     def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
