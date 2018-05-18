@@ -132,4 +132,11 @@ class StringIteratorTest {
     assert si.peekAround(6) == 'foobarbaz'
     assert si.peekAround(20) == 'foobarbaz'
   }
+
+  @Test
+  public void should_determine_if_is_empty() {
+    assert true == new StringIterator(null).isEmpty()
+    assert true == new StringIterator("").isEmpty()
+    assert false == new StringIterator("foo").isEmpty()
+  }
 }
