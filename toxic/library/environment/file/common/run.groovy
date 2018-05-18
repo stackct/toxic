@@ -1,7 +1,7 @@
 import toxic.ValidationException
 
-def k8sExec = ['kubectl', '-n', memory['namespace'], 'exec', memory['podName'], '-c', memory['containerName'], '-i', '-t', '--']
-def dockerExec = ['docker', 'exec', '-it', memory['containerName']]
+def k8sExec = ['kubectl', '-n', memory['namespace'], 'exec', memory['podName'], '-c', memory['containerName'], '--']
+def dockerExec = ['docker', 'exec', memory['containerName']]
 
 def touchFileCmd = ['/bin/sh', '-c', "touch ${memory['file']}"]
 def fileExistsCmd = ['/bin/sh', '-c', "stat ${memory['file']}"]
