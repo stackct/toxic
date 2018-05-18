@@ -2,26 +2,47 @@ function "DeployEnvironment" {
   description "Deploys an environment" 
   path "{{ libPath }}/environment/deploy"
 
-  arg "spec", true
-  arg "namespace", true
+  arg "spec"
+  arg "namespace"
 }
 
 function "DeleteEnvironment" {
   description "Deletes an environment" 
   path "{{ libPath }}/environment/delete"
 
-  arg "spec", true
-  arg "namespace", true
-  arg "artifactsDir", true
+  arg "spec"
+  arg "namespace"
+  arg "artifactsDir"
 }
 
 function "GetServiceUrl" {
   description "Returns the URL for a Kubernetes Service"
   path "{{ libPath }}/environment/service/get"
 
-  arg "namespace", true
-  arg "service", true
+  arg "namespace"
+  arg "service"
 
   output "hostname"
   output "url"
+}
+
+function "GetPodName" {
+  description "Returns the name of a pod using a specified prefix."
+  path "{{ libPath }}/environment/pod/get"
+
+  arg "namespace"
+  arg "prefix"
+
+  output "name"
+}
+
+function "WaitUntilFileRemoved" {
+	description "Waits until a file within a specified runtime is removed. Will optionally create the file before waiting if specified."
+	path "{{ libPath }}/environment/file/wait_until_removed"
+
+	input "runtime"
+	input "file"
+	input "intervalMs"
+	input "maxWaitMs"
+	input "create", false
 }
