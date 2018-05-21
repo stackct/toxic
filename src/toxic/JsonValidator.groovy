@@ -90,7 +90,15 @@ class JsonValidator extends HttpValidator {
   }
 
   /* Any unquoted variables, such as map or list references, will be replaced 
-     with the String representation of the JSON structure
+     with the String representation of the JSON structure.
+
+     (?<!")%(?!")  - Match a percent sign that does not have a double quote on either side
+                   - Matches:
+                      %bar%
+                   - Does not match:
+                     "%bar%"
+                     r%"
+     ([^%]+)%      - Capture any and all characters until a percent is found
   */
   static String stringify(String json, ToxicProperties props) {
     json.replaceAll(/(?<!")%(?!")([^%]+)%/) { match, variable ->
@@ -100,6 +108,14 @@ class JsonValidator extends HttpValidator {
 
   /* Quote any unquoted response assignment variables so contents can be correctly 
      parsed as JSON
+
+     (?<!")(%=)(?!") - Match a percent and equal sign that does not have a double quote on either side and capture as startDelimiter
+                     - Matches:
+                         %=bar%
+                     - Does not match:
+                         "%=bar%"
+                         r%"
+     ([^%]+)(%)      - Capture any and all characters until a percent is found and capture the endDelimiter as a variable
   */
   static String normalize(String s) {
     s.replaceAll(/(?<!")(%=)(?!")([^%]+)(%)/) { match, startDelimiter, variable, endDelimiter ->
