@@ -13,8 +13,12 @@ class Assertion {
     assertOperation(ying, yang, '!=')
   }
 
-  Assertion contains(Object ying, Object yang) {
+  Assertion contains(String ying, String yang) {
     assertFunction(ying, yang, 'contains')
+  }
+
+  Assertion contains(Map ying, String yang) {
+    assertFunction(ying, yang, 'containsKey')
   }
 
   Assertion startswith(Object ying, Object yang) {
@@ -25,22 +29,31 @@ class Assertion {
     assertFunction(ying, yang, 'endsWith')
   }
 
-  Assertion assertFunction(Object ying, Object yang, String function) {
+  private Assertion assertFunction(def ying, def yang, String function) {
     String failureMessage = failureMessage("\"${ying}.${function}(${yang})\"")
     assertions << "assert ${format(ying)}.${function}(${format(yang)}) : ${failureMessage}"
     this
   }
 
-  Assertion assertOperation(Object ying, Object yang, String operator) {
+  private Assertion assertOperation(Object ying, Object yang, String operator) {
     String failureMessage = failureMessage("\"${ying} ${operator} ${yang}\"")
     assertions << "assert ${format(ying)} ${operator} ${format(yang)} : ${failureMessage}"
     this
   }
 
-  String format(String value) { "'${value}'" }
-  String format(Object value) { value }
+  private String format(Object value) { 
+    return value 
+  }
+  
+  private String format(String value) { 
+    return "'${value}'" 
+  }
+  
+  private String format(Map value) { 
+    return "[" + value.collect {k,v-> "${k}:${format(v)}" }.join('') + "]" 
+  }
 
-  String failureMessage(String message) {
+  private String failureMessage(String message) {
     message.replaceAll(Step.beginVariableRegex, variableReplacement).replaceAll(Step.endVariableRegex, variableReplacement)
   }
 }
