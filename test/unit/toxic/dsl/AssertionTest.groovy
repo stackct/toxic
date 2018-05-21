@@ -19,10 +19,17 @@ class AssertionTest {
   }
 
   @Test
-  void should_evaluate_contains() {
+  void should_evaluate_string_contains() {
     assert true == contains('foobar', 'oob')
     assert 'foo.contains(bar). Expression: foo.contains(bar)' == contains('foo', 'bar')
     assert 'foo.contains(bar). Expression: {{foo}}.contains({{bar}})' == contains('{{foo}}', '{{bar}}')
+  }
+
+  @Test
+  void should_evaluate_map_contains() {
+    assert true == contains([foo:'bar'], 'foo')
+    assert '[foo:bar].containsKey(bla). Expression: [foo:bar].containsKey(bla)' == contains([foo:'bar'], 'bla')
+    assert 'foo.contains(bla). Expression: {{foo}}.contains({{bla}})' == contains('{{foo}}', '{{bla}}')
   }
 
   @Test
@@ -38,7 +45,6 @@ class AssertionTest {
     assert 'foobar.endsWith(foo). Expression: foobar.endsWith(foo)' == endswith('foobar', 'foo')
     assert 'foobar.endsWith(foo). Expression: {{foobar}}.endsWith({{foo}})' == endswith('{{foobar}}', '{{foo}}')
   }
-
 
   def eq(Object ying, Object yang) {
     evaluateAssertion(new Assertion().eq(ying, yang))
@@ -63,7 +69,7 @@ class AssertionTest {
   def evaluateAssertion(Assertion assertion) {
     assert 1 == assertion.assertions.size()
     try {
-      new GroovyShell().evaluate(assertion.assertions[0])
+      new GroovyShell().evaluate(assertion.assertions.first())
       return true
     }
     catch(AssertionError e) {
