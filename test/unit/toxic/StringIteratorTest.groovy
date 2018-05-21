@@ -31,10 +31,10 @@ class StringIteratorTest {
     assert si.remaining == 'ar'
 
     assert si.skip(2)
-    assert si.remaining == null
+    assert si.remaining == ''
 
     assert !si.skip()
-    assert si.remaining == null
+    assert si.remaining == ''
   }
 
   @Test
@@ -54,21 +54,21 @@ class StringIteratorTest {
     def si = new StringIterator("foobarbaz")
 
     assert !si.skipUntil('NOTFOUND')
-    assert si.remaining == null
+    assert si.remaining == ''
     si.reset()
 
     assert si.skipUntil('bar')
     assert si.remaining == 'barbaz'
 
     assert !si.skipUntil('foo')
-    assert si.remaining == null
+    assert si.remaining == ''
   }
 
   @Test
   public void should_peek_ahead() {
     def si = new StringIterator("foobarbaz")
 
-    assert si.peek(10) == null
+    assert si.peek(10) == ''
     assert si.remaining == 'foobarbaz'
 
     assert si.peek() == 'f'
@@ -76,14 +76,19 @@ class StringIteratorTest {
     assert si.remaining == 'foobarbaz'
 
     si.skip('foo')
-    assert si.peek(7) == null
+    assert si.peek(7) == ''
     assert si.remaining == 'barbaz'
     assert si.peek(6) == 'barbaz'
     assert si.remaining == 'barbaz'
 
     si.skip(si.remaining)
-    assert si.peek() == null
+    assert si.peek() == ''
+    assert si.remaining == ''
+
+    si = new StringIterator(null)
     assert si.remaining == null
+    assert si.peek() == null
+    assert si.peek(10) == null
   }
 
   @Test
@@ -100,11 +105,16 @@ class StringIteratorTest {
     assert si.grab(3) == 'bar'
     assert si.remaining == 'baz'
 
-    assert si.grab(4) == null
+    assert si.grab(4) == ''
     assert si.remaining == 'baz'
 
     assert si.grab(3) == 'baz'
+    assert si.remaining == ''
+
+    si = new StringIterator(null)
     assert si.remaining == null
+    assert si.grab() == null
+    assert si.grab(10) == null
   }
 
   @Test
@@ -115,12 +125,17 @@ class StringIteratorTest {
     assert si.remaining == 'barbaz'
     si.reset()
 
-    assert si.grabUntil('NOTEXISTS') == null
-    assert si.remaining == null
+    assert si.grabUntil('NOTEXISTS') == ''
+    assert si.remaining == ''
     si.reset()
 
     assert si.grabUntil(null) == 'foobarbaz'
+    assert si.remaining == ''
+
+    si = new StringIterator(null)
     assert si.remaining == null
+    assert si.grabUntil(null) == null
+    assert si.grabUntil('foo') == null
   }
 
   @Test

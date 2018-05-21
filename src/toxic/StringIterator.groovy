@@ -26,14 +26,15 @@ public class StringIterator {
   }
 
   boolean skip(String s) {
-    if (s == null) 
+    if (!s) {
       return false
+    }
 
     skip(s.size())
   }
 
   boolean skipUntil(String match) {
-    if (match == null) {
+    if (!match) {
       return skip(this.remaining)
     }
 
@@ -46,7 +47,7 @@ public class StringIterator {
 
   String peek(int n=1) {
     if (n > this.remaining?.size()) {
-      return null
+      return nullOrEmpty()
     }
 
     return this.remaining[0..n-1]
@@ -66,13 +67,13 @@ public class StringIterator {
       return this.value[curPos..this.idx-1]
     }
 
-    return null
+    return nullOrEmpty()
   }
 
   String getRemaining() {
-    if (this.idx > this.length-1)
-      return null
-
+    if (this.idx > this.length-1) {
+      return nullOrEmpty()
+    }
     return this.value[this.idx..-1]
   }
 
@@ -90,5 +91,9 @@ public class StringIterator {
   @Override
   String toString() {
     return "idx=${this.idx}; remaining=${this.remaining}; value=${this.value};"
+  }
+
+  String nullOrEmpty() {
+    value == null ? null : ''
   }
 }
