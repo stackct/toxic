@@ -41,7 +41,7 @@ class TestCaseHandler extends LinkHandler {
     }
 
     if (props.tags) {
-      return props.tags?.tokenize(',')?.any { f -> testCase.tags.contains(f) }
+      return props.tags.tokenize(',')?.any { f -> testCase.tags.contains(f) }
     }
     
     return true
