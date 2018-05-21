@@ -11,9 +11,33 @@ import org.apache.log4j.Logger
  *   <li>Removes whitespace at end of self-closing tags</li>
  *   <li>Ignores HTTP header of actual message if the expected text does not contain an HTTP header</li>
  * </ul>
-s */
+ */
 public class HttpValidator extends TextValidator {
   private static Logger log = Logger.getLogger(HttpValidator.class.name)
+
+  /**
+   * Perform any desired 'clean-up' of actual/test text before doing comparison.
+   */
+  @Override
+  protected prepareText(String actualOrig, String expectedOrig) {
+    // Disregard extra white space at the beginning and end of the compared
+    // lines, to help avoid false positives due to negligible variances.
+    def actual = normalizeWhiteSpace(actualOrig)
+    def expected = normalizeWhiteSpace(expectedOrig)
+
+    [actual, expected]
+  }
+
+  private String normalizeWhiteSpace(String s) {
+    if(null == s) {
+      return null
+    }
+    def result = ""
+    s.trim().eachLine {
+      result += it.trim() + "\n"
+    }
+    return result
+  }
 
   /**
    * Return the initial indexes for each string
@@ -28,7 +52,7 @@ public class HttpValidator extends TextValidator {
     if (!expected?.startsWith("HTTP") && actual?.startsWith("HTTP")) {
       contentBoundaries.each { boundary ->
         if (actual.contains(boundary)) {
-          actualIdx = actual.indexOf(boundary) + boundary.size()  
+          actualIdx = actual.indexOf(boundary) + boundary.size()
         }
       }
     }

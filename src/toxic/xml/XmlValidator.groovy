@@ -8,19 +8,11 @@ class XmlValidator extends HttpValidator {
    */
   @Override
   protected prepareText(String actualOrig, String expectedOrig) {
-    // Disregard extra white space at the beginning and end of the compared
-    // lines, to help avoid false positives due to negligible variances.
-    def actual = trimMarkup(actualOrig)
-    def expected = trimMarkup(expectedOrig)
-
-    [actual, expected]
+    def (actual, expected) = super.prepareText(actualOrig, expectedOrig)
+    [trimMarkup(actual), trimMarkup(expected)]
   }
 
   private String trimMarkup(String s) {
-    def result = ""
-    s.trim().eachLine {
-      result += it.trim() + "\n"
-    }
-    return result.replaceAll(" />", "/>")
+    s.replaceAll(" />", "/>")
   }
 }

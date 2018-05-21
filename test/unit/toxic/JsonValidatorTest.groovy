@@ -138,7 +138,7 @@ class JsonValidatorTest {
     def props = [:] as ToxicProperties
     def val = new JsonValidator()
 
-    String expected = val.normalize('{ "foo": %=bar% }', props)
+    String expected = val.normalize('{ "foo": %=bar% }')
     String actual   = '{ "foo": null }'
 
     expectSuccess(expected, actual, props)
@@ -166,6 +166,25 @@ class JsonValidatorTest {
     expectSuccess(expected, actual, props)
 
     assert props.bar == 'null'
+  }
+
+  @Test
+  void should_succeed_with_multiline_list_variable_assignment() {
+    String expected = """[
+  { "foo1": "bar1"},
+  %=foo2%,
+  { "foo3": "bar3"}
+]"""
+    String actual   = """[
+  { "foo1": "bar1"},
+  { "foo2": "bar2"},
+  { "foo3": "bar3"}
+]"""
+
+    def props = new ToxicProperties()
+    expectSuccess(JsonValidator.normalize(expected), actual, props)
+
+    assert props.foo2 == [foo2: 'bar2']
   }
 
   @Test
@@ -371,6 +390,38 @@ class JsonValidatorTest {
     message = ''<<''
     message << 'Content mismatch; path=/topic; expected=foobaz; actual=[foo:bar]\n'
     expectValidationFailure(expected, actual, message.toString(), [bar: 'foobaz'])
+  }
+
+  @Test
+  void should_stringify_list_of_maps() {
+    String expected = """[
+  {"foo1":"bar1"},
+  {"foo2":"bar2"},
+  {"foo3":"bar3"}
+]"""
+    String actual   = """[
+  {"foo1":"bar1"},
+  %foo2%,
+  {"foo3":"bar3"}
+]"""
+    ToxicProperties props = new ToxicProperties()
+    props.foo2 = [foo2: 'bar2']
+    assert expected == JsonValidator.stringify(actual, props)
+  }
+
+  @Test
+  void should_normalize_list_of_maps() {
+    String expected = """[
+  { "foo1": "bar1"},
+  "%=foo2%",
+  { "foo3": "bar3"}
+]"""
+    String actual   = """[
+  { "foo1": "bar1"},
+  %=foo2%,
+  { "foo3": "bar3"}
+]"""
+    assert expected == JsonValidator.normalize(actual)
   }
 
   def expectSuccess = { String expected, String actual, def props=[:] ->
