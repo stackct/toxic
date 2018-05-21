@@ -16,7 +16,7 @@ class JsonTask extends HttpTask {
   @Override
   String lookupExpectedResponse(File file) {
     String responseJson = super.lookupExpectedResponse(file)
-    validator.normalize(responseJson, props)
+    validator.normalize(responseJson)
   }
 
   @Override

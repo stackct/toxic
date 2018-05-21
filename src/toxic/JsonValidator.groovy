@@ -92,19 +92,18 @@ class JsonValidator extends HttpValidator {
   /* Any unquoted variables, such as map or list references, will be replaced 
      with the String representation of the JSON structure
   */
-  String stringify(String json, ToxicProperties props) {
-    json.replaceAll(/(:\s*[^"])(%)([^%]+)(%)([^"])/) { all, begin, openDelimiter, match, closeDelimiter, end ->
-      def value = props[match]
-      "${begin}${JsonOutput.toJson(value)}${end}"
+  static String stringify(String json, ToxicProperties props) {
+    json.replaceAll(/(?<!")%(?!")([^%]+)%/) { match, variable ->
+      JsonOutput.toJson(props[variable])
     }
   }
 
   /* Quote any unquoted response assignment variables so contents can be correctly 
      parsed as JSON
   */
-  String normalize(String s, ToxicProperties props) {
-    s.replaceAll(/(:\s*[^"])(%=[^%]+%)([^"])/) { all, begin, match, end ->
-      "${begin}\"${match}\"${end}"
+  static String normalize(String s) {
+    s.replaceAll(/(?<!")(%=)(?!")([^%]+)(%)/) { match, startDelimiter, variable, endDelimiter ->
+      "\"${startDelimiter}${variable}${endDelimiter}\""
     }
   }
 
@@ -119,5 +118,10 @@ class JsonValidator extends HttpValidator {
   @Override
   protected def nullHandler(def value) {
     return value
+  }
+
+  @Override
+  protected prepareText(String actualOrig, String expectedOrig) {
+    [actualOrig, expectedOrig]
   }
 }

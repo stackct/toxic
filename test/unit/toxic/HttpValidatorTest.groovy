@@ -40,4 +40,33 @@ Content-Length: 30
     }
   }
 
+  @Test
+  public void testValidatorTrimsWhitespaceFromEachLine() {
+    def httpValidator = new HttpValidator()
+    def tp = new ToxicProperties()
+    httpValidator.init(tp)
+
+    def expected = """HTTP/1.1 200 OK
+Date: %%
+Content-Language: en-US
+Content-Length: %%
+Content-Type: text/plain
+Connection: close
+
+Text Body
+
+"""
+
+    def actual = """HTTP/1.1 200 OK
+Date: Mon, 23 May 2011 03:34:46 GMT+00:00
+Content-Language: en-US
+Content-Length: 705
+Content-Type: text/plain
+Connection: close
+
+Text Body
+"""
+
+    httpValidator.validate(actual, expected, tp)
+  }
 }
