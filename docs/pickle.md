@@ -74,7 +74,7 @@ Tests are concluded to have passed or failed, based on the statement contained w
 
 * **eq** - Compares that two objects are equal. Usage `eq obj, obj`.
 * **neq** - Compares that two objects are not equal. Usage `neq obj, obj`.
-* **contains** - Compares that one object is contained within the other. In the case of a String, it works like a _substring_ match. Usage `contains obj, obj`.
+* **contains** - Compares that one object is contained within the other. In the case of a String, it works like a _substring_ match. Usage `contains obj, obj`. In the case of a Map, it will evaluate if the map contains a key.
 
 ## Interpolation
 
