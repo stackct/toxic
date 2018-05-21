@@ -14,6 +14,7 @@ public class TextValidator implements Validator {
     return props?.log ?: this.slog
   }
 
+  @Override
   public void init(def props) {
     this.props = props
     if (props?.containsKey("tvNearChars")) {
@@ -22,13 +23,10 @@ public class TextValidator implements Validator {
     delimiter = props.tvDelimiter ? props.tvDelimiter : delimiter
   }
 
+  @Override
   public void validate(def actualOrig, def expectedOrig, def memory) {
     if (actualOrig == null && expectedOrig == null) {
       return
-    }
-
-    if ((actualOrig == null && expectedOrig != null) || (actualOrig != null && expectedOrig == null)) {
-      throw new ValidationException("Content mismatch; actual=${actualOrig}; expected=${expectedOrig}")
     }
 
     // "clean-up" text before comparison

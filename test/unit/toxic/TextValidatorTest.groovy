@@ -55,6 +55,13 @@ public class TextValidatorTest {
   }
 
   @Test
+  public void testInitWithNearCharOverride() {
+    TextValidator textValidator = new TextValidator()
+    textValidator.init([tvNearChars: 20])
+    assert 20 == textValidator.nearChars
+  }
+
+  @Test
   public void testValidatorXml() {
     def xv = new TextValidator()
     def tp = new ToxicProperties()
@@ -176,6 +183,20 @@ Content-Length: 30
   }
 
   @Test
+  void testContentMismatchExceptionDuringVariableAssignment() {
+    TextValidator textValidator = new TextValidator()
+    def tp = new ToxicProperties()
+    tp.foo = 'bar'
+    try {
+      textValidator.validate("foo", "%=bar=foo%", tp)
+      fail('Expected ContentMismatchException')
+    }
+    catch(ContentMismatchException e) {
+      assert 'Content mismatch; expected=bar; actual=foo' == e.message
+    }
+  }
+
+  @Test
   public void testValidateCount() {
     def xv = new TextValidator()
     def tp = new ToxicProperties()
@@ -228,26 +249,11 @@ Content-Length: 30
   }
 
   @Test
-  public void testValidatorNull() {
-    def xv = new TextValidator()
+  public void testWithNullActualAndNullOriginal() {
     def tp = new ToxicProperties()
-    def test = "Testing 20%#1%00"
-
-    try {
-      xv.validate(null, test, tp)
-      fail("Expected ValidationException")
-    } catch (ValidationException ex) { 
-      assert "Content mismatch; actual=null; expected=${test}" == ex.message
-    }
-
-    try {
-      xv.validate(test, null, tp)
-      fail("Expected ValidationException")
-    } catch (ValidationException ex) { 
-      assert "Content mismatch; actual=${test}; expected=null" == ex.message
-    }
-
-    xv.validate(null, null, tp)
+    TextValidator textValidator = new TextValidator()
+    textValidator.validate(null, null, tp)
+    // If no exception is thrown, test passes
   }
 
   @Test
@@ -348,5 +354,10 @@ Content-Length: 30
     xv.validate(actual, expected, tp)
 
     // If no validation exception is thrown, test passes
+  }
+
+  @Test
+  void testIsVariableAssignmentWithNullObject() {
+    assert false == new TextValidator().isVariableAssignment(null)
   }
 }

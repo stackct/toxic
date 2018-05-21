@@ -1,6 +1,5 @@
 package toxic
 
-import org.junit.Ignore
 import org.junit.Test
 import static org.junit.Assert.fail
 
@@ -135,7 +134,6 @@ class JsonValidatorTest {
   }
 
   @Test
-  @Ignore("TODO: not yet supported")
   void should_succeed_with_null_variable_assignment() {
     def props = [:] as ToxicProperties
     def val = new JsonValidator()
@@ -149,7 +147,6 @@ class JsonValidatorTest {
   }
 
   @Test
-  @Ignore("TODO: not yet supported")
   void should_succeed_with_empty_string_variable_assignment() {
     String expected = '{ "foo": "%=bar%" }'
     String actual   = '{ "foo": "" }'
@@ -161,7 +158,6 @@ class JsonValidatorTest {
   }
 
   @Test
-  // @Ignore("TODO: not yet supported")
   void should_succeed_with_string_null_variable_assignment() {
     String expected = '{ "foo": "%=bar%" }'
     String actual   = '{ "foo": "null" }'
