@@ -2,6 +2,7 @@ package toxic
 
 import groovy.json.JsonException
 import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
 
 class JsonValidator extends HttpValidator {
   @Override
@@ -71,7 +72,10 @@ class JsonValidator extends HttpValidator {
   }
 
   void validate(def expected, def actual, def failures, String path, def memory) {
-    if(skipValidation(expected)) { return }
+    if(skipValidation(expected)) { 
+      return 
+    }
+
     if(isVariableAssignment(expected)) {
       try {
         performVariableAssignment(expected, actual, memory)
@@ -85,11 +89,35 @@ class JsonValidator extends HttpValidator {
     }
   }
 
+  /* Any unquoted variables, such as map or list references, will be replaced 
+     with the String representation of the JSON structure
+  */
+  String stringify(String json, ToxicProperties props) {
+    json.replaceAll(/(:\s*[^"])(%)([^%]+)(%)([^"])/) { all, begin, openDelimiter, match, closeDelimiter, end ->
+      def value = props[match]
+      "${begin}${JsonOutput.toJson(value)}${end}"
+    }
+  }
+
+  /* Quote any unquoted response assignment variables so contents can be correctly 
+     parsed as JSON
+  */
+  String normalize(String s, ToxicProperties props) {
+    s.replaceAll(/(:\s*[^"])(%=[^%]+%)([^"])/) { all, begin, match, end ->
+      "${begin}\"${match}\"${end}"
+    }
+  }
+
   boolean hasContent(expected, actual) {
     expected != null || actual != null
   }
 
   String mismatchFailure(def expected, def actual, String path) {
     "Content mismatch; path=${path}; expected=${expected}; actual=${actual}\n"
+  }
+
+  @Override
+  protected def nullHandler(def value) {
+    return value
   }
 }

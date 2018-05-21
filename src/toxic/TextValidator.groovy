@@ -184,6 +184,10 @@ public class TextValidator implements Validator {
       log.debug("Saving text snippet into memory; snippet=" + content + "; variable=" + varName)
     }
 
-    memory[varName] = content
+    memory[varName] = nullHandler(content)
+  }
+
+  protected def nullHandler(def value) {
+    return (value == null) ? "" : value
   }
 }

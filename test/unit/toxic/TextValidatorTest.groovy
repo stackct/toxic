@@ -327,29 +327,26 @@ Content-Length: 30
   }
 
   @Test
-  @Ignore("not yet supported")
   void testEmptyStringVariableAssignment() {
     def xv = new TextValidator()
     def tp = new ToxicProperties()
 
-    String expected = '%=value%'
-    String actual   = ''
+    String expected = "%=value%"
+    String actual   = ""
     xv.validate(actual, expected, tp)
 
-    assert tp.value == ''
+    assert tp.value == ""
   }
 
   @Test
-  @Ignore("not yet supported")
   void testEmptyStringSkipsValidation() {
     def xv = new TextValidator()
     def tp = new ToxicProperties()
 
-    String expected = '%%'
-    String actual   = ''
+    String expected = "%%"
+    String actual   = ""
     xv.validate(actual, expected, tp)
 
     // If no validation exception is thrown, test passes
   }
 }
-
