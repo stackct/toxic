@@ -9,6 +9,27 @@ public class TextValidator implements Validator {
   def props
   def nearChars = 10
   def delimiter = "%"
+  def skipToken = [
+      (skipMatchToken): { StringIterator exp, StringIterator act, String count ->
+        exp.grab(skipCountToInteger(count, exp)).with { terminator ->
+          act.skipUntil(terminator)
+          act.skip(terminator)
+        }
+      },
+      (skipAheadToken): { StringIterator exp, StringIterator act, String count ->
+        act.skip(skipCountToInteger(count, exp))
+      },
+      (skipRemainingToken): { StringIterator exp, StringIterator act, String _ ->
+        act.skip(act.remaining)
+      }
+  ]
+
+  private Integer skipCountToInteger(String count, StringIterator exp) {
+    if (!count) {
+      throw new ValidationException("Unterminated variable definition in expected response; expected=" + exp.peekAround(nearChars))
+    }
+    return new Integer(count)
+  }
 
   protected Logger getLog() {
     return props?.log ?: this.slog
@@ -51,29 +72,17 @@ public class TextValidator implements Validator {
         exp.skip(tag)
         act.skipUntil(exp.peek())
       }
-      else if (isSkipMatch(tag) || isSkipAhead(tag)) {
+      else if (skipToken.containsKey(tag)) {
         exp.skip(tag)
-
-        String count = exp.grabUntil(delimiter)
-        if (!count) {
-          throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
-        }
-
+        String remainder = exp.grabUntil(delimiter)
         exp.skip(delimiter)
-
-        if (isSkipMatch(tag)) {
-          exp.grab(new Integer(count)).with { terminator ->
-          act.skipUntil(terminator)
-          act.skip(terminator)
-          }
-        } else {
-          act.skip(new Integer(count))
-        }
-      } else if (isVariableAssignment(tag)) {
+        skipToken[tag](exp, act, remainder)
+      }
+      else if (isVariableAssignment(tag)) {
         exp.skip(tag)
 
         String varName = exp.grabUntil(delimiter)
-        
+
         if (!varName) {
           throw new ValidationException("Unterminated variable definition in expected response; expected=" + expectedOrig)
         }
@@ -144,6 +153,10 @@ public class TextValidator implements Validator {
     "${delimiter}>"
   }
 
+  String getSkipRemainingToken() {
+    "${delimiter}*"
+  }
+
   boolean skipValidation(def value) {
     value instanceof String && value.trim() == "${delimiter}${delimiter}"
   }
@@ -154,14 +167,6 @@ public class TextValidator implements Validator {
 
   boolean isVariableAssignment(String s) {
     s.take(assignmentToken.size()) == assignmentToken
-  }
-
-  boolean isSkipAhead(String s) {
-    s == skipAheadToken
-  }
-
-  boolean isSkipMatch(String s) {
-    s == skipMatchToken
   }
 
   void performVariableAssignment(String varName, def content, def memory) {

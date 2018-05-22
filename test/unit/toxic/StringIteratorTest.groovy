@@ -136,6 +136,10 @@ class StringIteratorTest {
     assert si.remaining == null
     assert si.grabUntil(null) == null
     assert si.grabUntil('foo') == null
+
+    si = new StringIterator('%')
+    assert '' == si.grabUntil('%')
+    assert si.remaining == '%'
   }
 
   @Test
