@@ -24,7 +24,7 @@ public class TextValidator implements Validator {
       }
   ]
 
-  private Integer skipCountToInteger(String count, StringIterator exp) {
+  protected Integer skipCountToInteger(String count, StringIterator exp) {
     if (!count) {
       throw new ValidationException("Unterminated variable definition in expected response; expected=" + exp.peekAround(nearChars))
     }
