@@ -388,6 +388,29 @@ class TestCaseHandlerTest {
       assert 'bar' == props.step.step1.foo
     }
   }
+
+  @Test
+  void should_not_override_existing_property_with_reusing_properties() {
+    DirItem dirItem = new DirItem('something.test')
+    Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo'])
+    def functions = ['fn1': fn]
+
+    def input = """
+      test "test1" {
+        description "test1 description"
+        step "fn1", "step1", {
+            foo 'bar'
+        }
+      }
+    """
+    mockFile(input) { file ->
+      def props = [functions: functions, foo: 'foobar']
+      assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      TestCaseHandler.stepComplete(props)
+      assert 'bar' == props.step.step1.foo
+      assert 'foobar' == props.foo
+    }
+  }
   
   @Test
   void should_copy_interpolated_values_to_memory_map() {

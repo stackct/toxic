@@ -117,7 +117,6 @@ class TestCaseHandler extends LinkHandler {
   private static void removeWithRestore(key, props, backup) {
     if (backup.containsKey(key)) {
       props[key] = backup[key]
-      backup.remove(key)
     } else {
       props.remove(key)
     }
