@@ -94,9 +94,9 @@ class JsonValidator extends HttpValidator {
   */
   static String normalizeRequest(String s, ToxicProperties props) {
     def regexes = []
-    // Match from a newline, any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
+    // Match from a newline, any number of spaces, until an unquoted % is found, capture a variable until a close percent without a trailing quote
     regexes << /((?<=\n)\s*[^"])(%)([^%]+)(%)([^"])/
-    // Match a colon followed by any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
+    // Match a colon followed by any number of spaces, until an unquoted % is found, capture a variable until a close percent without a trailing quote
     regexes << /(:\s*[^"])(%)([^%]+)(%)([^"])/
 
     regexes.each {
@@ -114,8 +114,10 @@ class JsonValidator extends HttpValidator {
     def regexes = []
     // Match from a newline, any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
     regexes << /((?<=\n)\s*[^"])(%[^%]*%)([^"])/
-    // Match a colon followed by any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
-    regexes << /(:\s*[^"])(%[^%]*%)([^"])/
+    // Match a colon followed by any number of spaces, until an unquoted % is found, capture a variable until a close percent without a trailing quote
+    regexes << /(:\s*[^"])(%=[^%]+%)([^"])/
+    // Match a colon followed by any number of spaces, until an unquoted %% is found
+    regexes << /(:\s*[^"])(%%)([^"])/
 
     regexes.each {
       s = s.replaceAll(it) { all, begin, match, end ->

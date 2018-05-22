@@ -448,6 +448,51 @@ class JsonValidatorTest {
   }
 
   @Test
+  void should_normalize_response_list_of_maps_with_normalized_ignored_value() {
+    String expected = """[
+  { "foo1": "bar1"},
+  "%=foo2%",
+  { "foo3": "%%"}
+]"""
+    String actual   = """[
+  { "foo1": "bar1"},
+  %=foo2%,
+  { "foo3": "%%"}
+]"""
+    assert expected == JsonValidator.normalizeResponse(actual)
+  }
+
+  @Test
+  void should_normalize_response_list_of_maps_with_non_normalized_ignored_value() {
+    String expected = """[
+  { "foo1": "bar1"},
+  "%=foo2%",
+  { "foo3": "%%"}
+]"""
+    String actual   = """[
+  { "foo1": "bar1"},
+  %=foo2%,
+  { "foo3": %%}
+]"""
+    assert expected == JsonValidator.normalizeResponse(actual)
+  }
+
+  @Test
+  void should_normalize_ignored_structure_non_normalized_ignored_value() {
+    String expected = """[
+  { "foo1": "bar1"},
+  "%foo2%",
+  { "foo3": "%%"}
+]"""
+    String actual   = """[
+  { "foo1": "bar1"},
+  %foo2%,
+  { "foo3": %%}
+]"""
+    assert expected == JsonValidator.normalizeResponse(actual)
+  }
+
+  @Test
   void should_normalize_response_with_ignored_structure() {
     String expected = """{
   "foo": "bar",
@@ -456,6 +501,21 @@ class JsonValidatorTest {
     String actual   = """{
   "foo": "bar",
   "baz": %%
+}"""
+    assert expected == JsonValidator.normalizeResponse(actual)
+  }
+
+  @Test
+  void should_normalize_response_with_ignored_structure_and_normalized_string() {
+    String expected = """{
+  "foo": "bar",
+  "baz": "%%",
+  "foobaz": "%%"
+}"""
+    String actual   = """{
+  "foo": "bar",
+  "baz": %%,
+  "foobaz": "%%"
 }"""
     assert expected == JsonValidator.normalizeResponse(actual)
   }
