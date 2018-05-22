@@ -138,7 +138,7 @@ class JsonValidatorTest {
     def props = [:] as ToxicProperties
     def val = new JsonValidator()
 
-    String expected = val.normalize('{ "foo": %=bar% }')
+    String expected = val.normalizeResponse('{ "foo": %=bar% }')
     String actual   = '{ "foo": null }'
 
     expectSuccess(expected, actual, props)
@@ -182,7 +182,7 @@ class JsonValidatorTest {
 ]"""
 
     def props = new ToxicProperties()
-    expectSuccess(JsonValidator.normalize(expected), actual, props)
+    expectSuccess(JsonValidator.normalizeResponse(expected), actual, props)
 
     assert props.foo2 == [foo2: 'bar2']
   }
@@ -277,6 +277,17 @@ class JsonValidatorTest {
     String actual = """{ "topic": "foobar2" }"""
     String message = 'Content mismatch; path=/topic; expected=foo%%1; actual=foobar2\n'
     expectValidationFailure(expected, actual, message)
+  }
+
+  @Test
+  void should_succeed_with_skip_variable() {
+    def props = [:] as ToxicProperties
+    def val = new JsonValidator()
+
+    String expected = val.normalizeResponse('{ "foo": %% }')
+    String actual   = '{ "foo": [] }'
+
+    expectSuccess(expected, actual, props)
   }
 
   @Test
@@ -393,7 +404,7 @@ class JsonValidatorTest {
   }
 
   @Test
-  void should_stringify_list_of_maps() {
+  void should_normalize_request_list_of_maps() {
     String expected = """[
   {"foo1":"bar1"},
   {"foo2":"bar2"},
@@ -406,11 +417,11 @@ class JsonValidatorTest {
 ]"""
     ToxicProperties props = new ToxicProperties()
     props.foo2 = [foo2: 'bar2']
-    assert expected == JsonValidator.stringify(actual, props)
+    assert expected == JsonValidator.normalizeRequest(actual, props)
   }
 
   @Test
-  void should_normalize_list_of_maps() {
+  void should_normalize_response_list_of_maps() {
     String expected = """[
   { "foo1": "bar1"},
   "%=foo2%",
@@ -421,7 +432,7 @@ class JsonValidatorTest {
   %=foo2%,
   { "foo3": "bar3"}
 ]"""
-    assert expected == JsonValidator.normalize(actual)
+    assert expected == JsonValidator.normalizeResponse(actual)
   }
 
   def expectSuccess = { String expected, String actual, def props=[:] ->

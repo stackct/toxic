@@ -9,14 +9,14 @@ class JsonTask extends HttpTask {
 
   @Override
   def prepare(def request) {
-    request = validator.stringify(request, props)
+    request = validator.normalizeRequest(request, props)
     super.prepare(request)
   }
 
   @Override
   String lookupExpectedResponse(File file) {
     String responseJson = super.lookupExpectedResponse(file)
-    validator.normalize(responseJson)
+    validator.normalizeResponse(responseJson)
   }
 
   @Override
