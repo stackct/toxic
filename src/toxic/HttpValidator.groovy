@@ -36,7 +36,7 @@ public class HttpValidator extends TextValidator {
     s.trim().eachLine {
       result += it.trim() + "\n"
     }
-    return result
+    return result.trim()
   }
 
   /**

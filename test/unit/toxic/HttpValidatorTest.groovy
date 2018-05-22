@@ -69,4 +69,25 @@ Text Body
 
     httpValidator.validate(actual, expected, tp)
   }
+
+  @Test
+  public void testValidatorSkipsRemaining() {
+    def httpValidator = new HttpValidator()
+    def tp = new ToxicProperties()
+    httpValidator.init(tp)
+
+    def expected = 'HTTP/1.1 200 %*%'
+
+    def actual = """HTTP/1.1 200 OK
+Date: Mon, 23 May 2011 03:34:46 GMT+00:00
+Content-Language: en-US
+Content-Length: 705
+Content-Type: text/plain
+Connection: close
+
+Text Body
+"""
+
+    httpValidator.validate(actual, expected, tp)
+  }
 }
