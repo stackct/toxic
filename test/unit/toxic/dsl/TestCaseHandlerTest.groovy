@@ -366,6 +366,28 @@ class TestCaseHandlerTest {
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
     }
   }
+
+  @Test
+  void should_allow_input_variables_to_be_assigned_to_output_variables() {
+    DirItem dirItem = new DirItem('something.test')
+    Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo'])
+    def functions = ['fn1': fn]
+
+    def input = """
+      test "test1" {
+        description "test1 description"
+        step "fn1", "step1", {
+            foo 'bar'
+        }
+      }
+    """
+    mockFile(input) { file ->
+      def props = [functions: functions]
+      assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      TestCaseHandler.stepComplete(props)
+      assert 'bar' == props.step.step1.foo
+    }
+  }
   
   @Test
   void should_copy_interpolated_values_to_memory_map() {
