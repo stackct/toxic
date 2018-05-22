@@ -318,6 +318,12 @@ Additionally, a single test can be run by specifying the `-name=TEST_NAME` argum
 toxic -doDir=toxic/tests -test=MyTest
 ```
 
+If the single test name has spaces, escape with single and double quotes:
+
+```plain
+toxic -doDir=toxic/tests -test='"my pickle test"'
+```
+
 ## What's Next
 
 * More matchers
