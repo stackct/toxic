@@ -448,7 +448,20 @@ class JsonValidatorTest {
   }
 
   @Test
-  void should_normalize_response_with_multiple_ignore_all_on_single_line() {
+  void should_normalize_response_with_ignored_structure() {
+    String expected = """{
+  "foo": "bar",
+  "baz": "%%"
+}"""
+    String actual   = """{
+  "foo": "bar",
+  "baz": %%
+}"""
+    assert expected == JsonValidator.normalizeResponse(actual)
+  }
+
+  @Test
+  void should_not_normalize_response_with_multiple_ignore_all_on_single_line() {
     String expected = """{
   "foo": "bar",
   "baz": "%%//%%/path/to/somewhere"
@@ -457,7 +470,7 @@ class JsonValidatorTest {
   }
 
   @Test
-  void should_normalize_response_with_multiple_ignore_all_on_single_line_with_spaces() {
+  void should_not_normalize_response_with_multiple_ignore_all_on_single_line_with_spaces() {
     String expected = """{
   "foo": "bar",
   "baz": "   %%  %%      "
