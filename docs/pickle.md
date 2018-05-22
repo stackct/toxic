@@ -326,11 +326,5 @@ toxic -doDir=toxic/tests -test='"my pickle test"'
 
 ## What's Next
 
-* More matchers
-   * `notcontains`
-   * `len`
-   * `null`
-   * `notnull`
-* Normalize `step` declaration
 * Test `variables`
-* Normalize list argument values
+* Higher order function composition
