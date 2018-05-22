@@ -63,7 +63,7 @@ public class StringIterator {
   String grabUntil(String match) {
     int curPos = this.idx
     
-    if (skipUntil(match)) {
+    if (skipUntil(match) && curPos != this.idx) {
       return this.value[curPos..this.idx-1]
     }
 

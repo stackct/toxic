@@ -207,6 +207,14 @@ By default `%%` skips forward to the next single character match. For an HTTP st
 </orderReceipt>
 ```
 
+#### Skip Remaining
+
+Skip the remaining content.
+
+```
+%*%
+```
+
 #### HTTP Headers
 
 HTTP method and headers can optionally be specified in the HTTP request and response text. If specified in the request, then any dynamically generated method and headers will be omitted. (Dynamically generated headers are specified via the `xml.header.<1-9>` properties). If specified in the expected HTTP response, then the entire server response will be text matched. Otherwise, just the body of the HTTP response will be compared.

@@ -230,6 +230,7 @@ Content-Length: 30
       xv.validate(actual, expected, tp)
       assert false : "Expected ValidatorException"
     } catch (ValidationException ve) {
+      assert 'Unterminated variable definition in expected response; expected=esting %#1' == ve.message
     }
   }
 
@@ -330,6 +331,21 @@ Content-Length: 30
     xv.validate(actual, expected, tp)
 
     assert tp.foo == '42'
+  }
+
+  @Test
+  void testVariableAssignmentWithSkipRemaining() {
+    def xv = new TextValidator()
+    def tp = new ToxicProperties()
+
+    String expected = """foo1=%=foo1%
+%*%"""
+    String actual   = """foo1=bar1
+foo2=bar2
+foo3=bar3"""
+    xv.validate(actual, expected, tp)
+
+    assert tp.foo1 == 'bar1'
   }
 
   @Test
