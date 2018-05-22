@@ -421,6 +421,18 @@ class JsonValidatorTest {
   }
 
   @Test
+  void should_not_normalize_request_with_surrounding_spaces() {
+    String expected = """[
+  {"foo1":"bar1"},
+  {"foo2":"  %foo2%  "},
+  {"foo3":"bar3"}
+]"""
+    ToxicProperties props = new ToxicProperties()
+    props.foo2 = [foo2: 'bar2']
+    assert expected == JsonValidator.normalizeRequest(expected, props)
+  }
+
+  @Test
   void should_normalize_response_list_of_maps() {
     String expected = """[
   { "foo1": "bar1"},
@@ -433,6 +445,24 @@ class JsonValidatorTest {
   { "foo3": "bar3"}
 ]"""
     assert expected == JsonValidator.normalizeResponse(actual)
+  }
+
+  @Test
+  void should_normalize_response_with_multiple_ignore_all_on_single_line() {
+    String expected = """{
+  "foo": "bar",
+  "baz": "%%//%%/path/to/somewhere"
+}"""
+    assert expected == JsonValidator.normalizeResponse(expected)
+  }
+
+  @Test
+  void should_normalize_response_with_multiple_ignore_all_on_single_line_with_spaces() {
+    String expected = """{
+  "foo": "bar",
+  "baz": "   %%  %%      "
+}"""
+    assert expected == JsonValidator.normalizeResponse(expected)
   }
 
   def expectSuccess = { String expected, String actual, def props=[:] ->
