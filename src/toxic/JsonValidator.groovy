@@ -91,19 +91,20 @@ class JsonValidator extends HttpValidator {
 
   /* Any unquoted variables, such as map or list references, will be replaced 
      with the String representation of the JSON structure.
-
-     (?<!")%(?!")  - Match a percent sign that does not have a double quote on either side
-                   - Matches:
-                      %bar%
-                   - Does not match:
-                     "%bar%"
-                     r%"
-     ([^%]+)%      - Capture any and all characters until a percent is found
   */
-  static String normalizeRequest(String json, ToxicProperties props) {
-    json.replaceAll(/(?<!")%(?!")([^%]+)%/) { match, variable ->
-      JsonOutput.toJson(props[variable])
+  static String normalizeRequest(String s, ToxicProperties props) {
+    def regexes = []
+    // Match from a newline, any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
+    regexes << /((?<=\n)\s*[^"])(%)([^%]*)(%)([^"])/
+    // Match a colon followed by any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
+    regexes << /(:\s*[^"])(%)([^%]+)(%)([^"])/
+
+    regexes.each {
+      s = s.replaceAll(it) { all, begin, openDelimiter, variable, closeDelimiter, end ->
+        "${begin}${JsonOutput.toJson(props[variable])}${end}"
+      }
     }
+    return s
   }
 
   /* Quote any unquoted response assignment variables so contents can be correctly 
@@ -119,12 +120,18 @@ class JsonValidator extends HttpValidator {
      ([^%]+)(%)      - Capture any and all characters until a percent is found and capture the endDelimiter as a variable
   */
   static String normalizeResponse(String s) {
-    s = s.replaceAll(/(?<!")(%%)(?!")/) { match, variable ->
-      "\"${variable}\""
+    def regexes = []
+    // Match from a newline, any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
+    regexes << /((?<=\n)\s*[^"])(%[^%]*%)([^"])/
+    // Match a colon followed by any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
+    regexes << /(:\s*[^"])(%[^%]*%)([^"])/
+
+    regexes.each {
+      s = s.replaceAll(it) { all, begin, match, end ->
+        "${begin}\"${match}\"${end}"
+      }
     }
-    s.replaceAll(/(?<!")(%=)(?!")([^%]+)(%)/) { match, startDelimiter, variable, endDelimiter ->
-      "\"${startDelimiter}${variable}${endDelimiter}\""
-    }
+    return s
   }
 
   boolean hasContent(expected, actual) {
