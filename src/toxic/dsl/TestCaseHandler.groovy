@@ -57,8 +57,8 @@ class TestCaseHandler extends LinkHandler {
   }
 
   static void stepComplete(props) {
-    removeStepArgsFromMemory(props)
     moveOutputResultsToStep(props)
+    removeStepArgsFromMemory(props)
     props.stepIndex++
     copyStepArgsToMemory(props)
   }
