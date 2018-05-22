@@ -100,7 +100,7 @@ class JsonValidator extends HttpValidator {
                      r%"
      ([^%]+)%      - Capture any and all characters until a percent is found
   */
-  static String stringify(String json, ToxicProperties props) {
+  static String normalizeRequest(String json, ToxicProperties props) {
     json.replaceAll(/(?<!")%(?!")([^%]+)%/) { match, variable ->
       JsonOutput.toJson(props[variable])
     }
@@ -109,6 +109,7 @@ class JsonValidator extends HttpValidator {
   /* Quote any unquoted response assignment variables so contents can be correctly 
      parsed as JSON
 
+     (?<!")(%%)(?!") - Match a double percent that does not have a double quote on either side
      (?<!")(%=)(?!") - Match a percent and equal sign that does not have a double quote on either side and capture as startDelimiter
                      - Matches:
                          %=bar%
@@ -117,7 +118,10 @@ class JsonValidator extends HttpValidator {
                          r%"
      ([^%]+)(%)      - Capture any and all characters until a percent is found and capture the endDelimiter as a variable
   */
-  static String normalize(String s) {
+  static String normalizeResponse(String s) {
+    s = s.replaceAll(/(?<!")(%%)(?!")/) { match, variable ->
+      "\"${variable}\""
+    }
     s.replaceAll(/(?<!")(%=)(?!")([^%]+)(%)/) { match, startDelimiter, variable, endDelimiter ->
       "\"${startDelimiter}${variable}${endDelimiter}\""
     }
