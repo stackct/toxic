@@ -95,7 +95,7 @@ class JsonValidator extends HttpValidator {
   static String normalizeRequest(String s, ToxicProperties props) {
     def regexes = []
     // Match from a newline, any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
-    regexes << /((?<=\n)\s*[^"])(%)([^%]*)(%)([^"])/
+    regexes << /((?<=\n)\s*[^"])(%)([^%]+)(%)([^"])/
     // Match a colon followed by any number of spaces, until an unquoted % is found, to a close percent without a trailing quote
     regexes << /(:\s*[^"])(%)([^%]+)(%)([^"])/
 
@@ -107,17 +107,8 @@ class JsonValidator extends HttpValidator {
     return s
   }
 
-  /* Quote any unquoted response assignment variables so contents can be correctly 
+  /* Quote any unquoted response assignment and ignore variables so contents can be correctly
      parsed as JSON
-
-     (?<!")(%%)(?!") - Match a double percent that does not have a double quote on either side
-     (?<!")(%=)(?!") - Match a percent and equal sign that does not have a double quote on either side and capture as startDelimiter
-                     - Matches:
-                         %=bar%
-                     - Does not match:
-                         "%=bar%"
-                         r%"
-     ([^%]+)(%)      - Capture any and all characters until a percent is found and capture the endDelimiter as a variable
   */
   static String normalizeResponse(String s) {
     def regexes = []
