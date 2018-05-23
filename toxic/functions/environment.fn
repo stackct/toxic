@@ -22,6 +22,7 @@ function "KubePortForward" {
   arg "namespace"
   arg "name"
   arg "port"
+  arg "enabled"
 }
 
 function "GetServiceUrl" {

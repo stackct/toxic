@@ -1,0 +1,1 @@
+assert memory.kubePortForward()
