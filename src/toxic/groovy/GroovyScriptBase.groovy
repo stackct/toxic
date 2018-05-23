@@ -161,7 +161,8 @@ abstract class GroovyScriptBase extends Script {
     env << envVars
 
     logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmdAndArgs.join(' '), memory['sanitize.terms'] ?: [])}")
-    execExitCode = monitorProc(logger, pb.start(), logOutput, timeoutSecs)
+    memory.lastStartedProc = pb.start()
+    execExitCode = monitorProc(logger, memory.lastStartedProc, logOutput, timeoutSecs)
     return execExitCode
   }
 

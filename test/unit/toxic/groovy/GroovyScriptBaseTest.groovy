@@ -16,6 +16,7 @@ public class GroovyScriptBaseTest {
   
   @Before
   void before() {
+    memory.clear()
     compiler = new CompilerConfiguration()
     compiler.setScriptBaseClass("toxic.groovy.GroovyScriptBase")
 
@@ -101,9 +102,11 @@ public class GroovyScriptBaseTest {
 
   @Test
   public void testExecWithEnv() {
+    assert !memory.lastStartedProc
     assert 0 == shell.evaluate("execWithEnv(['ls'], [:])")
     assert "" != shell.out
     assert 0 == shell.err.length()
+    assert memory.lastStartedProc instanceof Process
   }
 
   @Test
