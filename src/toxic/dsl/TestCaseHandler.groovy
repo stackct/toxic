@@ -16,6 +16,7 @@ class TestCaseHandler extends LinkHandler {
     props.stepIndex = 0
     props.testCases = TestCase.parse(file.text).findAll { shouldInclude(it) }
     props.step = new StepOutputResolver(props)
+    props.var = new VariableResolver(props)
     props.backup = props.clone()
 
     props.testCases.each { testCase ->
