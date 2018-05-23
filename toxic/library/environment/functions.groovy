@@ -17,32 +17,35 @@ memory.deleteNamespace = { ->
 }
 
 memory.kubePortForward = { ->
-  memory.lastStartedProc = null
-  def exitCode = null
-  // Spawn the port forward process in a separate thread, since this process will block.
-  def thread = Thread.startDaemon("portfwd-${memory['name']}") {
-    exitCode = execWithEnv([kubectl, '--namespace', memory['namespace'], 'port-forward', memory['name'], memory['port']])
+  def running = false
+  if (memory.portForwardEnabled?.toString().equalsIgnoreCase("true")) {
+    memory.lastStartedProc = null
+    def exitCode = null
+    // Spawn the port forward process in a separate thread, since this process will block.
+    def thread = Thread.startDaemon("portfwd-${memory['name']}") {
+      exitCode = execWithEnv([kubectl, '--namespace', memory['namespace'], 'port-forward', memory['name'], memory['port']])
+    }
+
+    // Wait for the process to start in the new thread (should take just a few milliseconds)
+    while (!memory.lastStartedProc && exitCode == null) {
+      sleep(100)
+    }
+
+    // Grab a copy of the Process object for use in the shutdown hook
+    // Note that this could be clobbered by another thread if multiple threads are trying to 
+    // exec multiple process concurrently. Since this function is expected to be performed
+    // during the test setup phase, there is not an expectation of parallel activity during
+    // port forward construction.
+    def proc = memory.lastStartedProc
+
+    // When the JVM exits, destroy the port forward process.
+    thread.addShutdownHook() {
+      proc?.destroy()
+    }
+
+    // If this port forward succeeded then the proc will not be null and the exitCode will still be null.
+    running = proc != null && exitCode == null
   }
-
-  // Wait for the process to start in the new thread (should take just a few milliseconds)
-  while (!memory.lastStartedProc && exitCode == null) {
-    sleep(100)
-  }
-
-  // Grab a copy of the Process object for use in the shutdown hook
-  // Note that this could be clobbered by another thread if multiple threads are trying to 
-  // exec multiple process concurrently. Since this function is expected to be performed
-  // during the test setup phase, there is not an expectation of parallel activity during
-  // port forward construction.
-  def proc = memory.lastStartedProc
-
-  // When the JVM exits, destroy the port forward process.
-  thread.addShutdownHook() {
-    proc?.destroy()
-  }
-
-  // If this port forward succeeded then the proc will not be null and the exitCode will still be null.
-  def running = proc != null && exitCode == null
   return running
 }
 
