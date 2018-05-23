@@ -15,11 +15,15 @@ class TestCaseTest {
   }
 
   @Test
-  void should_parse_a_simple_test_case() {
+  void should_parse_a_complete_test_case() {
     def input = { ->
       test "foo-test", {
         description "Description for foo"
         tags 'foo', 'bar'
+
+        declare {
+          ying "yang"
+        }
 
         step "fn-dummy", "foo-step-1", {
           argument1   1
@@ -37,6 +41,7 @@ class TestCaseTest {
       assert tests[0].name == 'foo-test'
       assert tests[0].description == 'Description for foo'
       assert tests[0].tags == ["foo", "bar"] as Set
+      assert tests[0].vars == [ying:'yang']
       assert tests[0].steps.size() == 1
       tests[0].steps[0].with { step ->
         assert step.name == 'foo-step-1'

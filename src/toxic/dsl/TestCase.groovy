@@ -3,6 +3,7 @@ package toxic.dsl
 class TestCase extends Parser {
   String name
   String description
+  Map<String,Object> vars = [:]
   Set<String> tags = [] as Set
   List<Step> steps = []
   List<String> assertions = []
@@ -28,6 +29,15 @@ class TestCase extends Parser {
     tags.each { tag ->
       this.tags << tag.trim()
     }
+  }
+
+  def declare(Closure closure) {
+    def v = new Variable()
+    closure.setResolveStrategy(Closure.DELEGATE_FIRST)
+    closure.delegate = v
+    closure()
+    
+    vars = v.vars
   }
 
   def step(String function, String name, Closure closure) {

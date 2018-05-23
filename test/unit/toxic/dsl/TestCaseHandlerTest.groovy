@@ -478,11 +478,17 @@ class TestCaseHandlerTest {
     def input = """
       test "test1" {
         description "test1 description"
-        step "fn_1", "one_line_item", {
-            arg1 1
+
+        declare {
+          foo 1
         }
+
+        step "fn_1", "one_line_item", {
+            arg1 "{{ var.foo }}"
+        }
+
         assertions {
-          eq 'ordering', "{{ step.one_line_item.screenName }}"
+          eq 'ordering-1', "{{ step.one_line_item.screenName }}"
           neq 'order', "{{ step.one_line_item.screenName }}"
         }
       }
@@ -492,14 +498,14 @@ class TestCaseHandlerTest {
       Function fn1 = new Function(path: 'fn_1', outputs: ['screenName'], args: [new Arg(name: 'arg1')])
       def props = [functions: ['fn_1': fn1]]
       new TestCaseHandler(dirItem, props).nextFile(file)
-      props.screenName = 'ordering'
+      props.screenName = 'ordering-' + props.arg1
       TestCaseHandler.stepComplete(props)
       TransientFile transientFile = new TestCaseHandler(dirItem, props).nextFile(file)
 
       def expected = new StringBuffer()
-      expected.append("assert 'ordering' == 'ordering' : \"ordering ==  step.one_line_item.screenName \"")
+      expected.append("assert 'ordering-1' == 'ordering-1' : \"ordering-1 ==  step.one_line_item.screenName \"")
       expected.append("\n")
-      expected.append("assert 'order' != 'ordering' : \"order !=  step.one_line_item.screenName \"")
+      expected.append("assert 'order' != 'ordering-1' : \"order !=  step.one_line_item.screenName \"")
       expected.append("\n")
 
       assert expected.toString() == transientFile.text
