@@ -40,13 +40,19 @@ Tests are composed of a collection of a `description`, an optional collection of
 
 * **description** (Required) - A description of the Test
 * **tags** (Optional) - List of tags for optional filtering of tests at runtime
+* **declare** (Optional) - Immutable variables that can be used within the test case as interpolated values
 * **step** (Required) - Named invocation of a Function
    * *arg* (Optional) - Value for input argument as defined by the Function
+* **assertions** (Optional) - Assertions to drive the pass/fail of a test case 
 
 ```groovy
 test "NAME" {
    description   "DESCRIPTION"
    tags          (["TAG1", "TAG2", ...])
+
+   declare {
+     KEY "VALUE"
+   }
 
    step "FUNCTION_NAME", "TASK_NAME_1", {
       ARG1 "VALUE"
@@ -82,7 +88,7 @@ Pickle supports interpolation of values, using `"{{ var }}"` syntax, where `var`
 
 ### Supported Interpolation
 
-* **Step Output** - If a Step invokes a Function that has an output defined, that output can be referenced using `"{{ step.STEP_NAME.OUTPUT }}"`. Step outputs can be used in arg values for other Steps, or in Assertion statements. 
+* **Step Output** - If a Step invokes a Function that has an output defined, that output can be referenced using `"{{ step.STEP_NAME.OUTPUT }}"`. Step outputs and variables can be used in arg values for other Steps, or in Assertion statements. 
 
    For example, given the following Function definitions:
 
@@ -112,8 +118,12 @@ Pickle supports interpolation of values, using `"{{ var }}"` syntax, where `var`
    test "A user can log in" {
       description "Proves that a user can log in"
 
+      declare {
+        user "Fred"
+      }
+
       step "create_user", "fred", {
-         name "Fred"
+         name "{{ var.user }}"
       }
 
       step "login_user", "login", {
@@ -326,5 +336,4 @@ toxic -doDir=toxic/tests -test='"my pickle test"'
 
 ## What's Next
 
-* Test `variables`
 * Higher order function composition
