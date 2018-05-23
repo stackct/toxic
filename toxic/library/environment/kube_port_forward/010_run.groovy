@@ -1,1 +1,1 @@
-assert memory.kubePortForward()
+assert memory.kubePortForward().toString().equalsIgnoreCase(memory.enabled?.toString())
