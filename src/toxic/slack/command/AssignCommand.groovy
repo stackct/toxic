@@ -75,7 +75,7 @@ class AssignCommand extends BaseCommand {
 
     int itemsPerUser = items.size() / users.size()
     int remainingItems = items.size() % users.size()
-    int maxItemsPerUser = itemsPerUser ? itemsPerUser + remainingItems % users.size() : 1
+    int maxItemsPerUser = itemsPerUser ? itemsPerUser + remainingItems : 1
 
     while (!assignments.every { it.value }) {
       def user = users[new Random().nextInt(users.size())]
