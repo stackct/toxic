@@ -150,4 +150,13 @@ class AssignCommandTest extends CommandTest {
 
     assert ['item1', 'item2', 'item3', 'item4'] == command.itemsFromTopic(topic.toString())
   }
+
+  @Test
+  public void should_assign_items_evenly() {
+    def result = ['fred': 0, 'barney': 0, 'wilma': 0]
+    command.assign((1..13), result.keySet().toList()).each { item, user ->
+      result[user]++
+    }
+    assert [4, 4, 5] == result.collect { it.value }.sort()
+  }
 }
