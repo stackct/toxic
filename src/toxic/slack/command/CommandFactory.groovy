@@ -32,6 +32,7 @@ class CommandFactory {
       commands = [
        "about", 
        "ack", 
+       "assign",
        "bounce", 
        "describe", 
        "halt", 
