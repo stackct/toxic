@@ -73,15 +73,15 @@ class AssignCommand extends BaseCommand {
       return assignments
     }
 
-    int itemsPerUser = items.size() / users.size()
-    int remainingItems = items.size() % users.size()
-    int maxItemsPerUser = itemsPerUser ? itemsPerUser + remainingItems : 1
+    int userIndex = 0
+    Random random = new Random(System.nanoTime())
+    Collections.shuffle(users, random)
 
-    while (!assignments.every { it.value }) {
-      def user = users[new Random().nextInt(users.size())]
-
-      if (assignments.count { it.value == user} < maxItemsPerUser) {
-        assignments.find { !it.value }.value = user
+    items.eachWithIndex { item, index ->
+      assignments[item] = users[userIndex++]
+      if((index+1) % users.size() == 0) {
+        userIndex = 0
+        Collections.shuffle(users, random)
       }
     }
 
