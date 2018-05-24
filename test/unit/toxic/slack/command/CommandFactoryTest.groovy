@@ -28,6 +28,7 @@ public class CommandFactoryTest {
     assert CommandFactory.available().sort() == [
       'about',
       'ack',
+      'assign',
       'bounce',
       'describe',
       'halt',
