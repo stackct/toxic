@@ -32,17 +32,18 @@ class AssignCommandTest extends CommandTest {
     def chan = [ id: 'C12345', name: 'lobby', is_group: true, topic:[value:''] ]
     chan.members = bot.rtm.users.collect { it.id}
     chan.topic.value += '%%' + '\n'
-    chan.topic.value += 'foo' + '\n'
-    chan.topic.value += 'bar' + '\n'
+    chan.topic.value += 'foo the thing' + '\n'
+    chan.topic.value += 'bar in the other thing' + '\n'
     chan.topic.value += '%%' + '\n'
     bot.rtm.channels << chan
     bot.metaClass.getChannelInfo = { id -> chan }
 
     def actual = command.handle([], bot, [channel:'C12345'])
+    def lines = []
+    actual.eachLine { line -> lines << line }
 
-    actual.eachLine { line ->
-      assert (line ==~ /(foo|bar): <@(W0000002|W0000003)>/)
-    }
+    assert lines[0] ==~ /Foo the thing          \| <@(W0000002|W0000003)>/
+    assert lines[1] ==~ /Bar in the other thing \| <@(W0000002|W0000003)>/
   }
 
   @Test

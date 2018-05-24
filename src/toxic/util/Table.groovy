@@ -24,10 +24,8 @@ public class Table {
   public static String toTable(Map map) {
     if (map.size() == 0) return ""
 
-    def keyPad = map.collect { k,v -> k.size() }.max()
-    def sb = new StringBuilder()
-    map.each { k,v -> sb.append("${k.capitalize().padRight(keyPad)} | ${v}\n") }
-    sb.toString()
+    int keyPad = map.collect { k,v -> k.size() }.max()
+    map.collect { k,v -> "${k.capitalize().padRight(keyPad)} | ${v}" }.join('\n')
   }
 
   private static void buildHeaders(StringBuilder sb, Map columns) {
