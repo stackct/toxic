@@ -134,6 +134,14 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
     }
     return target
   }
+
+  def getUserStatus(user) {
+    post("users.getPresence", [user:user,token:slackToken])
+  }
+
+  def getChannelInfo(id) {
+    post("channels.info", [channel:id,token:slackToken])?.channel
+  }
   
   def processMessage_message(def msg) {
     def resp = handler.handleCommand(this, msg)
