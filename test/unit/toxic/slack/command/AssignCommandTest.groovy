@@ -40,10 +40,12 @@ class AssignCommandTest extends CommandTest {
 
     def actual = command.handle([], bot, [channel:'C12345'])
     def lines = []
-    actual.eachLine { line -> lines << line }
+    actual.trim().eachLine { line -> lines << line }
 
-    assert lines[0] ==~ /Foo the thing          \| <@(W0000002|W0000003)>/
-    assert lines[1] ==~ /Bar in the other thing \| <@(W0000002|W0000003)>/
+    assert lines[0] == '```'
+    assert lines[1] ==~ /Foo the thing          \| <@(W0000002|W0000003)>/
+    assert lines[2] ==~ /Bar in the other thing \| <@(W0000002|W0000003)>/
+    assert lines[3] == '```'
   }
 
   @Test
