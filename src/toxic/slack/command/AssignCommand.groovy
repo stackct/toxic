@@ -2,6 +2,7 @@ package toxic.slack.command
 
 import org.apache.log4j.*
 import groovy.json.*
+import toxic.util.Table
 
 class AssignCommand extends BaseCommand {
   private static Logger log = Logger.getLogger(this)
@@ -39,7 +40,8 @@ class AssignCommand extends BaseCommand {
     def users = validUsers.collect { u -> "<@${u.id}>" }
 
     // Perform assignment
-    return assign(items, users).findAll{ it.value }.collect { k,v -> "${k}: ${v}" }.join('\n')
+    return Table.toTable(assign(items, users).findAll{ it.value })
+    // return assign(items, users).findAll{ it.value }.collect { k,v -> "${k}: ${v}" }.join('\n')
   }
 
   private boolean shouldBeAssigned(user, status) {

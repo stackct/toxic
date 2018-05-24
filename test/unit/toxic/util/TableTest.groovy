@@ -63,7 +63,7 @@ public class TableTest {
     expected.append("Id  | some-long-value\n")
     expected.append("Foo | 1\n")
     expected.append("Bar | abc\n")
-    expected.append("Baz | something else\n")
+    expected.append("Baz | something else")
 
     use (Table) {
       assert map.toTable() == expected.toString()
