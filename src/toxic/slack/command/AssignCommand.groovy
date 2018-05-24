@@ -67,7 +67,6 @@ class AssignCommand extends BaseCommand {
 
   private Map assign(List items, List users) {
     def assignments = [:]
-    items.each { item -> assignments[item] = null }
 
     if (!items || !users) {
       return assignments
