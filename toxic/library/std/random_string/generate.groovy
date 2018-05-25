@@ -5,4 +5,5 @@ def generate = { n ->
   }
 }
 
-memory['value'] = 'int-' + generate((int)memory['length'])
+memory['prefix'] = memory['prefix'] ?: 'int-'
+memory['value'] = memory['prefix'] + generate((int)memory['length'])
