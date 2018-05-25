@@ -9,8 +9,8 @@ function "ExportProperty" {
   description "Set a global property"
   path "{{ libPath }}/std/property/export"
 
-  arg "key", true
-  arg "value", true
+  arg "key"
+  arg "value"
   arg "force", false
 }
 
@@ -18,7 +18,8 @@ function "RandomString" {
   description "Generates a random alphanumeric string of the given length"
   path "{{ libPath }}/std/random_string"
 
-  arg "length", true
+  arg "length"
+  arg "prefix", false
 
   output "value"
 }
