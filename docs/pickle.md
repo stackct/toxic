@@ -322,7 +322,7 @@ To run only the _essential_ 'user' tests:
 toxic -doDir=toxic/tests -tags=user-essential
 ```
 
-Additionally, a single test can be run by specifying the `-name=TEST_NAME` argument:
+Additionally, a single test can be run by specifying the `-test=TEST_NAME` argument:
 
 ```plain
 toxic -doDir=toxic/tests -test=MyTest
