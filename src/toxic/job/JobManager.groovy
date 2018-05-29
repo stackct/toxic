@@ -208,7 +208,7 @@ public class JobManager implements Runnable,Publisher {
     log.info("Job monitoring halted")
   }
 
-  private def findNewJobs() {
+  private synchronized def findNewJobs() {
     log.trace("Starting to find new jobs")
     def begin = System.currentTimeMillis()
 
@@ -220,7 +220,11 @@ public class JobManager implements Runnable,Publisher {
     Thread.startDaemon("hi-pri-maint") {
       while (running) {
         try {
-          fetchAutomatedJobs().each { name, details -> queueJob(name, details) }
+          synchronized (this) {
+            // This must not progress while findNewJobs() is scanning the same directory.
+            // Otherwise the scanner might pick up a partially written job file.
+            fetchAutomatedJobs().each { name, details -> queueJob(name, details) }
+          }
           fetchCompletedJobs().each { job -> completeJob(job) }
           fetchLatestJobs().each { job -> job.performAutoTriggerActions() }
           refreshProperties()
