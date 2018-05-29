@@ -7,19 +7,20 @@ class FunctionTask extends toxic.Task {
     memory.functions = memory.functions ?: [:]
     if (input instanceof File) {
       Function.parse(input.text).each { fn ->
-        if(memory.functions.containsKey(fn.name)) {
-          throw new IllegalArgumentException("Found duplicated function name; name=${fn.name}")
-        }
-
+        String fnName = fn.name
         def dep = findDep(memory)
         if(dep) {
           fn.path = Step.interpolate(memory+[libPath:new File(dep.value, 'library').canonicalPath], fn.path)
-          memory.functions["${dep.key}.${fn.name}"] = fn
+          fnName = "${dep.key}.${fn.name}"
         }
         else {
           fn.path = Step.interpolate(memory, fn.path)
-          memory.functions[(fn.name)] = fn
         }
+
+        if(memory.functions.containsKey(fnName)) {
+          throw new IllegalArgumentException("Found duplicated function name; name=${fnName}")
+        }
+        memory.functions[(fnName)] = fn
       }
     }
     return null

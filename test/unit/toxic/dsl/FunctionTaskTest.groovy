@@ -111,34 +111,18 @@ class FunctionTaskTest {
 
   @Test
   void should_namespace_external_functions() {
-    File tempDir
-    try {
-      tempDir = File.createTempDir()
-      File depsDir = new File(tempDir, 'deps/toxic')
-      File fnDir = new File(depsDir, 'functions')
-      fnDir.mkdirs()
-      File fnFile = new File(fnDir, 'foo.fn')
-      fnFile.text = """
+    def memory = [libPath: '/tmp/lib']
+    doTaskFromDep("""
         function "foo" {
           path "{{ libPath }}"
           description "foo-description"
-        }"""
+        }""", memory)
 
-      def task = new FunctionTask()
-      task.init(fnFile, [:])
-
-      def memory = [libPath: '/tmp/lib', deps:[toxic:depsDir]]
-      task.doTask(memory)
-
-      assert '/tmp/lib' == memory.libPath
-      assert 1 == memory.functions.size()
-      def actualFunction = memory.functions['toxic.foo']
-      assert 'foo' == actualFunction.name
-      assert new File(depsDir, 'library').canonicalPath == actualFunction.path
-    }
-    finally {
-      tempDir?.deleteDir()
-    }
+    assert '/tmp/lib' == memory.libPath
+    assert 1 == memory.functions.size()
+    def actualFunction = memory.functions['toxic.foo']
+    assert 'foo' == actualFunction.name
+    assert new File(memory.deps.toxic, 'library').canonicalPath == actualFunction.path
   }
 
   @Test
@@ -160,8 +144,56 @@ class FunctionTaskTest {
       fail('Expected IllegalArgumentException')
     }
     catch(IllegalArgumentException e) {
-      assert 'Found duplicated function name; name=foo'
+      assert 'Found duplicated function name; name=foo' == e.message
     }
+  }
+
+  @Test
+  void should_fail_to_add_duplicated_dep_function_by_name() {
+    try {
+      doTaskFromDep("""
+      function "foo" {
+        path "{{ libPath }}"
+        description "foo-description"
+      }
+      function "foo" {
+        path "{{ libPath }}"
+        description "foo-description"
+      }""", [:])
+
+      fail('Expected IllegalArgumentException')
+    }
+    catch(IllegalArgumentException e) {
+      assert 'Found duplicated function name; name=toxic.foo' == e.message
+    }
+  }
+
+  @Test
+  void should_allow_for_local_fn_and_dep_fn_to_share_names() {
+    def memory = [:]
+
+    doTask("""
+      function "foo" {
+        path "/path/to/lib"
+        description "foo-description"
+        arg "arg1", true
+        output "output1"
+      }""", memory)
+
+    doTaskFromDep("""
+      function "foo" {
+        path "{{ libPath }}"
+        description "foo-description"
+      }""", memory)
+
+    assert 2 == memory.functions.size()
+    def localFunction = memory.functions['foo']
+    assert 'foo' == localFunction.name
+    assert '/path/to/lib' == localFunction.path
+
+    def depFunction = memory.functions['toxic.foo']
+    assert 'foo' == depFunction.name
+    assert new File(memory.deps.toxic, 'library').canonicalPath == depFunction.path
   }
 
   def doTask(String fileText, def memory) {
@@ -176,6 +208,27 @@ class FunctionTaskTest {
     }
     finally {
       file?.delete()
+    }
+  }
+
+  def doTaskFromDep(String fileText, def memory) {
+    File tempDir
+    try {
+      tempDir = File.createTempDir()
+      File depsDir = new File(tempDir, 'deps/toxic')
+      File fnDir = new File(depsDir, 'functions')
+      fnDir.mkdirs()
+      File fnFile = new File(fnDir, 'foo.fn')
+      fnFile.text = fileText
+
+      def task = new FunctionTask()
+      task.init(fnFile, [:])
+
+      memory.deps = [toxic:depsDir]
+      task.doTask(memory)
+    }
+    finally {
+      tempDir?.deleteDir()
     }
   }
 }
