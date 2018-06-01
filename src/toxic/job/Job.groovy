@@ -271,9 +271,6 @@ public class Job implements Callable, Comparable, Publisher {
     // Can't be stale if it's still pending or running
     if (!isCompleted()) return false
     
-    // Can't be stale if someone has tagged it
-    if (fetchTags()) return false
-    
     // Only stale if its age exceeds the maxAgeInDays property
     def maxAgeInDays = this.properties['job.maxAgeInDays'].toInteger()
     def jobDate = completedDate ?: new Date(jobDir.lastModified())
