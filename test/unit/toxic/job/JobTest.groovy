@@ -730,7 +730,7 @@ line4"""
     assert job.isStale()
     
     job.metaClass.fetchArtifacts = { return [new File("something.tag")]}
-    assert !job.isStale()
+    assert job.isStale()
 
     job.metaClass.fetchArtifacts = { return [new File("something.notag")]}
     assert job.isStale()
