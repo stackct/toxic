@@ -32,6 +32,7 @@ public class JobManager implements Runnable,Publisher {
   private def mainThread
   private SourceRepository configRepo
   private def urlCache = [:]
+  private Object newJobSearchLock = new Object()
   protected long urlCacheExpireMs = 600000
 
   public JobManager(String propertiesUrl, String defaultJobDir = null) {
@@ -208,11 +209,14 @@ public class JobManager implements Runnable,Publisher {
     log.info("Job monitoring halted")
   }
 
-  private synchronized def findNewJobs() {
+  private def findNewJobs() {
     log.trace("Starting to find new jobs")
     def begin = System.currentTimeMillis()
 
-    fetchNewJobs().each { jobFile -> addJob(jobFile) }
+    synchronized (newJobSearchLock) {
+      fetchNewJobs().each { jobFile -> addJob(jobFile) }
+    }
+
     log.trace("Finished finding new jobs elapsedMs=${System.currentTimeMillis()-begin}")
   }
 
@@ -220,7 +224,7 @@ public class JobManager implements Runnable,Publisher {
     Thread.startDaemon("hi-pri-maint") {
       while (running) {
         try {
-          synchronized (this) {
+          synchronized (newJobSearchLock) {
             // This must not progress while findNewJobs() is scanning the same directory.
             // Otherwise the scanner might pick up a partially written job file.
             fetchAutomatedJobs().each { name, details -> queueJob(name, details) }
