@@ -143,6 +143,23 @@ public class JobManagerTest {
 
   @Test
   public void should_fetch_archived_jobs() {
+    def date = new Date()
+    def job1 = new Job(completedDate: date-1)
+    def job2 = new Job(completedDate: date-2)
+    def job3 = new Job(completedDate: date-3)
+    def job4 = new Job(completedDate: date-4)
+    def job5 = new Job(completedDate: date-5)
+    jobManager.archive = [ job3, job5, job2, job4, job1 ]
+    def jobs = jobManager.archivedJobs()
+    assert jobs[0].is(job1)
+    assert jobs[1].is(job2)
+    assert jobs[2].is(job3)
+    assert jobs[3].is(job4)
+    assert jobs[4].is(job5)
+  }
+
+  @Test
+  public void should_fetch_historic_jobs() {
     def mockFiles = [new File("1.job-0"), new File("2.job-0"), new File("3.job")]
 
     def count = 0
