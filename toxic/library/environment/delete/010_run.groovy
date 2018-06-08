@@ -12,5 +12,5 @@ memory.parseEnvironment(memory.spec).charts.each { chart, props ->
 memory.deleteNamespace()
 
 // Wait for namespace to be deleted
-int wait = 1000 * 60
+int wait = 1000 * 300
 Wait.on { -> !memory.namespaceExists() }.every(3000).atMostMs(wait).start()
