@@ -221,8 +221,17 @@ public class HttpTaskTest {
 
   @Test
   void should_read_body_with_lowercase_content_length() {
-    String http = 'POST / HTTP/1.1\r\ncontent-length: 5\r\n\r\n<ok/>'
+    String http = 'HTTP/1.1 200 OK\r\ncontent-length: 5\r\n\r\n<ok/>'
     assert http == new HttpTask().readHttpBody(new ByteArrayInputStream(http.getBytes()))
+  }
+
+  @Test
+  void should_read_body_with_chunked_encoding() {
+    String http = 'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\n\r\n<ok/>\r\n\r\n0\r\n\r\n'
+    def task = new HttpTask()
+    task.props = new Properties()
+    task.props.httpMaxChunkedSize="500"
+    assert http == task.readHttpBody(new ByteArrayInputStream(http.getBytes()))
   }
 
   @Test

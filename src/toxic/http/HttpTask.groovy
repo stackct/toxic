@@ -171,6 +171,7 @@ class HttpTask extends CompareTask {
 
   def readHttpBody(input) {
     def response = new StringWriter()
+    def chunked = false
     def bodyLength = 0
     def line = "Keep going"
     while (line.trim()) {
@@ -179,6 +180,7 @@ class HttpTask extends CompareTask {
         // According to the RFC7230 spec, HTTP headers are case-insensitive
         // https://tools.ietf.org/html/rfc7230#section-3.2
         if (line.toLowerCase().startsWith("content-length")) bodyLength = line.split(":")[1].trim().toInteger()
+        if (line.toLowerCase().startsWith("transfer-encoding: chunked")) bodyLength = new Integer(props["httpMaxChunkedSize"].toString())
         response << line
       }
     }
@@ -188,13 +190,15 @@ class HttpTask extends CompareTask {
     def read = 0
     while ((read != -1) && (bodyReadLength < bodyLength)) {
       read = input.read(bodyBytes, bodyReadLength, bodyLength - bodyReadLength)
-      bodyReadLength += read
+      if (read > 0) {
+        bodyReadLength += read
+      }
     }
     if (gzip) {
       response = response.toString() + uncompress(bodyBytes)
     }
     else {
-      response = response.toString() + new String(bodyBytes)
+      response = response.toString() + new String(bodyBytes, 0, bodyReadLength)
     }
 
     response
