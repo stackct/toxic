@@ -26,8 +26,18 @@ class JsonValidator extends HttpValidator {
     validate(expected, actual, failures, path, memory)
 
     if(failures) {
-      throw new ValidationException(failures.toString())
+      throw new ValidationException(formatValidatorExceptionMessage(expectedJson, actualJson, failures.toString()))
     }
+  }
+
+  String formatValidatorExceptionMessage(String expectedJson, String actualJson, String failures) {
+    failures +=
+      "\n${'-'.multiply(25)}  ACTUAL  ${'-'.multiply(25)}\n" +
+          actualJson + "\n" +
+      "\n${'-'.multiply(25)}  EXPECTED  ${'-'.multiply(25)}\n" +
+          expectedJson
+
+    return failures
   }
 
   void validate(Map expected, Map actual, def failures, String basePath, def memory) {
