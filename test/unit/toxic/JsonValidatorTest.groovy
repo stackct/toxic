@@ -553,7 +553,7 @@ class JsonValidatorTest {
       fail('Expected ValidationException')
     }
     catch(ValidationException e) {
-      assert e.message == message
+      assert new JsonValidator().formatValidatorExceptionMessage(expected, actual, message) == e.message
     }
   }
 }
