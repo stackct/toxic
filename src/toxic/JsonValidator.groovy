@@ -17,7 +17,7 @@ class JsonValidator extends HttpValidator {
       actual = new JsonSlurper().parseText(actualJson[actualIdx..-1])
     }
     catch(JsonException e) {
-      throw new ValidationException(e.message)
+      throw new ValidationException(formatValidatorExceptionMessage(expectedJson, actualJson, e.message))
     }
 
     def failures = ''<<''

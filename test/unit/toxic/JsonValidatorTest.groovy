@@ -249,26 +249,30 @@ class JsonValidatorTest {
   void should_fail_when_expected_json_is_invalid() {
     String expected = """NOT_VALID_JSON"""
     String actual = """{ "topic": "barTopic" }"""
-    try {
-      new JsonValidator().validate(actual, expected, [:])
-      fail('Expected ValidationException')
-    }
-    catch(ValidationException e) {
-      assert e.message.contains('Unable to determine the current character, it is not a string, number, array, or object')
-    }
+    String message = """Unable to determine the current character, it is not a string, number, array, or object
+
+The current character read is 'N' with an int value of 78
+Unable to determine the current character, it is not a string, number, array, or object
+line number 1
+index number 0
+NOT_VALID_JSON
+^"""
+    expectValidationFailure(expected, actual, message)
   }
 
   @Test
   void should_fail_when_actual_json_is_invalid() {
     String expected = """{ "topic": "barTopic" }"""
     String actual = """NOT_VALID_JSON"""
-    try {
-      new JsonValidator().validate(actual, expected, [:])
-      fail('Expected ValidationException')
-    }
-    catch(ValidationException e) {
-      assert e.message.contains('Unable to determine the current character, it is not a string, number, array, or object')
-    }
+    String message = """Unable to determine the current character, it is not a string, number, array, or object
+
+The current character read is 'N' with an int value of 78
+Unable to determine the current character, it is not a string, number, array, or object
+line number 1
+index number 0
+NOT_VALID_JSON
+^"""
+    expectValidationFailure(expected, actual, message)
   }
 
   @Test

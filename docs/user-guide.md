@@ -298,6 +298,14 @@ Anytime you want to stop a test directory on it's first failure use the followin
 -tmHaltOnError=true
 ```
 
+#### Truncated errors
+
+Toxic will truncate Task errors by default. To override this behavior, set the maxErrorLength property.
+
+```
+-maxErrorLength=5000
+```
+
 #### Running an entire test suite multiple times
 
 If you want to run a test suite multiple times use the flag `-tmReps=1000` to set the number times to run the test. If you want to use multiple threads use the flag `-agentTaskMasterCount=5` to set the number of threads.
