@@ -36,12 +36,27 @@ class Function extends Parser {
     this.description = description
   }
 
-  def arg(String name, Boolean required=true) {
-    args << new Arg(name: name, required: required)
+  def arg(String name, boolean required=true) {
+    addArg(name, required, false)
   }
 
-  def input(String name, Boolean required=true) {
-    arg(name, required)
+  def arg(String name, boolean required, def defaultValue) {
+    addArg(name, required, true, defaultValue)
+  }
+
+  def input(String name, boolean required=true) {
+    addArg(name, required, false)
+  }
+
+  def input(String name, boolean required, def defaultValue) {
+    addArg(name, required, true, defaultValue)
+  }
+
+  void addArg(String name, boolean required, boolean hasDefaultValue, def defaultValue = null) {
+    if(required && hasDefaultValue) {
+      throw new IllegalStateException("Cannot specify a default value on a required arg; name=${this.name}; args=${name}; defaultValue=${defaultValue}")
+    }
+    args << new Arg(name: name, required: required, hasDefaultValue: hasDefaultValue, defaultValue: defaultValue)
   }
 
   def output(String key) {

@@ -69,6 +69,11 @@ class TestCaseHandler extends LinkHandler {
     if(step) {
       Function function = props.functions["${step.function}"]
       function.validateRequiredArgsArePresent(step.args)
+      function.args.each { arg ->
+        if(arg.hasDefaultValue && !step.args.containsKey(arg.name)) {
+          step.args[arg.name] = arg.defaultValue
+        }
+      }
       step.args.each { k, v ->
         function.validateArgIsDefined(k)
         setWithBackup(k, Step.interpolate(props, v), props, props.backup)

@@ -266,6 +266,58 @@ class FunctionTest {
   }
 
   @Test
+  void should_set_default_arg_value() {
+    def assertArg = { Arg arg, String expectedName, boolean expectedRequired, boolean expectedHasDefaultValue,  def expectedDefaultValue ->
+      assert expectedName == arg.name
+      assert expectedRequired == arg.required
+      assert expectedHasDefaultValue == arg.hasDefaultValue
+      assert expectedDefaultValue == arg.defaultValue
+    }
+
+    ['arg', 'input'].each {
+      def input = """
+      function "foo" {
+        path "foo-path"
+        description "foo-description"
+
+        TOKEN "required-arg1"
+        TOKEN "optional-arg-1", false
+        TOKEN "optional-arg-2", false, "bar"
+        TOKEN "optional-arg-3", false, true
+        TOKEN "optional-arg-4", false, 12.3
+        TOKEN "optional-arg-5", false, null
+      }""".replaceAll('TOKEN', it)
+
+      Function function = Function.parse(input)[0]
+      assert 6 == function.args.size()
+      assertArg(function.args[0], 'required-arg1', true, false, null)
+      assertArg(function.args[1], 'optional-arg-1', false, false, null)
+      assertArg(function.args[2], 'optional-arg-2', false, true, 'bar')
+      assertArg(function.args[3], 'optional-arg-3', false, true, true)
+      assertArg(function.args[4], 'optional-arg-4', false, true, 12.3)
+      assertArg(function.args[5], 'optional-arg-5', false, true, null)
+    }
+  }
+
+  @Test
+  void should_not_allow_default_values_on_required_args() {
+    def input = """
+      function "foo" {
+        path "foo-path"
+        description "foo-description"
+
+        arg "required-arg1", true, "foo"
+      }"""
+    try {
+      Function.parse(input)
+      fail('Expected IllegalStateException')
+    }
+    catch(IllegalStateException e) {
+      assert "Cannot specify a default value on a required arg; name=foo; args=required-arg1; defaultValue=foo" == e.message
+    }
+  }
+
+  @Test
   void should_override_to_string() {
     Function function = new Function(name: 'foo', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
     assert 'foo(arg1,arg2)' == function.toString()

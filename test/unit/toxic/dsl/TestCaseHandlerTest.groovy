@@ -434,6 +434,54 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  void should_copy_default_value_to_memory_map() {
+    TestCase testCase = new TestCase()
+    testCase.steps << new Step(name: 'foo_step', function: 'foo_fn')
+
+    Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: true, defaultValue: 'bar')])
+    def props = [testCases: [testCase], stepIndex: 0, functions: [foo_fn: fn]]
+    props.step = new StepOutputResolver(props)
+    TestCaseHandler.copyStepArgsToMemory(props)
+    assert 'bar' == props.foo
+  }
+
+  @Test
+  void should_copy_interpolated_default_value_to_memory_map() {
+    TestCase testCase = new TestCase()
+    testCase.steps << new Step(name: 'foo_step', function: 'foo_fn')
+
+    Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: true, defaultValue: '{{ var.foo }}')])
+    def props = [testCases: [testCase], stepIndex: 0, functions: [foo_fn: fn], var: [foo: 'bar']]
+    props.step = new StepOutputResolver(props)
+    TestCaseHandler.copyStepArgsToMemory(props)
+    assert 'bar' == props.foo
+  }
+
+  @Test
+  void should_not_copy_default_value_to_memory_map_when_default_value_is_not_defined() {
+    TestCase testCase = new TestCase()
+    testCase.steps << new Step(name: 'foo_step', function: 'foo_fn')
+
+    Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: false)])
+    def props = [testCases: [testCase], stepIndex: 0, functions: [foo_fn: fn]]
+    props.step = new StepOutputResolver(props)
+    TestCaseHandler.copyStepArgsToMemory(props)
+    assert !props.containsKey('foo')
+  }
+
+  @Test
+  void should_not_override_step_arg_with_default_arg() {
+    TestCase testCase = new TestCase()
+    testCase.steps << new Step(name: 'foo_step', function: 'foo_fn', args: [foo: 'bar'])
+
+    Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: true, defaultValue: 'foobar')])
+    def props = [testCases: [testCase], stepIndex: 0, functions: [foo_fn: fn]]
+    props.step = new StepOutputResolver(props)
+    TestCaseHandler.copyStepArgsToMemory(props)
+    assert 'bar' == props.foo
+  }
+
+  @Test
   void should_validate_all_required_input_args_are_present() {
     TestCase testCase = new TestCase()
     testCase.steps << new Step(name: 'create an order', function: 'create_order', args: [:])

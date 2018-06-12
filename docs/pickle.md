@@ -14,7 +14,7 @@ Functions encapsulate a group of Toxic tasks that can run in isolation, and can 
 
 * **path** (Required) - Path to the Toxic task(s)
 * **description** (Required) - A description of the Function
-* **arg** | **input** (Optional) - Defines an input argument that can be marked as required or optional. Multiple `arg` blocks are supported.
+* **arg** | **input** (Optional) - Defines an input argument that can be marked as required or optional. Specified arguments are required by default. Multiple `arg` blocks are supported.
 * **output** (Optional) - Defines an output that can be interpolated in subsequent Steps and/or Assertion statements (see [Interpolation](#interpolation)). Multiple `output` statements are supported.
 
 ```groovy
@@ -22,8 +22,9 @@ function "NAME" {
    path         "PATH_TO_LIB"
    description  "DESCRIPTION"
 
-   arg "ARG1", [true|false] // (default=false)
-   arg "ARG2", [true|false] // (default=false)
+   arg "ARG1"                 // Arg1 is a required argument
+   arg "ARG2", false          // Arg2 is an optional argument and if not specified, will NOT be set
+   arg "ARG3", false, "foo"   // Arg3 is an optional argument and if not specified, will default to string foo
 
    output "OUTPUT1"
    output "OUTPUT2"
