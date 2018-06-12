@@ -2,5 +2,7 @@ package toxic.dsl
 
 class Arg {
   String name
-  Boolean required
+  boolean required
+  boolean hasDefaultValue
+  def defaultValue
 }
