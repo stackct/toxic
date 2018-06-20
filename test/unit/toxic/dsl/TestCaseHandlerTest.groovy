@@ -226,6 +226,16 @@ class TestCaseHandlerTest {
       assert props.testCases.size() == 2
       assert props.testCases[0].name == 'test2'
       assert props.testCases[1].name == 'test3'
+
+      // No filtering
+      props = [functions: functions]
+      dirItem.children = []
+
+      new TestCaseHandler(dirItem, props).nextFile(file)
+      assert props.testCases.size() == 3
+      assert props.testCases[0].name == 'test1'
+      assert props.testCases[1].name == 'test2'
+      assert props.testCases[2].name == 'test3'
     }
   }
 
