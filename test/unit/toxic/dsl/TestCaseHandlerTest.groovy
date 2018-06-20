@@ -172,6 +172,64 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  public void should_exclude_by_skiptags() {
+    DirItem dirItem = new DirItem('something.test')
+    def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
+    assert [] == dirItem.children
+
+    def input = """
+      test "test1" {
+        description "description"
+        tags 'foo', 'baz'
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+      }
+      test "test2" {
+        description "description"
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+      }
+      test "test3" {
+        description "description"
+        tags 'bar'
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+      }
+    """
+    mockFile(input) { file ->
+      // Include and exclude
+      def props = [functions: functions, tags:'foo,bar', skipTags:'baz']
+      new TestCaseHandler(dirItem, props).nextFile(file)
+      assert props.testCases.size() == 1
+      assert props.testCases[0].name == 'test3'
+
+      // Include only
+      props = [functions: functions, tags:'foo,bar']
+      dirItem.children = []
+
+      new TestCaseHandler(dirItem, props).nextFile(file)
+      assert props.testCases.size() == 2
+      assert props.testCases[0].name == 'test1'
+      assert props.testCases[1].name == 'test3'
+
+      // Exclude only
+      props = [functions: functions, skipTags:'foo']
+      dirItem.children = []
+
+      new TestCaseHandler(dirItem, props).nextFile(file)
+      assert props.testCases.size() == 2
+      assert props.testCases[0].name == 'test2'
+      assert props.testCases[1].name == 'test3'
+    }
+  }
+
+  @Test
   public void should_run_single_test_case() {
     DirItem dirItem = new DirItem('something.test')
     def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]

@@ -271,10 +271,7 @@ test "A user can log in" {
    description "Proves that a user can log in"
    
    // Tags as a List
-   tags  (["user", "user-essential"]
-
-   // Alternative tags syntax:
-   tags 'user, user-essential'
+   tags  "user", "user-essential"
 
    step "create_user", "fred", {
       name "Fred"
@@ -291,7 +288,7 @@ test "A user can log in" {
 
 test "A user can change his/her ID" {
    description "Proves that a user can change his/her ID"
-   tags  (["user", "user-additional"])
+   tags  "user", "user-additional"
 
    step "create_user", "fred", {
       name "Fred"
@@ -310,8 +307,11 @@ test "A user can change his/her ID" {
    }
 }
 ```
+### Positive Filtering
 
-To run all the 'user' tests:
+Tests can be positively filtered for by specifying the tags to include.
+
+For example, to run all the 'user' tests:
 
 ```plain
 toxic -doDir=toxic/tests -tags=user
@@ -323,7 +323,25 @@ To run only the _essential_ 'user' tests:
 toxic -doDir=toxic/tests -tags=user-essential
 ```
 
-Additionally, a single test can be run by specifying the `-test=TEST_NAME` argument:
+### Negative Filtering
+
+Tests can be negatively filtered for by specifying the tags to _exclude_ using the `-skipTags` property.
+
+For example, to run all tests _except_ the "user-additional" ones:
+
+```plain
+toxic -doDir=toxic/tests -skipTags=user-additional
+```
+
+Positive and negative filtering can be combined. The example below will run all "user" tests, _except_ for the ones tagged as "user-additional":
+
+```plain
+toxic -doDir=toxic/tests -tags=user -skipTags=user-additional
+```
+
+### Single Test Execution
+
+Additionally, a single test can be run by specifying the `-test=TEST_NAME` argument.
 
 ```plain
 toxic -doDir=toxic/tests -test=MyTest
@@ -334,6 +352,8 @@ If the single test name has spaces, escape with single and double quotes:
 ```plain
 toxic -doDir=toxic/tests -test='"my pickle test"'
 ```
+
+**NOTE: Specifying a single test case to run supercedes any positive or negative filtering.**
 
 ## What's Next
 
