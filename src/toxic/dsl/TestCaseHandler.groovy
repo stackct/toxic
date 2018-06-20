@@ -40,12 +40,22 @@ class TestCaseHandler extends LinkHandler {
     if (props.test) {
       return testCase.name == props.test
     }
+    
+    boolean include = true
 
     if (props.tags) {
-      return props.tags.tokenize(',')?.any { f -> testCase.tags.contains(f) }
+      include &= hasAny(testCase, props.tags.tokenize(','))
+    }
+
+    if (props.skipTags) {
+      include &= !hasAny(testCase, props.skipTags.tokenize(','))
     }
     
-    return true
+    return include
+  }
+
+  private boolean hasAny(TestCase testCase, List tags) {
+    tags.any { t -> testCase.tags.contains(t) }
   }
 
   @Override
