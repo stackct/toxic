@@ -314,29 +314,29 @@ Tests can be positively filtered for by specifying the tags to include.
 For example, to run all the 'user' tests:
 
 ```plain
-toxic -doDir=toxic/tests -tags=user
+toxic -doDir=toxic/tests -includeTags=user
 ```
 
 To run only the _essential_ 'user' tests:
 
 ```plain
-toxic -doDir=toxic/tests -tags=user-essential
+toxic -doDir=toxic/tests -includeTags=user-essential
 ```
 
 ### Negative Filtering
 
-Tests can be negatively filtered for by specifying the tags to _exclude_ using the `-skipTags` property.
+Tests can be negatively filtered for by specifying the tags to _exclude_ using the `-excludeTags` property.
 
 For example, to run all tests _except_ the "user-additional" ones:
 
 ```plain
-toxic -doDir=toxic/tests -skipTags=user-additional
+toxic -doDir=toxic/tests -excludeTags=user-additional
 ```
 
 Positive and negative filtering can be combined. The example below will run all "user" tests, _except_ for the ones tagged as "user-additional":
 
 ```plain
-toxic -doDir=toxic/tests -tags=user -skipTags=user-additional
+toxic -doDir=toxic/tests -includeTags=user -excludeTags=user-additional
 ```
 
 ### Single Test Execution

@@ -43,12 +43,12 @@ class TestCaseHandler extends LinkHandler {
     
     boolean include = true
 
-    if (props.tags) {
-      include &= hasAny(testCase, props.tags.tokenize(','))
+    if (props.includeTags) {
+      include &= hasAny(testCase, props.includeTags.tokenize(','))
     }
 
-    if (props.skipTags) {
-      include &= !hasAny(testCase, props.skipTags.tokenize(','))
+    if (props.excludeTags) {
+      include &= !hasAny(testCase, props.excludeTags.tokenize(','))
     }
     
     return include
