@@ -151,7 +151,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions, tags:'foo,bar']
+      def props = [functions: functions, includeTags:'foo,bar']
 
       new TestCaseHandler(dirItem, props).nextFile(file)
       assert 4 == dirItem.children.size()
@@ -172,7 +172,7 @@ class TestCaseHandlerTest {
   }
 
   @Test
-  public void should_exclude_by_skiptags() {
+  public void should_exclude_by_excludeTags() {
     DirItem dirItem = new DirItem('something.test')
     def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
     assert [] == dirItem.children
@@ -204,13 +204,13 @@ class TestCaseHandlerTest {
     """
     mockFile(input) { file ->
       // Include and exclude
-      def props = [functions: functions, tags:'foo,bar', skipTags:'baz']
+      def props = [functions: functions, includeTags:'foo,bar', excludeTags:'baz']
       new TestCaseHandler(dirItem, props).nextFile(file)
       assert props.testCases.size() == 1
       assert props.testCases[0].name == 'test3'
 
       // Include only
-      props = [functions: functions, tags:'foo,bar']
+      props = [functions: functions, includeTags:'foo,bar']
       dirItem.children = []
 
       new TestCaseHandler(dirItem, props).nextFile(file)
@@ -219,7 +219,7 @@ class TestCaseHandlerTest {
       assert props.testCases[1].name == 'test3'
 
       // Exclude only
-      props = [functions: functions, skipTags:'foo']
+      props = [functions: functions, excludeTags:'foo']
       dirItem.children = []
 
       new TestCaseHandler(dirItem, props).nextFile(file)
