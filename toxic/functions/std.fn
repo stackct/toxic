@@ -24,6 +24,16 @@ function "RandomString" {
   output "value"
 }
 
+function "RandomNumericString" {
+  description "Generates a random numeric string of the given length"
+  path "{{ libPath }}/std/random_numeric_string"
+
+  arg "length"
+  arg "prefix", false
+
+  output "value"
+}
+
 function "VerifyUrls" {
   description "Verifies a 200 on GET request on a URL or a list of URLs; if waitMs is provided retries every second, up to the give number of waitMs milliseconds for each url, before failing"
   path "{{ libPath }}/std/verify"
