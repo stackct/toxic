@@ -30,6 +30,7 @@ function "RandomNumericString" {
 
   arg "length"
   arg "prefix", false
+  arg "suffix", false
 
   output "value"
 }

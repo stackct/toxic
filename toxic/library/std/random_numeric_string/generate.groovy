@@ -6,4 +6,6 @@ def generate = { n ->
 }
 
 memory['prefix'] = memory['prefix'] ?: ''
-memory['value'] = memory['prefix'] + generate((int)memory['length'])
+memory['suffix'] = memory['suffix'] ?: ''
+memory['value'] = memory['prefix'] + generate((int)memory['length']) + memory['suffix']
+
