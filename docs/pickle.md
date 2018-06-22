@@ -66,7 +66,7 @@ test "NAME" {
    }
 
    assertions {
-      [eq|neq|contains] "SOMETHING", "OTHER"
+      [eq|neq|contains] "SHOULD CONTAIN THIS" "THIS"
    }
 }
 ```
