@@ -2,6 +2,7 @@
 package toxic.http
 
 import org.junit.*
+import groovy.mock.interceptor.*
 
 import toxic.ToxicProperties
 
@@ -262,5 +263,98 @@ public class HttpTaskTest {
       assert t.props['httpPort'] == tc.port, "test case failed; name:'${tc.name}'; field:port"
       assert t.props['httpSsl'] == tc.ssl, "test case failed; name:'${tc.name}'; field:ssl"
     }
+  }
+
+  @Test
+  public void should_parse_http_response() {
+    def props = [httpHost:'http://foo.invalid', httpPort: 0] as ToxicProperties
+   
+    def testCases = [
+      [
+        name: 'empty response, no body',
+        response: null, 
+        expected: [ headers: [:], code:null, reason:null, body:null]
+      ],
+      [
+        name: 'good response, no body',
+        response: makeResponse(200, 'OK', null, ['foo: bar']), 
+        expected: [ headers: [foo: 'bar'], code:'200', reason:'OK', body:null]
+      ],
+      [
+        name: 'good response, body',
+        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar']), 
+        expected: [ headers: [foo: 'bar'], code:'200', reason:'OK', body:'{"foo":"bar"}']
+      ],
+      [
+        name: 'bad response, no body',
+        response: makeResponse(404, 'Not Found', null, null), 
+        expected: [ headers: [:], code:'404', reason:'Not Found', body:null]
+      ],
+      [
+        name: 'bad response, body',
+        response: makeResponse(400, 'Bad Request', '{"foo":"bar"}', ['foo: bar']), 
+        expected: [ headers: [:], code:'400', reason:'Bad Request', body:'{"foo":"bar"}']
+      ],
+    ]
+    
+    testCases.each { tc ->
+      new HttpTask().with { task ->
+        task.metaClass.getSocketFromProps = { p -> new FakeSocket(tc.response) }
+        task.transmit("ok", "ok", props)
+      }
+
+      tc.expected.headers.each { k,v -> 
+        assert props['http.response.headers'][k] == v, "scenario '${tc.name}' failed; header mismatch" 
+      }
+      assert tc.expected.code == props['http.response.code'], "scenario '${tc.name}' failed; response code mismatch"
+      assert tc.expected.reason == props['http.response.reason'], "scenario '${tc.name}' failed; response reason mismatch"
+      assert tc.expected.body == props['http.response.body'], "scenario '${tc.name}' failed; body mismatch"
+    }
+  }
+
+  private String makeResponse(int code, String reason, String body=null, List headers=[]) {
+    def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
+    
+    headers?.each { h -> sb.append(h + HttpTask.HTTP_CR) }
+    
+    if (body) {
+      sb.append('Content-Length: ' + body.bytes.size() + HttpTask.HTTP_CR)
+      sb.append(HttpTask.HTTP_CR)
+      sb.append(body)
+    }
+    
+    return sb.toString()
+  }
+}
+
+protected class FakeSocket extends Socket {
+  private String response
+
+  protected FakeSocket(String response) {
+    this.response = response
+  }
+  
+  @Override
+  public boolean isClosed() {
+    return false
+  }
+
+  @Override
+  public boolean isConnected() {
+    return true
+  }
+
+  @Override
+  public void setSoTimeout(int n) {
+  }
+
+  @Override
+  public InputStream getInputStream() {
+    return new StringBufferInputStream(response ?: "")
+  }
+
+  @Override
+  public OutputStream getOutputStream() {
+    return new ByteArrayOutputStream()
   }
 }
