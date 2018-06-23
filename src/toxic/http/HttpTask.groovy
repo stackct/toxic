@@ -2,6 +2,7 @@ package toxic.http
 
 import org.apache.log4j.Logger
 import toxic.CompareTask
+import toxic.ToxicProperties
 
 import javax.net.ssl.SSLSocketFactory
 import java.util.zip.GZIPInputStream
@@ -109,7 +110,7 @@ class HttpTask extends CompareTask {
           socket.setUseClientMode(true)
         }
         else {
-          socket = new Socket(memory.httpHost, new Integer(memory.httpPort.toString()))
+          socket = getSocketFromProps(memory)
         }
 
         if (memory.httpTimeout) {
@@ -151,7 +152,40 @@ class HttpTask extends CompareTask {
       log.info("Received:\n" + result)
     }
 
+    setResponseProperties(result, memory)
+
     return result
+  }
+
+  private void setResponseProperties(String response, ToxicProperties memory) {
+    memory['http.response.headers'] = [:]
+    memory['http.response.code']    = null
+    memory['http.response.reason']  = null
+    memory['http.response.body']    = null
+
+    if (!response) return
+
+    List responseParts = response.split(HTTP_CR + HTTP_CR) as List
+    List headers = responseParts[0].split(HTTP_CR) as List
+    memory['http.response.body'] = responseParts[1]
+
+    headers.find { h -> h.startsWith('HTTP') }.with { h ->
+      h.split(' ').with { parts ->
+        memory['http.response.code'] = parts[1]
+        memory['http.response.reason'] = parts[2..-1].join(' ')
+      }
+      headers.remove(h)
+    }
+
+    headers.each { h ->
+      h.split(': ').with { parts -> 
+        memory['http.response.headers'][parts[0]] = parts[1]
+      }
+    }
+  }
+
+  protected Socket getSocketFromProps(memory) {
+    return new Socket(memory.httpHost, new Integer(memory.httpPort.toString()))
   }
 
   void setupHttpConnection() {
