@@ -21,7 +21,7 @@ class ApiRoute implements Route {
   public Object handle(Request req, Response resp) {
     long startTime = System.currentTimeMillis()
 
-    if (useGzip) {
+    if (useGzip && req.headers("Accept-Encoding")?.contains("gzip")) {
       resp.header("Content-Encoding", "gzip")
     }
 
