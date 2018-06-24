@@ -196,7 +196,7 @@ public class WebServerTest {
     taskResults << new TaskResult(id:3, family:'family3').toSimple()
 
     String jsonRequest = JsonOutput.toJson(taskResults)
-    def request  = [ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params:{ String key -> '12345'}, body:{->jsonRequest}] as Request
+    def request  = [headers: { String s -> null}, ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params:{ String key -> '12345'}, body:{->jsonRequest}] as Request
     def response = [header:[:], type: { String s -> }] as Response
     Logger.getRootLogger().setLevel(Level.DEBUG)
     WebServer.log.track { logger ->
@@ -231,7 +231,7 @@ public class WebServerTest {
 
       server.run()
 
-      def request = [ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params: { String key ->
+      def request = [headers: { String s -> null}, ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params: { String key ->
         if (':id' == key) {
           return '12345'
         } else if (':resource' == key) {
@@ -258,7 +258,7 @@ public class WebServerTest {
     Main.metaClass.'static'.loadProperties = { String[] args -> loadedProps = true; return [:] }
     server.run()
 
-    def request = [ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params: { String key ->
+    def request = [headers: { String s -> null}, ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params: { String key ->
       return null
     }, raw: { -> [getInputStream:{[:] as ServletInputStream}] as HttpServletRequest }] as Request
     def response = [header: [:], type: { String s -> }, raw: { -> [getStatus: { -> 0 } ] as HttpServletResponse }] as Response
@@ -272,7 +272,7 @@ public class WebServerTest {
     server.run()
 
     def dt = new Date()
-    def request = [ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, queryParams: { String key ->
+    def request = [headers: { String s -> null}, ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, queryParams: { String key ->
       assert key == "since"
       return dt.time.toString()
     }, raw: { -> [getInputStream:{[:] as ServletInputStream}] as HttpServletRequest }] as Request
@@ -289,7 +289,7 @@ public class WebServerTest {
     Main.metaClass.'static'.loadProperties = { String[] args -> return [:] }
     server.run()
 
-    def request = [ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, queryParams: { String key ->
+    def request = [headers: { String s -> null}, ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, queryParams: { String key ->
       assert key == "since"
       return "null"
     }, raw: { -> [getInputStream:{[:] as ServletInputStream}] as HttpServletRequest }] as Request
@@ -322,7 +322,7 @@ public class WebServerTest {
     def paramsClosure = { key ->
       requestParams[key]
     }
-    def request = [ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params:paramsClosure, queryParams:[:], raw: { -> [getInputStream:{[:] as ServletInputStream}] as HttpServletRequest }] as Request
+    def request = [headers: { String s -> null}, ip: { -> "ip" }, url: { -> "url" }, userAgent: { -> "userAgent" }, params:paramsClosure, queryParams:[:], raw: { -> [getInputStream:{[:] as ServletInputStream}] as HttpServletRequest }] as Request
     def response = [header: [:], type: { String s -> responseType = s}, raw: { -> [getStatus: { -> 0 } ] as HttpServletResponse }] as Response
     def result = routes['/api/project/:id/latest/artifact/:filename'].handle(request, response).toString()
     assert 'text/markdown' == responseType
