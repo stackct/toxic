@@ -22,7 +22,7 @@ class FunctionTaskTest {
     def expectedFunction = new Function('foo')
     expectedFunction.path = '/path/to/lib'
     expectedFunction.args = [new Arg(name: 'arg1', required: true), new Arg(name: 'arg2', required: false)]
-    expectedFunction.outputs = ['output1', 'output2']
+    expectedFunction.outputs = ['output1': null, 'output2': null]
 
     assert 1 == memory.functions.size()
     def actualFunction = memory.functions.foo
@@ -60,12 +60,12 @@ class FunctionTaskTest {
     def expectedFoo = new Function('foo')
     expectedFoo.path = '/path/to/lib/foo'
     expectedFoo.args = [new Arg(name: 'foo-arg1', required: true), new Arg(name: 'foo-arg2', required: false)]
-    expectedFoo.outputs = ['foo-output1', 'foo-output2']
+    expectedFoo.outputs = ['foo-output1': null, 'foo-output2': null]
 
     def expectedBar = new Function('bar')
     expectedBar.path = '/path/to/lib/bar'
     expectedBar.args = [new Arg(name: 'bar-arg1', required: true), new Arg(name: 'bar-arg2', required: false)]
-    expectedBar.outputs = ['bar-output1', 'bar-output2']
+    expectedBar.outputs = ['bar-output1': null, 'bar-output2': null]
 
     assert 2 == memory.functions.size()
     def actualFoo = memory.functions.foo
@@ -99,7 +99,7 @@ class FunctionTaskTest {
     def expectedFunction = new Function('foo')
     expectedFunction.path = '/path/to/lib'
     expectedFunction.args = [new Arg(name: 'arg1', required: true), new Arg(name: 'arg2', required: false)]
-    expectedFunction.outputs = ['output1', 'output2']
+    expectedFunction.outputs = ['output1': null, 'output2': null]
 
     assert 1 == memory.functions.size()
     def actualFunction = memory.functions.foo

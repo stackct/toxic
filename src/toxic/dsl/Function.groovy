@@ -1,13 +1,13 @@
 package toxic.dsl
 
-class Function extends Parser {
-  private static final List<String> requiredFields = ['name', 'path', 'description']
+class Function extends StepParser {
+  private static final List<String> requiredFields = ['name', 'description']
 
   String name
   String path
   String description
   List<Arg> args = []
-  Set<String> outputs = []
+  Map<String, Object> outputs = [:]
 
   Function() {}
 
@@ -59,8 +59,8 @@ class Function extends Parser {
     args << new Arg(name: name, required: required, hasDefaultValue: hasDefaultValue, defaultValue: defaultValue)
   }
 
-  def output(String key) {
-    outputs << key
+  def output(String key, String value = null) {
+    outputs[key] = value
   }
 
   void validate() {
@@ -68,8 +68,14 @@ class Function extends Parser {
     requiredFields.each { field ->
       if(!this."${field}") { missingFields << field }
     }
+    if(!path && !steps) {
+      missingFields << '(path OR steps)'
+    }
     if(missingFields) {
       throw new IllegalStateException("Missing required fields for function; name=${name}; fields=${missingFields}")
+    }
+    if(path && steps) {
+      throw new IllegalStateException("Function cannot specify both path and steps; name=${name}")
     }
   }
 

@@ -9,11 +9,26 @@ class StepOutputResolver extends TestCaseResolver {
 
   @Override
   def propertyMissing(String name)  {
-    TestCase testCase = currentTestCase(props.testCases, props.stepIndex)
-    Step step = testCase.steps.find { it.name == name }
+    TestCase testCase = currentTestCase(props)
+    Step step = findLatestStepByName(name, testCase.steps)
     if(!step) {
       throw new StepNotFoundException("Could not resolve values due to undefined step; testCase=${testCase.name}; step=${name}")
     }
     step.outputs
+  }
+
+  private Step findLatestStepByName(String name, List<Step> steps) {
+    Step foundStep
+    steps?.each { step ->
+      if(step.name == name) {
+        foundStep = step
+      }
+      Function function = props.functions["${step.function}"]
+      Step foundSubStep = findLatestStepByName(name, function?.steps)
+      if(foundSubStep) {
+        foundStep = foundSubStep
+      }
+    }
+    return foundStep
   }
 }

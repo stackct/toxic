@@ -1,11 +1,10 @@
 package toxic.dsl
 
-class TestCase extends Parser {
+class TestCase extends StepParser {
   String name
   String description
   Map<String,Object> vars = [:]
   Set<String> tags = [] as Set
-  List<Step> steps = []
   List<String> assertions = []
 
   static def parse(String input) {
@@ -40,14 +39,6 @@ class TestCase extends Parser {
     vars = v.vars
   }
 
-  def step(String function, String name, Closure closure) {
-    def t = new Step(name: name, function: function)
-    closure.setResolveStrategy(Closure.DELEGATE_FIRST)
-    closure.delegate = t
-    closure()
-    steps << t
-  }
-
   def assertions(Closure closure) {
     def assertion = new Assertion()
 
@@ -62,7 +53,7 @@ class TestCase extends Parser {
     def assertionFile = ''<<''
     assertions.each { assertionFile << "${it}\n" }
     String fileName = "${name.replaceAll(' ', '_')}_assertions_${UUID.randomUUID().toString()}.groovy"
-    new TransientFile(parentFile, fileName, assertionFile.toString(), resolver)
+    new TransientDir(new TransientFile(parentFile, fileName, assertionFile.toString(), resolver))
   }
 
   @Override

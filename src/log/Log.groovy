@@ -297,6 +297,10 @@ public class Log {
     setLevel(log4jLogger, level)
   }
 
+  static void setLevel(String name, String level) {
+    setLevel(Logger.getLogger(name), Log.convertLevel(level))
+  }
+
   static void setLevel(Logger llogger, int level){
     switch (level) {
       case LEVEL_ERROR: llogger.setLevel(Level.ERROR); break

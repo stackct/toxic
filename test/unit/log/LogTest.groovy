@@ -160,6 +160,18 @@ class LogTest {
   }
 
   @Test
+  void should_set_logger_to_debug_level_via_string() {
+    Log.setLevel(String.class.name, 'debug')
+    Log log = Log.getLogger(String.class)
+    assert log.getLevel() == Log.LEVEL_DEBUG
+    assert log.error
+    assert log.warn
+    assert log.info
+    assert log.debug
+    assert !log.trace
+  }
+
+  @Test
   void should_convert_level() {
     assert Log.LEVEL_TRACE == Log.convertLevel("xyz")
     assert Log.LEVEL_TRACE == Log.convertLevel("traCE")

@@ -1,5 +1,7 @@
 package toxic.dsl
 
+import org.apache.log4j.Level
+import toxic.ToxicProperties
 import toxic.dir.DirItem
 
 import static org.junit.Assert.fail
@@ -59,7 +61,9 @@ class TestCaseHandlerTest {
     assert expectedPaths.size() == dirItem.children.size()
     expectedPaths.eachWithIndex { expectedPath, index ->
       if(expectedPath instanceof Map) {
-        assert dirItem.children[index].file.name.startsWith(expectedPath.name)
+        TransientDir assertionDir = dirItem.children[index].file
+        assert 1 == assertionDir.listFiles().size()
+        assert assertionDir.listFiles()[0].name.startsWith(expectedPath.name)
       }
       else {
         assert expectedPath == dirItem.children[index].file.path
@@ -240,7 +244,7 @@ class TestCaseHandlerTest {
   }
 
   @Test
-  public void should_run_single_test_case() {
+  void should_run_single_test_case() {
     DirItem dirItem = new DirItem('something.test')
     def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
     assert [] == dirItem.children
@@ -281,6 +285,182 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  void should_run_higher_order_function_step() {
+    def functionFile = """
+      function "SingleStep" {
+        path "/foo/path/to/fn"
+        description "foo-description"
+        
+        input "foo"
+        output "foo"
+      }
+      function "MultiStep1" {
+        description "foo-description"
+
+        input "foo"
+        
+        step "SingleStep", "singleStep2", {
+          foo '{{ foo }}c'
+        }
+        
+        step "MultiStep2", "multiStep2", {
+          foo '{{ step.singleStep2.foo }}d'
+        }
+        
+        output "foo", "{{ step.multiStep2.foo }}"
+      }
+      function "MultiStep2" {
+        description "foo-description"
+        
+        input "foo"
+        
+        step "SingleStep", "singleStep3", {
+          foo '{{ foo }}e'
+        }
+        
+        step "MultiStep3", "multiStep3", {
+          foo '{{ step.singleStep3.foo }}f'
+        }
+        
+        output "foo", "{{ step.multiStep3.foo }}"
+      }
+      function "MultiStep3" {
+        description "foo-description"
+        
+        input "foo"
+        
+        step "SingleStep", "singleStep4", {
+          foo '{{ foo }}g'
+        }
+        
+        output "foo", "{{ step.singleStep4.foo }}"
+      }
+    """
+    def functions = Function.parse(functionFile)
+    def testFile = """
+      test "test1" {
+        description "test multi step function"
+        step "SingleStep", "singleStep1", {
+          foo 'a'
+        }
+        step "MultiStep1", "multiStep1", {
+            foo '{{ step.singleStep1.foo }}b'
+        }
+      }
+    """
+
+    def props = [functions: [:]]
+    functions.each {
+      props.functions[it.name] = it
+    }
+    DirItem dirItem = new DirItem('something.test')
+
+    def assertInputs = { def expectedInputs ->
+      expectedInputs.each { k, v ->
+        assert v == props[k]
+      }
+    }
+
+    def assertOutputs = { Step step, def expectedOutputs ->
+      expectedOutputs.each { k, v ->
+        assert v == step.outputs[k]
+      }
+    }
+
+    def assertInitFile = { File file, def expectedInputs, def expectedOutputs ->
+      StepFile nextFile = new TestCaseHandler(dirItem, props).nextFile(file)
+      assertInputs(expectedInputs)
+      Step step = TestCaseHandler.currentStep(props)
+      nextFile.complete(props)
+      assertOutputs(step, expectedOutputs)
+    }
+
+    def assertNextFile = { File file, def expectedInputs, def expectedOutputs ->
+      assertInputs(expectedInputs)
+      File nextFile = new TestCaseHandler(dirItem, props).nextFile(file)
+      Step step = TestCaseHandler.currentStep(props)
+      if(nextFile instanceof TransientFile) {
+        nextFile = new TestCaseHandler(dirItem, props).nextFile(file)
+      }
+      if(nextFile instanceof StepFile) {
+        nextFile.complete(props)
+      }
+      assertOutputs(step, expectedOutputs)
+    }
+
+    mockFile(testFile) { file ->
+      TestCaseHandler.log.track { logger ->
+        assertInitFile(file, [foo:'a'], [foo:'a'])
+        assertNextFile(file, [foo:'abc'], [foo:'abc'])
+        assertNextFile(file, [foo:'abcde'], [foo:'abcde'])
+        assertNextFile(file, [foo:'abcdefg'], [foo:'abcdefg'])
+        assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
+        assert null == new TestCaseHandler(dirItem, props).nextFile(file)
+
+        assert logger.isLogged('Executing step; test="test1"; name=singleStep1; fnName=SingleStep; fnPath=/foo/path/to/fn', Level.INFO)
+        assert logger.isLogged('Executing step; test="test1"; name=multiStep1; fnName=MultiStep1; subSteps=2', Level.INFO)
+        assert logger.isLogged('Executing step; test="test1"; name=singleStep2; fnName=SingleStep; fnPath=/foo/path/to/fn', Level.INFO)
+        assert logger.isLogged('Executing step; test="test1"; name=multiStep2; fnName=MultiStep2; subSteps=2', Level.INFO)
+        assert logger.isLogged('Executing step; test="test1"; name=singleStep3; fnName=SingleStep; fnPath=/foo/path/to/fn', Level.INFO)
+        assert logger.isLogged('Executing step; test="test1"; name=multiStep3; fnName=MultiStep3; subSteps=1', Level.INFO)
+        assert logger.isLogged('Executing step; test="test1"; name=singleStep4; fnName=SingleStep; fnPath=/foo/path/to/fn', Level.INFO)
+      }
+    }
+  }
+
+  @Test
+  void should_not_allow_circular_function_calls() {
+    def functionFile = """
+      function "MultiStep1" {
+        description "foo-description"
+
+        input "foo"
+        
+        step "MultiStep2", "multiStep2", {
+          foo '{{ foo }}'
+        }
+        
+        output "foo", "{{ step.multiStep2.foo }}"
+      }
+      function "MultiStep2" {
+        description "foo-description"
+
+        input "foo"
+        
+        step "MultiStep1", "multiStep2", {
+          foo '{{ foo }}'
+        }
+        
+        output "foo", "{{ step.multiStep2.foo }}"
+      }
+    """
+    def functions = Function.parse(functionFile)
+    def testFile = """
+      test "test1" {
+        description "test circular reference"
+        step "MultiStep1", "multiStep1", {
+          foo 'bar'
+        }
+      }
+    """
+
+    def props = [functions: [:]]
+    functions.each {
+      props.functions[it.name] = it
+    }
+    DirItem dirItem = new DirItem('something.test')
+    mockFile(testFile) { file ->
+      try {
+        new TestCaseHandler(dirItem, props).nextFile(file)
+        fail('Expected IllegalStateException')
+      }
+      catch(IllegalStateException e) {
+        assert 'Circular function call detected; name=MultiStep1; callStack=[MultiStep1, MultiStep2]' == e.message
+      }
+    }
+  }
+
+  @Test
   void should_return_next_file() {
     DirItem dirItem = new DirItem('something.test')
     def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
@@ -306,8 +486,8 @@ class TestCaseHandlerTest {
   @Test
   void should_move_output_arg_results_to_step() {
     DirItem dirItem = new DirItem('something.test')
-    Function fn1 = new Function(path: 'fn_1', outputs: ['output1', 'output2'], args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
-    Function fn2 = new Function(path: 'fn_2', outputs: ['output3', 'output4'], args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    Function fn1 = new Function(path: 'fn_1', outputs: ['output1': null, 'output2': null], args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    Function fn2 = new Function(path: 'fn_2', outputs: ['output3': null, 'output4': null], args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
     def functions = ['fn_1': fn1, 'fn_2': fn2]
     assert [] == dirItem.children
 
@@ -330,21 +510,22 @@ class TestCaseHandlerTest {
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       props.output1 = 'value1'
       props.output2 = 'value2'
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
       assert ['output1': 'value1', 'output2': 'value2'] == props.testCases[0].steps[0].outputs
       assert 'existing.property.dont.remove' == props.output1
       assert !props.containsKey('output2')
 
+      TestCaseHandler.startNextStep(props)
       assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
       props.output3 = 'value3'
       props.output4 = 'value4'
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
       assert !props.containsKey('output3')
       assert !props.containsKey('output4')
       assert ['output3': 'value3', 'output4': 'value4'] == props.testCases[0].steps[1].outputs
 
+      TestCaseHandler.startNextStep(props)
       assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
-      TestCaseHandler.stepComplete(props)
 
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
     }
@@ -378,16 +559,17 @@ class TestCaseHandlerTest {
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert 1 == props.arg1
       assert 2 == props.arg2
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
 
+      TestCaseHandler.startNextStep(props)
       assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert 3 == props.arg1
       assert 4 == props.arg2
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
 
+      TestCaseHandler.startNextStep(props)
       assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
       assert 'existing.arg1' == props.arg1
-      TestCaseHandler.stepComplete(props)
       assert !props.containsKey('arg2')
 
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
@@ -419,17 +601,18 @@ class TestCaseHandlerTest {
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert 1 == props.arg1
       assert 2 == props.arg2
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
 
+      TestCaseHandler.startNextStep(props)
       assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert 3 == props.arg1
       assert 4 == props.arg2
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
 
+      TestCaseHandler.startNextStep(props)
       assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
       assert !props.containsKey('arg1')
       assert !props.containsKey('arg2')
-      TestCaseHandler.stepComplete(props)
 
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
     }
@@ -438,7 +621,7 @@ class TestCaseHandlerTest {
   @Test
   void should_allow_input_variables_to_be_assigned_to_output_variables() {
     DirItem dirItem = new DirItem('something.test')
-    Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo'])
+    Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo': null])
     def functions = ['fn1': fn]
 
     def input = """
@@ -452,7 +635,7 @@ class TestCaseHandlerTest {
     mockFile(input) { file ->
       def props = [functions: functions]
       assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
       assert 'bar' == props.step.step1.foo
     }
   }
@@ -460,7 +643,7 @@ class TestCaseHandlerTest {
   @Test
   void should_not_override_existing_property_with_reusing_properties() {
     DirItem dirItem = new DirItem('something.test')
-    Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo'])
+    Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo': null])
     def functions = ['fn1': fn]
 
     def input = """
@@ -474,12 +657,12 @@ class TestCaseHandlerTest {
     mockFile(input) { file ->
       def props = [functions: functions, foo: 'foobar']
       assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
       assert 'bar' == props.step.step1.foo
       assert 'foobar' == props.foo
     }
   }
-  
+
   @Test
   void should_copy_interpolated_values_to_memory_map() {
     TestCase testCase = new TestCase()
@@ -611,11 +794,11 @@ class TestCaseHandlerTest {
     """
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.test')
-      Function fn1 = new Function(path: 'fn_1', outputs: ['screenName'], args: [new Arg(name: 'arg1')])
+      Function fn1 = new Function(path: 'fn_1', outputs: ['screenName': null], args: [new Arg(name: 'arg1')])
       def props = [functions: ['fn_1': fn1]]
       new TestCaseHandler(dirItem, props).nextFile(file)
       props.screenName = 'ordering-' + props.arg1
-      TestCaseHandler.stepComplete(props)
+      TestCaseHandler.completeCurrentStep(props)
       TransientFile transientFile = new TestCaseHandler(dirItem, props).nextFile(file)
 
       def expected = new StringBuffer()
@@ -634,12 +817,21 @@ class TestCaseHandlerTest {
     def testCase2Steps = [new Step(name: 'step3'), new Step(name: 'step4'), new Step(name: 'step5')]
     def testCases = [new TestCase(steps: testCase1Steps), new TestCase(steps: testCase2Steps)]
 
-    assert 'step1' == TestCaseHandler.currentStep(testCases, 0).name
-    assert 'step2' == TestCaseHandler.currentStep(testCases, 1).name
-    assert 'step3' == TestCaseHandler.currentStep(testCases, 2).name
-    assert 'step4' == TestCaseHandler.currentStep(testCases, 3).name
-    assert 'step5' == TestCaseHandler.currentStep(testCases, 4).name
-    assert null == TestCaseHandler.currentStep(testCases, 5)
+    ToxicProperties props = new ToxicProperties()
+    props.testCases = testCases
+    props.stepIndex = 0
+
+    assert 'step1' == TestCaseHandler.currentStep(props).name
+    props.stepIndex++
+    assert 'step2' == TestCaseHandler.currentStep(props).name
+    props.stepIndex++
+    assert 'step3' == TestCaseHandler.currentStep(props).name
+    props.stepIndex++
+    assert 'step4' == TestCaseHandler.currentStep(props).name
+    props.stepIndex++
+    assert 'step5' == TestCaseHandler.currentStep(props).name
+    props.stepIndex++
+    assert null == TestCaseHandler.currentStep(props)
   }
 
   def mockFile(String fileText, Closure c) {

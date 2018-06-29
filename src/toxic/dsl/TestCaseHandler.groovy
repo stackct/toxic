@@ -1,12 +1,11 @@
 package toxic.dsl
 
+import log.Log
 import toxic.dir.DirItem
 import toxic.dir.LinkHandler
 
-import org.apache.log4j.Logger
-
 class TestCaseHandler extends LinkHandler {
-  protected static Logger log = Logger.getLogger(this)
+  private final static Log log = Log.getLogger(this)
 
   TestCaseHandler(DirItem item, def props) {
     super(item, props)
@@ -20,19 +19,35 @@ class TestCaseHandler extends LinkHandler {
     props.backup = props.clone()
 
     props.testCases.each { testCase ->
-      testCase.steps.each { step ->
-        if(!props.functions.containsKey(step.function)) {
-          throw new IllegalStateException("Undefined function; name=${step.function}")
-        }
-        Function function = props.functions["${step.function}"]
-        addChild(new DirItem(new StepFile("${function.path}"), item))
-      }
+      addSteps(testCase.steps)
       Closure resolver = { contents ->
         def interpolatedContents = ''<<''
         contents.eachLine { interpolatedContents << Step.interpolate(props, it) + '\n' }
         interpolatedContents.toString()
       }
       addChild(new DirItem(testCase.assertionFile(file, resolver), item))
+      testCase.steps << new AssertionStep()
+    }
+  }
+
+  void addSteps(List<Step> steps, Step parentStep=null, List<String> functionCallStack = []) {
+    steps.eachWithIndex { step, index ->
+      if(!props.functions.containsKey(step.function)) {
+        throw new IllegalStateException("Undefined function; name=${step.function}")
+      }
+      Function function = fromStep(step, props)
+      if(function.path) {
+        boolean lastChildStep = (parentStep && steps.size()-1 == index)
+        addChild(new DirItem(new StepFile("${function.path}", parentStep, lastChildStep), item))
+      }
+      else if(functionCallStack.contains(function.name)) {
+        throw new IllegalStateException("Circular function call detected; name=${function.name}; callStack=${functionCallStack}")
+      }
+      else {
+        List<String> stepsFunctionCallStack = functionCallStack.collect()
+        stepsFunctionCallStack << function.name
+        addSteps(function.steps, step, stepsFunctionCallStack)
+      }
     }
   }
 
@@ -40,7 +55,7 @@ class TestCaseHandler extends LinkHandler {
     if (props.test) {
       return testCase.name == props.test
     }
-    
+
     boolean include = true
 
     if (props.includeTags) {
@@ -50,7 +65,7 @@ class TestCaseHandler extends LinkHandler {
     if (props.excludeTags) {
       include &= !hasAny(testCase, props.excludeTags.tokenize(','))
     }
-    
+
     return include
   }
 
@@ -62,65 +77,113 @@ class TestCaseHandler extends LinkHandler {
   File nextFile(File f) {
     if (!item.children) {
       lazyInit(f)
-      copyStepArgsToMemory(props)
+      startStep(props)
     }
     item.nextChild(props)
   }
 
-  static void stepComplete(props) {
-    moveOutputResultsToStep(props)
-    removeStepArgsFromMemory(props)
-    props.stepIndex++
-    copyStepArgsToMemory(props)
-  }
-
-  static void copyStepArgsToMemory(props) {
-    Step step = currentStep(props.testCases, props.stepIndex)
+  static void startStep(props) {
+    Step step = currentStep(props)
     if(step) {
-      Function function = props.functions["${step.function}"]
-      function.validateRequiredArgsArePresent(step.args)
-      function.args.each { arg ->
-        if(arg.hasDefaultValue && !step.args.containsKey(arg.name)) {
-          step.args[arg.name] = arg.defaultValue
-        }
+      TestCase testCase = props.step.currentTestCase(props)
+      if(step instanceof AssertionStep) {
+        log.info("Executing test assertions; test=\"${testCase.name}\"")
       }
-      step.args.each { k, v ->
-        function.validateArgIsDefined(k)
-        setWithBackup(k, Step.interpolate(props, v), props, props.backup)
+      else {
+        Function function = fromStep(step, props)
+        String fnDetails = function.path ? "fnPath=${function.path}" : "subSteps=${function.steps.size()}"
+        log.info("Executing step; test=\"${testCase.name}\"; name=${step.name}; fnName=${function.name}; ${fnDetails}")
+        copyStepArgsToMemory(props)
+        if(!function.path) {
+          startNextStep(props)
+        }
       }
     }
   }
 
-  static void removeStepArgsFromMemory(props) {
-    Step step = currentStep(props.testCases, props.stepIndex)
-    step?.args?.keySet().each {
+  static void startNextStep(props) {
+    props.stepIndex++
+    startStep(props)
+  }
+
+  static void completeCurrentStep(props) {
+    completeStep(currentStep(props), props)
+  }
+
+  static void completeStep(Step step, props) {
+    log.debug("Completing step; name=${step.name}")
+    moveOutputResultsToStep(step, props)
+    removeStepArgsFromMemory(step, props)
+  }
+
+  static void copyStepArgsToMemory(props) {
+    Step step = currentStep(props)
+    Function function = fromStep(step, props)
+    function.validateRequiredArgsArePresent(step.args)
+    function.args.each { arg ->
+      if(arg.hasDefaultValue && !step.args.containsKey(arg.name)) {
+        step.args[arg.name] = arg.defaultValue
+      }
+    }
+    step.args.each { k, v ->
+      function.validateArgIsDefined(k)
+      def interpolatedValue = Step.interpolate(props, v)
+      log.debug("Copying step input to memory; step=${step.function}; ${k}=${interpolatedValue}")
+      setWithBackup(k, interpolatedValue, props, props.backup)
+    }
+  }
+
+  static void removeStepArgsFromMemory(Step step, props) {
+    step.args.keySet().each {
+      log.debug("Removing step input from memory; step=${step.function}; input=${it}")
       removeWithRestore(it, props, props.backup)
     }
   }
 
-  static void moveOutputResultsToStep(props) {
-    Step step = currentStep(props.testCases, props.stepIndex)
-    if(step) {
-      props.functions["${step.function}"].outputs.each {
-        step.outputs[it] = props[it]
-        removeWithRestore(it, props, props.backup)
+  static void moveOutputResultsToStep(Step step, props) {
+    Function function = fromStep(step, props)
+    if(function) {
+      function.outputs.each { k, v ->
+        step.outputs[k] = v ? Step.interpolate(props, v) : props[k]
+        log.debug("Moving step output to memory; fn=${function.name}; ${k}=${step.outputs[k]}")
+        removeWithRestore(k, props, props.backup)
       }
+    }
+    else {
+      log.debug("Skipping output result copy because function was not found for step; step=${step.name}")
     }
   }
 
-  static Step currentStep(List<TestCase> testCases, int stepIndex) {
+  static Step currentStep(props) {
     Step step
+    int stepIndex = props.stepIndex
     int totalTestCaseExecutions = 0
-    testCases.each { testCase ->
-      totalTestCaseExecutions += testCase.steps.size()
+    props.testCases.each { testCase ->
+      List<Step> testCaseSteps = flattenTestCaseSteps(testCase.steps, props)
+      int totalTestCaseSteps = testCaseSteps.size()
+      totalTestCaseExecutions += totalTestCaseSteps
       if(!step && stepIndex < totalTestCaseExecutions) {
-        int foundIndex = stepIndex - (totalTestCaseExecutions - testCase.steps.size())
+        int foundIndex = stepIndex - (totalTestCaseExecutions - totalTestCaseSteps)
         if(foundIndex >= 0) {
-          step = testCase.steps[foundIndex]
+          step = testCaseSteps[foundIndex]
         }
       }
     }
     step
+  }
+
+  static Function fromStep(Step step, props) {
+    props.functions["${step.function}"]
+  }
+
+  static List<Step> flattenTestCaseSteps(List<Step> steps, props) {
+    List<Step> flattenedSteps = []
+    steps?.each { step ->
+      flattenedSteps << step
+      Function function = fromStep(step, props)
+      flattenedSteps += flattenTestCaseSteps(function?.steps, props)
+    }
+    return flattenedSteps
   }
 
   private static void setWithBackup(key, newVal, props, backup) {
@@ -133,7 +196,8 @@ class TestCaseHandler extends LinkHandler {
   private static void removeWithRestore(key, props, backup) {
     if (backup.containsKey(key)) {
       props[key] = backup[key]
-    } else {
+    }
+    else {
       props.remove(key)
     }
   }

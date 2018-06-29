@@ -12,7 +12,7 @@ Functions encapsulate a group of Toxic tasks that can run in isolation, and can 
 
 #### Fields
 
-* **path** (Required) - Path to the Toxic task(s)
+* **path** | **step(s)** (Required) - Path to the Toxic task(s) or a list of steps to execute
 * **description** (Required) - A description of the Function
 * **arg** | **input** (Optional) - Defines an input argument that can be marked as required or optional. Specified arguments are required by default. Multiple `arg` blocks are supported.
 * **output** (Optional) - Defines an output that can be interpolated in subsequent Steps and/or Assertion statements (see [Interpolation](#interpolation)). Multiple `output` statements are supported.
@@ -28,6 +28,20 @@ function "NAME" {
 
    output "OUTPUT1"
    output "OUTPUT2"
+}
+```
+
+```groovy
+function "NAME" {
+   description  "DESCRIPTION"
+
+   input "ARG1"
+
+   step "FunctionName", "taskName", {
+     foo '{{ ARG1 }}'
+   }
+
+   output "OUTPUT1", "{{ step.taskName.foo }}"
 }
 ```
 
@@ -357,4 +371,4 @@ toxic -doDir=toxic/tests -test='"my pickle test"'
 
 ## What's Next
 
-* Higher order function composition
+* Parallel test execution

@@ -85,9 +85,14 @@ class TestCaseTest {
   void should_create_assertion_file() {
     TestCase testCase = new TestCase(name: 'testCase', assertions: ['assert 1=1', 'assert 2=2'])
     File parent = new File('parent')
-    File file = testCase.assertionFile(parent) { contents ->
+    TransientDir transientDir = testCase.assertionFile(parent) { contents ->
       contents.replaceAll('=', '==')
     }
+    assert transientDir.exists()
+    assert transientDir.isDirectory()
+    assert 1 == transientDir.listFiles().size()
+
+    TransientFile file = transientDir.listFiles()[0]
     assert parent == file.parentFile
     assert file.exists()
     assert !file.isDirectory()

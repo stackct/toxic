@@ -1,19 +1,20 @@
 package toxic.dsl
 
 class StepFile extends File {
-  StepFile(String name) {
+  Step parentStep
+  boolean lastChildStep
+
+  StepFile(String name, Step parentStep = null, boolean lastChildStep = false) {
     super(name)
-  }
-
-  StepFile(File parent, String name) {
-    super(parent, name)
-  }
-
-  StepFile(java.net.URI uri) {
-    super(uri)
+    this.parentStep = parentStep
+    this.lastChildStep = lastChildStep
   }
 
   void complete(props) {
-    TestCaseHandler.stepComplete(props)
+    TestCaseHandler.completeCurrentStep(props)
+    if(lastChildStep) {
+      TestCaseHandler.completeStep(parentStep, props)
+    }
+    TestCaseHandler.startNextStep(props)
   }
 }
