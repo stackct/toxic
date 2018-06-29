@@ -456,7 +456,7 @@ public class DirItemTest {
     mockFile.demand.getName(3) { 'test' }
     mockFile.demand.complete { def p -> assert p == props }
     mockFile.use {
-      StepFile taskFile = new StepFile('test')
+      StepFile taskFile = new StepFile('test', null, false)
       new DirItem(taskFile).nextFile(props)
     }
   }
@@ -472,7 +472,7 @@ public class DirItemTest {
     mockFile.demand.getName(3) { 'test' }
     mockFile.demand.complete(0) { def p -> }
     mockFile.use {
-      StepFile taskFile = new StepFile('test')
+      StepFile taskFile = new StepFile('test', null, false)
       new DirItem(taskFile).nextFile(['test1':'value1'])
     }
   }

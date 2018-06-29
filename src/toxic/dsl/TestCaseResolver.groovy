@@ -4,12 +4,11 @@ abstract class TestCaseResolver {
 
   abstract def propertyMissing(String name);
 
-  TestCase currentTestCase(List<TestCase> testCases, int stepIndex) {
+  TestCase currentTestCase(props) {
     int totalTestCaseExecutions = 0
-    testCases.find { testCase ->
-      totalTestCaseExecutions += testCase.steps.size()
-      // Using <= because the assertion step needs to be considered within the current TestCase
-      stepIndex <= totalTestCaseExecutions
+    props.testCases.find { testCase ->
+      totalTestCaseExecutions += TestCaseHandler.flattenTestCaseSteps(testCase.steps, props).size()
+      props.stepIndex < totalTestCaseExecutions
     }
   }
 }

@@ -31,7 +31,8 @@ class FunctionTest {
       assert fn.args[1].required == false
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
-      assert fn.outputs == ['a', 'b'] as Set
+      assert fn.outputs == ['a': null, 'b': null]
+      assert fn.steps == []
     }
   }
 
@@ -61,7 +62,8 @@ class FunctionTest {
       assert fn.args[1].required == false
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
-      assert fn.outputs == ['a', 'b'] as Set
+      assert fn.outputs == ['a': null, 'b': null]
+      assert fn.steps == []
     }
   }
 
@@ -91,7 +93,8 @@ class FunctionTest {
       assert fn.args[1].required == false
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
-      assert fn.outputs == ['a', 'b'] as Set
+      assert fn.outputs == ['a': null, 'b': null]
+      assert fn.steps == []
     }
   }
 
@@ -135,7 +138,7 @@ class FunctionTest {
       assert fn1.args[1].required == false
       assert fn1.args[2].name == 'foo-other'
       assert fn1.args[2].required == true
-      assert fn1.outputs == ['foo-a', 'foo-b'] as Set
+      assert fn1.outputs == ['foo-a': null, 'foo-b': null]
 
       Function fn2 = fns[1]
       assert fn2.name == 'bar'
@@ -147,7 +150,67 @@ class FunctionTest {
       assert fn2.args[1].required == false
       assert fn2.args[2].name == 'bar-other'
       assert fn2.args[2].required == true
-      assert fn2.outputs == ['bar-a', 'bar-b'] as Set
+      assert fn2.outputs == ['bar-a': null, 'bar-b': null]
+    }
+  }
+
+  @Test
+  void should_compile_function_with_steps() {
+    def input =  { ->
+      function "foo", {
+        description "foo description"
+
+        input "foo"
+
+        step "Step1", "step1", {
+          input1 'value1'
+        }
+        step "Step2", "step2", {
+          input2 '{{ step.step1.output }}'
+        }
+
+        output "bar"
+      }
+    }
+
+    Parser.parse(new Function(), input).with { functions ->
+      assert 1 == functions.size()
+      Function fn = functions[0]
+      assert null == fn.path
+      assert fn.description == 'foo description'
+
+      assert 2 == fn.steps.size()
+      assert 'step1' == fn.steps[0].name
+      assert 'Step1' == fn.steps[0].function
+      assert ['input1':'value1'] == fn.steps[0].args
+
+      assert [:] == fn.steps[1].outputs
+      assert 'step2' == fn.steps[1].name
+      assert 'Step2' == fn.steps[1].function
+      assert ['input2':'{{ step.step1.output }}'] == fn.steps[1].args
+      assert [:] == fn.steps[1].outputs
+    }
+  }
+
+  @Test
+  void should_compile_function_with_output_values() {
+    def input =  { ->
+      function "foo", {
+        path "foo-path"
+        description "foo description"
+
+        output "a", "foo"
+        output "b", "{{ bar }}"
+      }
+    }
+
+    Parser.parse(new Function(), input).with { functions ->
+      assert 1 == functions.size()
+      Function fn = functions[0]
+      assert fn.path == 'foo-path'
+      assert fn.description == 'foo description'
+      assert fn.outputs == ['a': 'foo', 'b': '{{ bar }}']
+      assert fn.steps == []
     }
   }
 
@@ -198,9 +261,20 @@ class FunctionTest {
       }
     }
 
-    assertRequiredField(new Function(), 'name, path, description')
-    assertRequiredField(new Function('foo'), 'path, description')
+    assertRequiredField(new Function(), 'name, description, (path OR steps)')
+    assertRequiredField(new Function('foo'), 'description, (path OR steps)')
     assertRequiredField(new Function(name: 'foo', path: 'path'), 'description')
+  }
+
+  @Test
+  void should_validate_path_and_steps_cannot_be_defined_together() {
+    try {
+      new Function(name: 'foo', description: 'bar', path: 'path', steps: [new Step()]).validate()
+      fail('Expected IllegalStateException')
+    }
+    catch(IllegalStateException e) {
+      assert "Function cannot specify both path and steps; name=foo" == e.message
+    }
   }
 
   @Test

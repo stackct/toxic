@@ -1,6 +1,8 @@
 
 package toxic
 
+import log.Log
+
 import java.lang.management.ManagementFactory
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -295,6 +297,13 @@ public class Main {
 
     if (props.logLevel) {
       log.getRootLogger().setLevel(Level.toLevel(props.logLevel))
+    }
+
+    props.keySet().each {
+      String prefix = 'logLevel.'
+      if(it.startsWith(prefix)) {
+        Log.setLevel(it - prefix, props[it])
+      }
     }
   }
 }

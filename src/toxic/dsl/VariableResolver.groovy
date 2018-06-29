@@ -9,6 +9,6 @@ class VariableResolver extends TestCaseResolver {
 
   @Override
   def propertyMissing(String name)  {
-    currentTestCase(props.testCases, props.stepIndex).vars[name]
+    currentTestCase(props).vars[name]
   }
 }

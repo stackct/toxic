@@ -2,6 +2,7 @@ package toxic
 
 import log.Log
 import org.apache.log4j.Level
+import org.apache.log4j.Logger
 import org.junit.*
 
 public class MainTest {
@@ -48,6 +49,16 @@ public class MainTest {
     props.logConf = "foo.xml"
     Main.configureLogging(props)
     assert log4jResource == "foo.xml"
+  }
+
+  @Test
+  void should_configure_log_level() {
+    ToxicProperties props = new ToxicProperties()
+    props['foo'] = 'bar'
+    props['logLevel.toxic.dsl'] = 'debug'
+
+    Main.configureLogging(props)
+    assert Log.LEVEL_DEBUG == Log.getLevel(Logger.getLogger('toxic.dsl'))
   }
 
   @Test
