@@ -1,14 +1,13 @@
 package toxic.dsl
 
-class VariableResolver extends TestCaseResolver {
+class VariableResolver {
   def props
 
   VariableResolver(def props) {
     this.props = props
   }
 
-  @Override
   def propertyMissing(String name)  {
-    currentTestCase(props).vars[name]
+    TestCaseHandler.currentTestCase(props).vars[name]
   }
 }

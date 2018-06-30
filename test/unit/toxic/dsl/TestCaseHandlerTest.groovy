@@ -6,7 +6,6 @@ import toxic.dir.DirItem
 
 import static org.junit.Assert.fail
 import org.junit.Test
-import org.junit.Ignore
 
 class TestCaseHandlerTest {
   @Test
@@ -94,6 +93,60 @@ class TestCaseHandlerTest {
       catch(IllegalStateException e) {
         assert 'Undefined function; name=fn_1' == e.message
       }
+    }
+  }
+
+  @Test
+  void should_set_step_index_and_level_during_init() {
+    def functionFile = """
+      function "SingleStep" {
+        path "/foo/path/to/fn"
+        description "foo-description"
+      }
+      function "MultiStep" {
+        description "foo-description"
+        step "SingleStep", "singleStep", { }
+      }
+    """
+    def functions = Function.parse(functionFile)
+    def testFile = """
+      test "test1" {
+        description "test1"
+        step "SingleStep", "singleStep", { }
+        step "MultiStep", "multiStep", { }
+        assertions { eq '1', '1' }
+      }
+      
+      test "test2" {
+        description "test2"
+        step "SingleStep", "singleStep", { }
+        step "MultiStep", "multiStep", { }
+        assertions { eq '1', '1' }
+      }
+    """
+
+    def props = [functions: [:]]
+    functions.each {
+      props.functions[it.name] = it
+    }
+    DirItem dirItem = new DirItem('something.test')
+
+    def assertSequence = { int sequenceIndex, String expectedStepName, int expectedLevel ->
+      assert expectedStepName == props.stepSequence[sequenceIndex].step.name
+      assert expectedLevel == props.stepSequence[sequenceIndex].level
+    }
+
+    mockFile(testFile) { file ->
+      new TestCaseHandler(dirItem, props).lazyInit(file)
+      assert 8 == props.stepSequence.size()
+      assertSequence(0, 'singleStep', 0)
+      assertSequence(1, 'multiStep', 0)
+      assertSequence(2, 'singleStep', 1)
+      assertSequence(3, null, 0)
+      assertSequence(4, 'singleStep', 0)
+      assertSequence(5, 'multiStep', 0)
+      assertSequence(6, 'singleStep', 1)
+      assertSequence(7, null, 0)
     }
   }
 
@@ -461,6 +514,29 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  void should_find_current_test_case() {
+    def testCase1Steps = [new Step(name: 'step1'), new Step(name: 'step2')]
+    def testCase2Steps = [new Step(name: 'step3'), new Step(name: 'step4'), new Step(name: 'step5')]
+    def testCases = [new TestCase(name: 'tc1', steps: testCase1Steps), new TestCase(name: 'tc2', steps: testCase2Steps)]
+
+    ToxicProperties props = new ToxicProperties()
+    props.testCases = testCases
+    props.stepIndex = 0
+
+    assert 'tc1' == TestCaseHandler.currentTestCase(props).name
+    props.stepIndex++
+    assert 'tc1' == TestCaseHandler.currentTestCase(props).name
+    props.stepIndex++
+    assert 'tc2' == TestCaseHandler.currentTestCase(props).name
+    props.stepIndex++
+    assert 'tc2' == TestCaseHandler.currentTestCase(props).name
+    props.stepIndex++
+    assert 'tc2' == TestCaseHandler.currentTestCase(props).name
+    props.stepIndex++
+    assert null == TestCaseHandler.currentTestCase(props)
+  }
+
+  @Test
   void should_return_next_file() {
     DirItem dirItem = new DirItem('something.test')
     def functions = ['fn_1': new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])]
@@ -636,6 +712,7 @@ class TestCaseHandlerTest {
       def props = [functions: functions]
       assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       TestCaseHandler.completeCurrentStep(props)
+      TestCaseHandler.startNextStep(props)
       assert 'bar' == props.step.step1.foo
     }
   }
@@ -658,6 +735,7 @@ class TestCaseHandlerTest {
       def props = [functions: functions, foo: 'foobar']
       assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       TestCaseHandler.completeCurrentStep(props)
+      TestCaseHandler.startNextStep(props)
       assert 'bar' == props.step.step1.foo
       assert 'foobar' == props.foo
     }
@@ -674,7 +752,10 @@ class TestCaseHandlerTest {
     ])
 
     Function voidFunction = new Function(args: [new Arg(name: 'total'), new Arg(name: 'list'), new Arg(name: 'order'), new Arg(name: 'map')])
-    def props = [testCases: [testCase], stepIndex: 1, functions: [create_order:new Function(), void_order:voidFunction]]
+    def props = [testCases: [testCase], stepIndex: 1, stepSequence: [], functions: [create_order:new Function(), void_order:voidFunction]]
+    testCase.steps.each {
+      props.stepSequence << [step: it, level: 0]
+    }
     props.step = new StepOutputResolver(props)
     TestCaseHandler.copyStepArgsToMemory(props)
     assert '12345' == props.order.orderId
@@ -799,6 +880,7 @@ class TestCaseHandlerTest {
       new TestCaseHandler(dirItem, props).nextFile(file)
       props.screenName = 'ordering-' + props.arg1
       TestCaseHandler.completeCurrentStep(props)
+      TestCaseHandler.startNextStep(props)
       TransientFile transientFile = new TestCaseHandler(dirItem, props).nextFile(file)
 
       def expected = new StringBuffer()

@@ -13,6 +13,7 @@ class TestCaseHandler extends LinkHandler {
 
   void lazyInit(File file) {
     props.stepIndex = 0
+    props.stepSequence = []
     props.testCases = TestCase.parse(file.text).findAll { shouldInclude(it) }
     props.step = new StepOutputResolver(props)
     props.var = new VariableResolver(props)
@@ -26,7 +27,9 @@ class TestCaseHandler extends LinkHandler {
         interpolatedContents.toString()
       }
       addChild(new DirItem(testCase.assertionFile(file, resolver), item))
-      testCase.steps << new AssertionStep()
+      Step assertionStep = new AssertionStep()
+      testCase.steps << assertionStep
+      props.stepSequence << [step: assertionStep, level: 0]
     }
   }
 
@@ -35,6 +38,7 @@ class TestCaseHandler extends LinkHandler {
       if(!props.functions.containsKey(step.function)) {
         throw new IllegalStateException("Undefined function; name=${step.function}")
       }
+      props.stepSequence << [step: step, level: functionCallStack.size()]
       Function function = fromStep(step, props)
       if(function.path) {
         boolean lastChildStep = (parentStep && steps.size()-1 == index)
@@ -85,7 +89,7 @@ class TestCaseHandler extends LinkHandler {
   static void startStep(props) {
     Step step = currentStep(props)
     if(step) {
-      TestCase testCase = props.step.currentTestCase(props)
+      TestCase testCase = currentTestCase(props)
       if(step instanceof AssertionStep) {
         log.info("Executing test assertions; test=\"${testCase.name}\"")
       }
@@ -151,6 +155,14 @@ class TestCaseHandler extends LinkHandler {
     }
     else {
       log.debug("Skipping output result copy because function was not found for step; step=${step.name}")
+    }
+  }
+
+  static TestCase currentTestCase(props) {
+    int totalTestCaseExecutions = 0
+    props.testCases.find { testCase ->
+      totalTestCaseExecutions += flattenTestCaseSteps(testCase.steps, props).size()
+      props.stepIndex < totalTestCaseExecutions
     }
   }
 
