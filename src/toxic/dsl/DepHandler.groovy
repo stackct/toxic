@@ -1,9 +1,12 @@
 package toxic.dsl
 
+import log.Log
 import toxic.dir.DirItem
 import toxic.dir.LinkHandler
 
 class DepHandler extends LinkHandler {
+  private final static Log log = Log.getLogger(this)
+
   DepHandler(DirItem item, Object props) {
     super(item, props)
   }
@@ -20,7 +23,7 @@ class DepHandler extends LinkHandler {
     props.deps = props.deps ?: [:]
     String prefix = 'deps.'
     props.findAll { k, v -> k.startsWith(prefix) && v }.each {
-      props.deps[it.key.substring(prefix.size())] = it.value
+      props.deps[it.key.substring(prefix.size())] = new File(it.value)
     }
     Dep.parse(file.text).each {
       process(it)
@@ -29,19 +32,14 @@ class DepHandler extends LinkHandler {
 
   void process(Dep dep) {
     if(props.deps.containsKey(dep.name)) {
-      resolveLocal(dep, props.deps[dep.name])
+      resolveLocal(props.deps[dep.name])
     }
     else {
       resolveRemote(dep)
     }
   }
 
-  void resolveLocal(Dep dep, String depsDir) {
-    props.deps[dep.name] = new File(depsDir)
-    addFunctionsChild(depsDir)
-  }
-
-  void resolveLocal(Dep dep, File depsDir) {
+  void resolveLocal(File depsDir) {
     addFunctionsChild(depsDir)
   }
 
@@ -58,6 +56,9 @@ class DepHandler extends LinkHandler {
     File fnDir = new File(depsDir, 'functions')
     if(fnDir.isDirectory() && fnDir.list().length > 0) {
       addChild(new DirItem(fnDir, item))
+    }
+    else {
+      log.warn("skipping non-existent or empty deps function dir; fnDir=${fnDir.absolutePath}")
     }
   }
 }
