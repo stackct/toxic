@@ -1,8 +1,6 @@
 package toxic.dsl
 
-import toxic.ToxicProperties
 import toxic.dir.DirItem
-import groovy.mock.interceptor.MockFor
 import org.junit.After
 import org.junit.Test
 
@@ -27,7 +25,7 @@ class DepHandlerTest {
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.dep')
       mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        def props = [deps: [artifact: artifactsDir.absolutePath]]
+        def props = [deps: [artifact: artifactsDir]]
         assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
         assert 1 == dirItem.children.size()
 
@@ -78,40 +76,17 @@ class DepHandlerTest {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.dep')
-      def props = [useDepsCache: true, homePath:'/home', 'pickle.repoUrl': 'http://localhost']
-      assert null == new DepHandler(dirItem, props).nextFile(file)
-      assert 0 == dirItem.children.size()
+      def props = [useDepsCache: true, homePath:'/foo', 'pickle.repoUrl': 'http://localhost']
+      DepHandler.log.track { logger ->
+        assert null == new DepHandler(dirItem, props).nextFile(file)
+        assert 0 == dirItem.children.size()
+        assert logger.isLogged('skipping non-existent or empty deps function dir; fnDir=/foo/gen/deps/artifact/functions')
+      }
     }
   }
 
   @Test
   void should_resolve_local_dep() {
-    String input = 'dep "artifact"'
-    mockFile(input) { file ->
-      DirItem dirItem = new DirItem('something.dep')
-      mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        def props = [deps: [artifact: artifactsDir.absolutePath]]
-        assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
-        assert [artifact: artifactsDir] == props.deps
-      }
-    }
-  }
-
-  @Test
-  void should_resolve_local_dep_as_file() {
-    String input = 'dep "artifact"'
-    mockFile(input) { file ->
-      DirItem dirItem = new DirItem('something.dep')
-      mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        def props = [deps: [artifact: artifactsDir]]
-        assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
-        assert [artifact: artifactsDir] == props.deps
-      }
-    }
-  }
-
-  @Test
-  void should_resolve_from_string_key() {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.dep')
@@ -128,7 +103,7 @@ class DepHandlerTest {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.dep')
-      def props = [homePath:'/home', deps: [artifact: '/home/artifact']]
+      def props = [homePath:'/home', deps: [artifact: new File('/foo/does/not/exist')]]
       assert null == new DepHandler(dirItem, props).nextFile(file)
       assert 0 == dirItem.children.size()
     }
