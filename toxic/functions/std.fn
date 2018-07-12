@@ -44,3 +44,13 @@ function "VerifyUrls" {
 
   output "result"
 }
+
+function "VerifyDatabase" {
+  description "Verifies that a database is responsive before returning, or timesout after a waitMs milliseconds"
+  path "{{ libPath }}/std/verifyDatabase"
+
+  arg "waitMs", false
+
+  output "result"
+}
+
