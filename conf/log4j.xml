@@ -42,7 +42,7 @@
   </logger>
 
   <logger name="org.eclipse.jetty">
-    <level value="warn" />
+    <level value="error" />
   </logger>
 
   <root>

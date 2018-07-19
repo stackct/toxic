@@ -151,11 +151,11 @@ public class JobManagerTest {
     def job5 = new Job(completedDate: date-5)
     jobManager.archive = [ job3, job5, job2, job4, job1 ]
     def jobs = jobManager.archivedJobs()
-    assert jobs[0].is(job1)
-    assert jobs[1].is(job2)
+    assert jobs[0].is(job5)
+    assert jobs[1].is(job4)
     assert jobs[2].is(job3)
-    assert jobs[3].is(job4)
-    assert jobs[4].is(job5)
+    assert jobs[3].is(job2)
+    assert jobs[4].is(job1)
   }
 
   @Test

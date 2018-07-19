@@ -656,7 +656,7 @@ public class JobManager implements Runnable,Publisher {
 
   // Returns archived jobs, oldest first.
   public synchronized def archivedJobs() {
-    return archive.clone().sort { a,b -> b.completedDate <=> a.completedDate }
+    return archive.clone().sort { a,b -> a.completedDate <=> b.completedDate }
   }
 
   public synchronized def currentJobs() {
