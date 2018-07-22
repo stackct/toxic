@@ -61,32 +61,30 @@ pre {
   flex: 1 0 0; /* flex-grow, flex-shrink, flex-basis */
 }
 
-/* Dashboard */
-.dashboard-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+/* Wallboard */
+.wallboard {
+  margin:0;
 }
 
-.dashboard-container div.flex-box {
-  min-width:265px;
-  margin-left: 2px;
-  margin-top:0px;
-  flex: 0 1 10%; /* flex-grow, flex-shrink, flex-basis */
+.wallboard-item-container {
+  padding: 0px;
 }
 
-.dashboard-box {
-  min-height:80px;
-  margin: 1px 0px 1px 1px;
+.wallboard-item {
+  border: solid 1px white;
+  min-height: 80px;
+  padding: 5px;
 }
 
-.dashboard-box h1 {
+.wallboard-item h1 {
   text-align: center;
   font-weight: normal;
   font-size: 16px;
-  padding: 0px;
-  margin: 0px;
+  margin: 10px auto;
+}
+
+.wallboard-item .status {
+  float: left;
 }
 
 .fixed-body {
