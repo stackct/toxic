@@ -6,7 +6,10 @@ ARG K8S_VERSION=v1.10.5
 
 COPY ${DIST_DIR_NAME} /opt/toxic
 
-RUN apk update && apk add bash curl docker git jq openjdk8 openssh openssl make tar \
+RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl py-pip tar \
+    && apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev \
+    && pip install azure-cli \
+    && apk del --purge build \
     && docker -v \
     && addgroup -g 2000 toxic \
     && adduser -u 2000 -G toxic -D toxic \
