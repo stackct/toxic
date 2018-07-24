@@ -84,6 +84,36 @@ memory.helmInstall = { String name, String chart, def values ->
   memory.addHelmAuth(cmds)
   cmds << chart
 
+  exitCode &= memory.execWithValues(cmds, values, null)
+  exitCode &= memory.collectSummary(release, '-setup')
+  exitCode &= memory.collectDetails(namespace, '-setup')
+
+  return exitCode
+}
+
+memory.helmUpgrade = { String name, String chart, def values, def overrides ->
+  int exitCode = 0
+  
+  def namespace = memory['namespace']
+  def release = namespace + '-' + name
+
+  def cmds = []
+  cmds << helm
+  cmds << 'upgrade'
+  cmds << '--wait'
+  cmds << release
+  memory.addHelmAuth(cmds)
+  cmds << chart
+
+  exitCode &= memory.execWithValues(cmds, values, overrides)
+  exitCode &= memory.collectSummary(release, '-upgrade')
+  exitCode &= memory.collectDetails(namespace, '-upgrade')
+
+  return exitCode
+}
+
+memory.execWithValues = { cmds, values, overrides -> 
+  int exitCode = 0
   File f
   try {
     if (values) {
@@ -91,14 +121,14 @@ memory.helmInstall = { String name, String chart, def values ->
       f.write(new JsonBuilder(values).toString())
       cmds << '-f'; cmds << f.path
     }
+    if (overrides) {
+      cmds << '--set'; cmds << overrides
+    }
     exitCode = execWithEnv(cmds)  
   }
   finally {
     f?.delete()
   }
-
-  exitCode &= memory.collectSummary(release, '-setup')
-  exitCode &= memory.collectDetails(namespace, '-setup')
 
   return exitCode
 }
