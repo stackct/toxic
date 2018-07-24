@@ -6,6 +6,16 @@ function "DeployEnvironment" {
   arg "namespace"
 }
 
+function "UpgradeEnvironment" {
+  description "Updates an existing environment with the given value"
+  path "{{ libPath }}/environment/upgrade"
+
+  arg "spec"
+  arg "namespace"
+  arg "chart"
+  arg "overrides"   // Comma-separated key/value pairs
+}
+
 function "DeleteEnvironment" {
   description "Deletes an environment" 
   path "{{ libPath }}/environment/delete"
@@ -24,6 +34,7 @@ function "KubePortForward" {
   arg "port"
   arg "enabled"
 }
+
 
 function "GetServiceUrl" {
   description "Returns the URL for a Kubernetes Service"
