@@ -25,6 +25,15 @@ function "DeleteEnvironment" {
   arg "artifactsDir"
 }
 
+function "CollectLogs" {
+  description "Collects an environment's logs" 
+  path "{{ libPath }}/environment/logs"
+
+  arg "spec"
+  arg "namespace"
+  arg "artifactsDir"
+}
+
 function "KubePortForward" {
   description "Port forward a host port into a Kubernetes resource, and stop the port forward when toxic shuts down."
   path "{{ libPath }}/environment/kube_port_forward"
