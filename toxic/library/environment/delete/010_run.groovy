@@ -1,8 +1,5 @@
 import util.Wait
 
-// Collect the logs:
-memory.collectLogs()
-
 // Delete the charts
 memory.parseEnvironment(memory.spec).charts.each { chart, props ->
   memory.helmDelete(chart)
