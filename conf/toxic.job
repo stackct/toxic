@@ -1,6 +1,10 @@
 make.target=all
 job.trigger.repoCommit=true
 job.init.script.0=new File("${memory['project.workDir']}/gen/job").mkdirs()
-job.init.script.1=new File("${memory['project.workDir']}/gen/job/build.groovy").text="assert 0 == execWithEnv(['make', '${memory['make.target']}'], [TOXIC_ARGS:'-logConf=console-log4j.xml -taskResultsPublisherUrl=http://toxic:8001/api/job/${memory['job'].id}/publish/results', ARTIFACTS_DIR:'${memory.job.jobDir}/artifacts', PICKLE_REPO_URL:'${memory['pickle.repoUrl']}'], 7200, '${memory['project.workDir']}', null)"
+job.init.script.1=new File("${memory['project.workDir']}/gen/job/build.groovy").text="assert 0 == execWithEnv(['make', '${memory['make.target']}'], [:], 7200, '${memory['project.workDir']}', null)"
+artifactsDir=`"${memory.job.artifactsDir}"`
 doDir=`"${memory['project.workDir']}/gen/job/build.groovy"`
+doDir1=`"${memory['project.workDir']}/toxic/setup"`
+doDir2=`"${memory['project.workDir']}/toxic/tests"`
+doDir3=`"${memory['project.workDir']}/toxic/teardown"`
 job.end.script.0=memory['job'].parseJUnitXmlFilesInDir(new File("${memory['project.workDir']}/gen/test"))
