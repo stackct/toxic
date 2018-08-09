@@ -290,4 +290,23 @@ public class ToxicPropertiesTest {
     assert tp.y == ['hi','bye']
     assert !tp.z
   }
+
+  @Test
+  public void test_is_empty_entry() {
+    def tp = [
+      "a": null, 
+      "b": "", 
+      "c": 0,
+      "d": true,
+      "e": false
+
+    ] as ToxicProperties
+    
+    assert tp.isNothing("foo")
+    assert tp.isNothing("a")
+    assert !tp.isNothing("b")
+    assert !tp.isNothing("c")
+    assert !tp.isNothing("d")
+    assert !tp.isNothing("e")
+  }
 }
