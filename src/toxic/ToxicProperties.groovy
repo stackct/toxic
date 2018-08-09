@@ -228,6 +228,10 @@ public class ToxicProperties extends ConfigObject {
   public boolean isTrue(def key) {
     return "true".equalsIgnoreCase(get(key).toString())
   }
+
+  public boolean isNothing(def key) {
+    return get(key) == null || get(key) == [:]
+  }
   
   public void push() {
     backupStack.push(clone())
