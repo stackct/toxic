@@ -101,12 +101,14 @@ class Environment {
     def bean = ManagementFactory.getThreadMXBean()
     def threads = bean.getThreadInfo(bean.getAllThreadIds(), 75)
     threads.each {
-      result.append("\"${it.threadName}\"\n")
-      result.append("   java.lang.Thread.State: ${it.threadState}\n")
-      it.stackTrace.each { method ->
-        result.append("        at ${method}\n");
+      if (it != null) {
+        result.append("\"${it.threadName}\"\n")
+        result.append("   java.lang.Thread.State: ${it.threadState}\n")
+        it.stackTrace.each { method ->
+          result.append("        at ${method}\n");
+        }
+        result.append("\n")
       }
-      result.append("\n")
     }
     return result.toString();
   }
