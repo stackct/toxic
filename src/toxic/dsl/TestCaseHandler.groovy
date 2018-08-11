@@ -138,9 +138,10 @@ class TestCaseHandler extends LinkHandler {
   }
 
   static void removeStepArgsFromMemory(Step step, props) {
-    step.args.keySet().each {
-      log.debug("Removing step input from memory; step=${step.function}; input=${it}")
-      removeWithRestore(it, props, props.backup)
+    Function function = fromStep(step, props)
+    function?.args?.each { arg ->
+      log.debug("Removing step input from memory; step=${step.function}; input=${arg.name}")
+      removeWithRestore(arg.name, props, props.backup)
     }
   }
 
