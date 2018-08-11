@@ -560,6 +560,41 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  void should_remove_optional_args_from_memory_map() {
+    def functions = [
+      'fn_1': new Function(path: 'fn_1', args: [
+        new Arg(name: 'foo', required: true),
+        new Arg(name: 'bar', required: false),
+        new Arg(name: 'baz', required: false),
+      ])
+    ]
+
+    DirItem dirItem = new DirItem('something.test')
+    
+    def input = """
+      test "test1" {
+        description "test1 description"
+        step "fn_1", "step1", {
+          foo "remove me"
+        }
+      }
+    """
+
+    mockFile(input) { file ->
+      def props = [functions: functions]
+      props.output1 = 'existing.property.dont.remove'
+      assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      props['bar'] = 'and me'
+      props['baz'] = 'and me too'
+      
+      TestCaseHandler.completeCurrentStep(props)
+      assert !props.containsKey('foo')
+      assert !props.containsKey('bar')
+      assert !props.containsKey('baz')
+    }
+  }
+
+  @Test
   void should_move_output_arg_results_to_step() {
     DirItem dirItem = new DirItem('something.test')
     Function fn1 = new Function(path: 'fn_1', outputs: ['output1': null, 'output2': null], args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
