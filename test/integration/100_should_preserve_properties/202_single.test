@@ -1,0 +1,19 @@
+test "Second-Single" {
+  description "Noop"
+
+  tags "single"
+
+  step "Func1", "func", { 
+    foo "dog"
+  }
+}
+
+test "Third-Single" {
+  description "Noop"
+
+  tags "single"
+
+  step "Func1", "func", { 
+    foo "dog"
+  }
+}

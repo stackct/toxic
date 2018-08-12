@@ -1,5 +1,6 @@
 <project name="toxic" xmlns:if="ant:if" default="test">
   <property name="groovy.version" value="2.4.5" />
+  <property name="bin" location="bin"/>
   <property name="output" location="gen"/>
   <property name="lib" location="lib"/>
   <property name="conf" location="conf"/>
@@ -8,7 +9,9 @@
   <property name="src-test" location="test"/>
   <property name="class" location="${output}/classes"/>
   <property name="unit" location="${output}/unit"/>
-  <property name="results" location="${output}/unit/RESULTS"/>
+  <property name="integration" location="${output}/integration"/>
+  <property name="results-unit" location="${output}/unit/RESULTS"/>
+  <property name="results-integration" location="${output}/integration/RESULTS"/>
 
   <path id="cp.compile">
     <fileset dir="${lib}">
@@ -31,6 +34,7 @@
   <target name="init">
     <mkdir dir="${class}" />
     <mkdir dir="${unit}" />
+    <mkdir dir="${integration}" />
   </target>
   
   <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="cp.compile"/>
@@ -66,11 +70,13 @@
 
   </target>
 
-  <target name="test" depends="compile-test" description="Run unit tests">
-    <echo message="output=${output}; results=${results}" />
-    <delete dir="${results}" failonerror="false" />
-    <mkdir dir="${results}" />
-    <mkdir dir="${results}/html" />
+  <target name="test" depends="test-unit,test-integration" />
+
+  <target name="test-unit" depends="compile-test" description="Run unit tests">
+    <echo message="output=${output}; results=${results-unit}" />
+    <delete dir="${results-unit}" failonerror="false" />
+    <mkdir dir="${results-unit}" />
+    <mkdir dir="${results-unit}/html" />
 
     <property name="test.class" value="*" />
     <property name="test.formatter" value="xml" />
@@ -79,7 +85,7 @@
     <junit printsummary="true" haltonerror="false" haltonfailure="false" fork="true" forkmode="once" failureproperty="testFailed" showoutput="false">
       <sysproperty key="TOXIC_HOME" value="${basedir}"/>
       <formatter type="${test.formatter}" usefile="${test.useFile}" />
-      <batchtest todir="${results}">
+      <batchtest todir="${results-unit}">
         <fileset dir="${unit}">
           <include name="**/${test.class}Test.class" />
         </fileset>
@@ -90,16 +96,27 @@
     <antcall target="test-groovy-junit-reports"/>
   </target>
 
+  <target name="test-integration" depends="compile">
+    <delete dir="${results-integration}" failonerror="false" />
+    <mkdir dir="${results-integration}" />
+    <mkdir dir="${results-integration}/html" />
+
+    <exec executable="${bin}/toxic">
+      <arg value="-doDir=${src-test}/integration" />
+      <arg value="-junitFile=${integration}/toxic.xml" />
+    </exec>
+  </target>
+
   <target name="test-groovy-junit-reports">
     <echo message=""/>
-    <junitreport todir="${results}">
-      <fileset dir="${results}">
+    <junitreport todir="${results-unit}">
+      <fileset dir="${results-unit}">
         <include name="TEST-*.xml" />
       </fileset>
-      <report todir="${results}/html" />
+      <report todir="${results-unit}/html" />
     </junitreport>
     <echo message=""/>
-    <echo message="See a pretty junit report at ${results}/html/index.html" />
+    <echo message="See a pretty junit report at ${results-unit}/html/index.html" />
     <fail if="testFailed" message="Unit test(s) failed. See reports!" />
   </target>
 </project>

@@ -1,0 +1,10 @@
+test "First-Single" {
+  description "Noop"
+
+  tags "single"
+
+  step "Func1", "func", { 
+    foo "cat"
+    bar ""
+  }
+}

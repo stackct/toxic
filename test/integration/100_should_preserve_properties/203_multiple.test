@@ -1,0 +1,11 @@
+test "Nested" {
+  description "Noop"
+
+  tags "multiple"
+
+  step "Func3", "func", { 
+    foo   "dog"
+    bar   "static-from-test"
+    init  "altered"
+  }
+}
