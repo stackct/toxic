@@ -17,6 +17,8 @@ class TestCaseHandler extends LinkHandler {
     props.testCases = TestCase.parse(file.text).findAll { shouldInclude(it) }
     props.step = new StepOutputResolver(props)
     props.var = new VariableResolver(props)
+
+    log.debug("Creating property backup; size=${props.size()}")
     props.backup = props.clone()
 
     props.testCases.each { testCase ->
@@ -132,16 +134,21 @@ class TestCaseHandler extends LinkHandler {
     step.args.each { k, v ->
       function.validateArgIsDefined(k)
       def interpolatedValue = Step.interpolate(props, v)
-      log.debug("Copying step input to memory; step=${step.function}; ${k}=${interpolatedValue}")
+      log.debug("Copying step input to memory; test=${currentTestCase(props).name}; step=${step.function}; ${k}=${interpolatedValue}")
       setWithBackup(k, interpolatedValue, props, props.backup)
     }
   }
 
   static void removeStepArgsFromMemory(Step step, props) {
     Function function = fromStep(step, props)
-    function?.args?.each { arg ->
-      log.debug("Removing step input from memory; step=${step.function}; input=${arg.name}")
-      removeWithRestore(arg.name, props, props.backup)
+
+    // If we are back at the top of the call stack, remove all properties associated with
+    // Function args, and restore any backed up global properties.
+    if (props.stepSequence.find { it.step == step}?.level == 0 ) {
+      function?.args?.each { arg ->
+        log.debug("Removing step input from memory; test=${currentTestCase(props).name}; step=${step.function}; input=${arg.name}")
+        removeWithRestore(arg.name, props, props.backup)
+      }
     }
   }
 
@@ -150,7 +157,7 @@ class TestCaseHandler extends LinkHandler {
     if(function) {
       function.outputs.each { k, v ->
         step.outputs[k] = v ? Step.interpolate(props, v) : props[k]
-        log.debug("Moving step output to memory; fn=${function.name}; ${k}=${step.outputs[k]}")
+        log.debug("Moving step output to memory; test=${currentTestCase(props).name}; fn=${function.name}; ${k}=${step.outputs[k]}")
         removeWithRestore(k, props, props.backup)
       }
     }
@@ -200,18 +207,26 @@ class TestCaseHandler extends LinkHandler {
   }
 
   private static void setWithBackup(key, newVal, props, backup) {
-    if (props.containsKey(key)) {
-      backup[key] = props[key]
+    // If this is the first step in the call stack, back up all properties that would 
+    // otherwise get clobbered by Step args
+    if (currentStep(props) == props.stepSequence?.first()?.step) {
+      if (props.containsKey(key)) {
+        log.debug("Backing up key; key=${key}; oldVal=${props[key]}; newVal=${newVal}")
+        backup[key] = props[key]
+      }
     }
+
     props[key] = newVal
   }
 
   private static void removeWithRestore(key, props, backup) {
     if (backup.containsKey(key)) {
+      log.debug("Restoring key; key=${key}; value=${backup[key]}")
       props[key] = backup[key]
     }
     else {
       props.remove(key)
     }
   }
+  
 }
