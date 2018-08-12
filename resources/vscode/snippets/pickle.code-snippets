@@ -1,0 +1,105 @@
+{
+  "Test_Case": {
+    "prefix": "test",
+    "description": "Test Case",
+    "body": [
+      "test \"${1:name}\", {",
+      "  description \"${2}\"",
+      "  ",
+      "  ${0}",
+      "}"
+    ]
+  },
+  "Step": {
+    "prefix": "step",
+    "description": "Test step",
+    "body": [
+      "step \"${1:function}\", \"${2:name}\", {",
+        "  $0",
+        "}"
+    ]
+  },
+  "Function": {
+    "prefix": "function",
+    "description": "Function",
+    "body": [
+      "function \"${1:name}\", {",
+        "  description \"${2}\"",
+        "  path        \"${3}\"",
+        "  ",
+        "  ${0}",
+      "}"
+    ]
+  }, 
+  "Tags": {
+    "prefix": "tags",
+    "description": "Tags",
+    "body": [
+      "tags \"${1:name}\""
+    ]
+  },
+  "Arg": {
+    "prefix": "arg",
+    "description": "Function argument",
+    "body": [
+      "arg \"${1:name}\", ${2|true,false|}"
+    ]
+  },
+  "Input": {
+    "prefix": "input",
+    "description": "Alias for Arg",
+    "body": [
+      "input \"${1:name}\", ${2|true,false|}"
+    ]
+  },
+  "Output": {
+    "prefix": "output",
+    "description": "Function output",
+    "body": [
+      "output \"${1:name}\""
+    ]
+  },
+  "Assertions": {
+    "prefix": "assertions",
+    "description": "Test assertions",
+    "body": [
+      "assertions {",
+      "  ${0}",
+      "}"
+    ]
+  },
+  "Equals": {
+    "prefix": "eq",
+    "description": "Assertion: Equals",
+    "body": "eq, \"${1:expected}\", \"${2:actual}\""
+  },
+  "NotEquals": {
+    "prefix": "neq",
+    "description": "Assertion: NotEquals",
+    "body": "neq, \"${1:expected}\", \"${2:actual}\""
+  },
+  "Contains": {
+    "prefix": "contains",
+    "description": "Assertion: Contains",
+    "body": "contains, \"${1:container}\", \"${2:item}\""
+  },
+  "StartsWith": {
+    "prefix": "startswith",
+    "description": "Assertion: StartsWith",
+    "body": "startswith, \"${1:string}\", \"${2:substring}\""
+  },
+  "EndsWith": {
+    "prefix": "endswith",
+    "description": "Assertion: EndsWith",
+    "body": "endswith, \"${1:string}\", \"${2:substring}\""
+  },
+  "Declare": {
+    "prefix": "declare",
+    "description": "Local variable declaration",
+    "body": [
+      "declare {",
+      "  ${0}",
+      "}"
+    ]
+  }
+}
