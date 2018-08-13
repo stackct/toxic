@@ -42,7 +42,7 @@
     "prefix": "arg",
     "description": "Function argument",
     "body": [
-      "arg \"${1:name}\", ${2|true,false|}"
+      "arg \"${1:name}\", ${2:required|true,false|}"
     ]
   },
   "Input": {
