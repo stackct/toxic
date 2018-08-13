@@ -369,6 +369,23 @@ toxic -doDir=toxic/tests -test='"my pickle test"'
 
 **NOTE: Specifying a single test case to run supercedes any positive or negative filtering.**
 
+## Visual Studo Code Integration
+
+Pickle provides code snippets to assist in authoring tests and functions within Visual Studio Code.
+
+To install Pickle the code snippets, copy or symlink `resources/vscode/snippets/pickle.code-snippets` to your Visual Studio Code user preferences directory.
+  * **Windows** - `%APPDATA%\Code\User\snippets`
+  * **macOS** - `$HOME/Library/Application\ Support/Code/User/snippets`
+  * **Linux** - `$HOME/.config/Code/User/snippets`
+
+For example:
+
+```
+$ ln -s $(pwd)/resources/vscode/snippets/pickle.code-snippets` $HOME/Library/Application\ Support/Code/User/snippets/pickle.code-snippets
+```
+
+**NOTE** - Symlinks are preferred as changes to the source snippets will reflect automatically.
+
 ## What's Next
 
 * Parallel test execution
