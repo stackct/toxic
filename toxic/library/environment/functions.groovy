@@ -69,7 +69,7 @@ memory.helmRepoUpdate = { ->
   return execWithEnv([helm, 'repo', 'update'])
 }
 
-memory.helmInstall = { String name, String chart, def values ->
+memory.helmInstall = { String name, String chart, def values, def overrides = null ->
   int exitCode = memory.helmRepoUpdate()
 
   def namespace = memory['namespace']
@@ -84,7 +84,7 @@ memory.helmInstall = { String name, String chart, def values ->
   memory.addHelmAuth(cmds)
   cmds << chart
 
-  exitCode &= memory.execWithValues(cmds, values, null)
+  exitCode &= memory.execWithValues(cmds, values, overrides)
   exitCode &= memory.collectSummary(release, '-setup')
   exitCode &= memory.collectDetails(namespace, '-setup')
 

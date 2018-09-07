@@ -56,11 +56,12 @@ class JsonValidator extends HttpValidator {
   }
 
   void validate(List expected, List actual, def failures, String basePath, def memory) {
-    if(expected.size() != actual.size()) {
+    
+    if(expected?.size() != actual?.size()) {
       failures << mismatchFailure(expected, actual, basePath)
     }
     else {
-      expected.eachWithIndex { k, index ->
+      expected?.eachWithIndex { k, index ->
         if (hasContent(k, actual[index])) {
           String path = "${basePath}/[${index}]"
           validate(k, actual[index], failures, path, memory)
