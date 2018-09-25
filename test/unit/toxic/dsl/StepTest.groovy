@@ -14,9 +14,11 @@ class StepTest {
 
     step.arg1("foo")
     step.arg2("bar")
+    step.arg3("one", "two", "three")
 
     assert step.args['arg1'] == 'foo'
     assert step.args['arg2'] == 'bar'
+    assert step.args['arg3'] == ["one", "two", "three"]
   }
 
   @Test

@@ -15,8 +15,11 @@ class Step {
     if (this.args.containsKey(name)) {
       throw new IllegalArgumentException("Duplicate argument '${name}' for function '${function}'")
     }
-
-    this.args[name] = args[0]
+    
+    // If there is only one argument, pass it along as the raw value, to not force the burden of
+    // unpacking it to the consumer. If multiple (variadic) values are passed to the function, 
+    // then it is reasonable for the consumer to expect the values in an array.
+    this.args[name] = (args.size() == 1) ? args[0] : args
   }
 
   static def interpolate(def props, String property) {
