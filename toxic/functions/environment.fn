@@ -34,6 +34,13 @@ function "CollectLogs" {
   arg "artifactsDir"
 }
 
+function "KubeCreateNamespace" {
+  description "Create a Kubernetes namespace"
+  path "{{ libPath }}/environment/kube_namespace/create"
+
+  arg "namespace"
+}
+
 function "KubePortForward" {
   description "Port forward a host port into a Kubernetes resource, and stop the port forward when toxic shuts down."
   path "{{ libPath }}/environment/kube_port_forward"
@@ -44,6 +51,14 @@ function "KubePortForward" {
   arg "enabled"
 }
 
+function "KubeCreateSecret" {
+    description "Create a Kubernetes secret from a file"
+    path "{{ libPath }}/environment/kube_secret/create"
+
+    arg "namespace"
+    arg "name"
+    arg "file"
+}
 
 function "GetServiceUrl" {
   description "Returns the URL for a Kubernetes Service"

@@ -9,7 +9,20 @@ memory.parseEnvironment =  { String file ->
 }
 
 memory.createNamespace = { ->
-  return execWithEnv([kubectl, 'create', 'ns', memory['namespace']])
+  int exitCode = 0
+  String out, err
+
+  if (!memory.namespaceExists()) {
+    exitCode = execWithEnv([kubectl, 'create', 'ns', memory['namespace']])
+    out = out.toString()
+    err = err.toString()
+  }
+  
+  if (exitCode != 0) {
+    log.warn("Namespace not created; reason='${err}'")
+  }
+
+  return 0
 }
 
 memory.deleteNamespace = { ->
@@ -47,6 +60,10 @@ memory.kubePortForward = { ->
     running = proc != null && exitCode == null
   }
   return running
+}
+
+memory.kubeSecret = { String namespace, String name, String file -> 
+  execWithEnv([kubectl, '--namespace', namespace, 'create', 'secret', 'generic', name, '--from-file', file])
 }
 
 memory.helmInit = {
