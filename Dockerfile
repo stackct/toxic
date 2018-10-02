@@ -6,9 +6,13 @@ ARG K8S_VERSION=v1.10.5
 
 COPY ${DIST_DIR_NAME} /opt/toxic
 
-RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl py-pip tar \
-    && apk add --virtual=build gcc libffi-dev musl-dev openssl-dev python-dev \
-    && pip install azure-cli \
+# TODO: Move this to a multi-stage build
+RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl openssl-dev tar python3 \
+    && apk add --virtual=build gcc libffi-dev musl-dev python3-dev \
+    && pip3 install --upgrade pip \
+    && pip3 install cffi \
+    && pip3 install azure-cli \
+    && ln -s /usr/bin/python3 /usr/bin/python \
     && apk del --purge build \
     && docker -v \
     && addgroup -g 2000 toxic \
