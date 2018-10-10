@@ -3,6 +3,7 @@ package toxic
 
 import toxic.ToxicProperties
 import org.apache.log4j.Logger
+import util.Wait
 
 public abstract class CompareTask extends Task {
   protected static Logger slog = Logger.getLogger(CompareTask.class.name)
@@ -34,9 +35,22 @@ public abstract class CompareTask extends Task {
     if (!(input instanceof File)) {
       throw new IllegalArgumentException("input is not a file; type=${input?.className}")
     }
+
+    if(memory.containsKey('task.retry.condition') && !(memory['task.retry.condition'] instanceof Closure)) {
+      throw new IllegalArgumentException('task.retry.condition is not a closure')
+    }
+
     def request = prepare(reqContent)
     String expected = lookupExpectedResponse(input)
-    memory.lastResponse = transmit(request, expected, memory)
+
+    Wait.on { ->
+      memory.lastResponse = transmit(request, expected, memory)
+      if(memory.containsKey('task.retry.condition')) {
+        return memory['task.retry.condition'](memory.lastResponse)
+      }
+      return true
+    }.every(memory.isNothing('task.retry.every') ? 1 : memory['task.retry.every']).atMostMs(memory.isNothing('task.retry.atMostMs') ? 1 : memory['task.retry.atMostMs']).start()
+
     validate(memory.lastResponse, expected, memory)
     return null
   }
