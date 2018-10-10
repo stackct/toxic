@@ -3,10 +3,14 @@ package toxic.http
 
 import org.junit.*
 import groovy.mock.interceptor.*
-
+import org.junit.rules.ExpectedException
 import toxic.ToxicProperties
+import util.TimeoutException
 
 public class HttpTaskTest {
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none()
+
   @Test
   public void testInitXmlFile() {
     def xt = new HttpTask()
@@ -312,6 +316,99 @@ public class HttpTaskTest {
     }
   }
 
+  @Test
+  void should_not_retry_when_task_retry_not_configured() {
+    int transmitCount = 0
+    def task = [ transmit:{ request, expectedResponse, m ->
+      transmitCount++
+      return 'SUCCESS'
+    }] as HttpTask
+
+    def memory = new ToxicProperties()
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+    assert 1 == transmitCount
+    assert 'SUCCESS' == memory.lastResponse
+  }
+
+  @Test
+  void should_fail_when_retry_condition_is_not_a_closure() {
+    expectedException.expect(IllegalArgumentException.class)
+    expectedException.expectMessage("task.retry.condition is not a closure")
+
+    def memory = new ToxicProperties()
+    memory['task.retry.condition'] = 'THIS_IS_NOT_A_CLOSURE'
+
+    def task = new HttpTask()
+    task.props = memory
+    task.input = new File('/foo')
+
+    task.doTask(memory)
+  }
+
+  @Test
+  void should_retry_transmit_based_on_condition() {
+    int transmitCount = 0
+    def task = [ transmit:{ request, expectedResponse, m ->
+      transmitCount++
+      return transmitCount == 3 ? 'SUCCESS' : 'FAIL'
+    }] as HttpTask
+
+    def memory = new ToxicProperties()
+    memory['task.retry.condition'] = { response -> return 'SUCCESS' == response }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1000
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+    assert 3 == transmitCount
+    assert 'SUCCESS' == memory.lastResponse
+  }
+
+  @Test
+  void should_fail_after_retries_are_exhausted() {
+    expectedException.expect(TimeoutException.class)
+
+    def task = [ transmit:{ request, expectedResponse, m ->
+      return 'FAIL'
+    }] as HttpTask
+
+    def memory = new ToxicProperties()
+    memory['task.retry.condition'] = { response -> return 'SUCCESS' == response }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+  }
+
+  @Test
+  void should_fail_when_wait_conditions_are_not_configured() {
+    expectedException.expect(TimeoutException.class)
+
+    def task = [ transmit:{ request, expectedResponse, m ->
+      return 'FAIL'
+    }] as HttpTask
+
+    def memory = new ToxicProperties()
+    memory['task.retry.condition'] = { response -> return 'SUCCESS' == response }
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+  }
+
   private String makeResponse(int code, String reason, String body=null, List headers=[]) {
     def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
     
@@ -327,7 +424,7 @@ public class HttpTaskTest {
   }
 }
 
-protected class FakeSocket extends Socket {
+public class FakeSocket extends Socket {
   private String response
 
   protected FakeSocket(String response) {
