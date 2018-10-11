@@ -303,7 +303,11 @@ public class JobManager implements Runnable,Publisher {
       }
       uri.query?.split('&')?.collectEntries { param -> param.split('=')
           ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
-        props += "\n${k}=${v}"
+        if (k == "name") {
+          jobName = v
+        } else {
+          props += "\n${k}=${v}"
+        }
       }
       map[jobName] = props
     }
