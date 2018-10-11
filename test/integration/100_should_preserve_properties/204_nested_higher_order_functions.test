@@ -1,0 +1,11 @@
+test "Nested Higher Order Functions" {
+  description "Noop"
+
+  tags "multiple"
+
+  step "Func4", "func", { 
+    foo   "dog"
+    bar   "static-from-test"
+    init  "altered"
+  }
+}

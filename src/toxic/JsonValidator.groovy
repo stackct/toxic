@@ -7,6 +7,8 @@ import groovy.json.JsonOutput
 class JsonValidator extends HttpValidator {
   @Override
   void validate(def actualJson, def expectedJson, def memory) {
+    if (!expectedJson) return
+
     def expected
     def actual
 

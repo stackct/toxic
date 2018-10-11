@@ -18,8 +18,8 @@ class TestCaseHandler extends LinkHandler {
     props.step = new StepOutputResolver(props)
     props.var = new VariableResolver(props)
 
-    log.debug("Creating property backup; size=${props.size()}")
-    props.backup = props.clone()
+    //log.debug("Creating property backup; size=${props.size()}")
+    //props.backup = props.clone()
 
     props.testCases.each { testCase ->
       addSteps(testCase.steps)
@@ -99,6 +99,8 @@ class TestCaseHandler extends LinkHandler {
         Function function = fromStep(step, props)
         String fnDetails = function.path ? "fnPath=${function.path}" : "subSteps=${function.steps.size()}"
         log.info("Executing step; test=\"${testCase.name}\"; name=${step.name}; fnName=${function.name}; ${fnDetails}")
+        log.debug("props.push()")
+        props.push()
         copyStepArgsToMemory(props)
         if(!function.path) {
           startNextStep(props)
@@ -140,16 +142,21 @@ class TestCaseHandler extends LinkHandler {
   }
 
   static void removeStepArgsFromMemory(Step step, props) {
-    Function function = fromStep(step, props)
-
-    // If we are back at the top of the call stack, remove all properties associated with
-    // Function args, and restore any backed up global properties.
-    if (props.stepSequence.find { it.step == step}?.level == 0 ) {
-      function?.args?.each { arg ->
-        log.debug("Removing step input from memory; test=${currentTestCase(props).name}; step=${step.function}; input=${arg.name}")
-        removeWithRestore(arg.name, props, props.backup)
-      }
-    }
+    log.debug("before props.pop(); stepIndex=${props.stepIndex}")
+    int stepIndex = props.stepIndex
+    props.pop()
+    props.stepIndex = stepIndex
+    log.debug("after props.pop(); stepIndex=${props.stepIndex}")
+//    Function function = fromStep(step, props)
+//
+//    // If we are back at the top of the call stack, remove all properties associated with
+//    // Function args, and restore any backed up global properties.
+//    if (props.stepSequence.find { it.step == step}?.level == 0 ) {
+//      function?.args?.each { arg ->
+//        log.debug("Removing step input from memory; test=${currentTestCase(props).name}; step=${step.function}; input=${arg.name}")
+//        removeWithRestore(arg.name, props, props.backup)
+//      }
+//    }
   }
 
   static void moveOutputResultsToStep(Step step, props) {
@@ -157,8 +164,8 @@ class TestCaseHandler extends LinkHandler {
     if(function) {
       function.outputs.each { k, v ->
         step.outputs[k] = v ? Step.interpolate(props, v) : props[k]
-        log.debug("Moving step output to memory; test=${currentTestCase(props).name}; fn=${function.name}; ${k}=${step.outputs[k]}")
-        removeWithRestore(k, props, props.backup)
+        //log.debug("Moving step output to memory; test=${currentTestCase(props).name}; fn=${function.name}; ${k}=${step.outputs[k]}")
+        //removeWithRestore(k, props, props.backup)
       }
     }
     else {
@@ -207,26 +214,26 @@ class TestCaseHandler extends LinkHandler {
   }
 
   private static void setWithBackup(key, newVal, props, backup) {
-    // If this is the first step in the call stack, back up all properties that would 
-    // otherwise get clobbered by Step args
-    if (currentStep(props) == props.stepSequence?.first()?.step) {
-      if (props.containsKey(key)) {
-        log.debug("Backing up key; key=${key}; oldVal=${props[key]}; newVal=${newVal}")
-        backup[key] = props[key]
-      }
-    }
+//    // If this is the first step in the call stack, back up all properties that would
+//    // otherwise get clobbered by Step args
+//    if (currentStep(props) == props.stepSequence?.first()?.step) {
+//      if (props.containsKey(key)) {
+//        log.debug("Backing up key; key=${key}; oldVal=${props[key]}; newVal=${newVal}")
+//        backup[key] = props[key]
+//      }
+//    }
 
     props[key] = newVal
   }
 
-  private static void removeWithRestore(key, props, backup) {
-    if (backup.containsKey(key)) {
-      log.debug("Restoring key; key=${key}; value=${backup[key]}")
-      props[key] = backup[key]
-    }
-    else {
-      props.remove(key)
-    }
-  }
-  
+//  private static void removeWithRestore(key, props, backup) {
+//    if (backup.containsKey(key)) {
+//      log.debug("Restoring key; key=${key}; value=${backup[key]}")
+//      props[key] = backup[key]
+//    }
+//    else {
+//      props.remove(key)
+//    }
+//  }
+
 }

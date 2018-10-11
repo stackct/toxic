@@ -166,7 +166,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
 
       new TestCaseHandler(dirItem, props).nextFile(file)
       assert 2 == dirItem.children.size()
@@ -208,7 +208,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions, includeTags:'foo,bar']
+      def props = new ToxicProperties([functions: functions, includeTags:'foo,bar'])
 
       new TestCaseHandler(dirItem, props).nextFile(file)
       assert 4 == dirItem.children.size()
@@ -216,7 +216,7 @@ class TestCaseHandlerTest {
       assert props.testCases[0].name == 'test1'
       assert props.testCases[1].name == 'test3'
 
-      props = [functions: functions]
+      props = new ToxicProperties([functions: functions])
       dirItem.children = []
 
       new TestCaseHandler(dirItem, props).nextFile(file)
@@ -261,13 +261,13 @@ class TestCaseHandlerTest {
     """
     mockFile(input) { file ->
       // Include and exclude
-      def props = [functions: functions, includeTags:'foo,bar', excludeTags:'baz']
+      def props = new ToxicProperties([functions: functions, includeTags:'foo,bar', excludeTags:'baz'])
       new TestCaseHandler(dirItem, props).nextFile(file)
       assert props.testCases.size() == 1
       assert props.testCases[0].name == 'test3'
 
       // Include only
-      props = [functions: functions, includeTags:'foo,bar']
+      props = new ToxicProperties([functions: functions, includeTags:'foo,bar'])
       dirItem.children = []
 
       new TestCaseHandler(dirItem, props).nextFile(file)
@@ -276,7 +276,7 @@ class TestCaseHandlerTest {
       assert props.testCases[1].name == 'test3'
 
       // Exclude only
-      props = [functions: functions, excludeTags:'foo']
+      props = new ToxicProperties([functions: functions, excludeTags:'foo'])
       dirItem.children = []
 
       new TestCaseHandler(dirItem, props).nextFile(file)
@@ -285,7 +285,7 @@ class TestCaseHandlerTest {
       assert props.testCases[1].name == 'test3'
 
       // No filtering
-      props = [functions: functions]
+      props = new ToxicProperties([functions: functions])
       dirItem.children = []
 
       new TestCaseHandler(dirItem, props).nextFile(file)
@@ -328,7 +328,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions, tags:'test1,test2', test:'test3']
+      def props = new ToxicProperties([functions: functions, tags:'test1,test2', test:'test3'])
 
       new TestCaseHandler(dirItem, props).nextFile(file)
       assert 2 == dirItem.children.size()
@@ -402,7 +402,7 @@ class TestCaseHandlerTest {
       }
     """
 
-    def props = [functions: [:]]
+    def props = new ToxicProperties([functions: [:]])
     functions.each {
       props.functions[it.name] = it
     }
@@ -552,7 +552,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
@@ -581,7 +581,7 @@ class TestCaseHandlerTest {
     """
 
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
       props.output1 = 'existing.property.dont.remove'
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       props['bar'] = 'and me'
@@ -616,7 +616,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
       props.output1 = 'existing.property.dont.remove'
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       props.output1 = 'value1'
@@ -663,7 +663,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
 
       props.arg1 = "existing.arg1"
 
@@ -708,7 +708,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
       assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert 1 == props.arg1
       assert 2 == props.arg2
@@ -744,7 +744,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions]
+      def props = new ToxicProperties([functions: functions])
       assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       TestCaseHandler.completeCurrentStep(props)
       TestCaseHandler.startNextStep(props)
@@ -767,7 +767,7 @@ class TestCaseHandlerTest {
       }
     """
     mockFile(input) { file ->
-      def props = [functions: functions, foo: 'foobar']
+      def props = new ToxicProperties([functions: functions, foo: 'foobar'])
       assert 'fn1' == new TestCaseHandler(dirItem, props).nextFile(file).name
       TestCaseHandler.completeCurrentStep(props)
       TestCaseHandler.startNextStep(props)
@@ -911,7 +911,7 @@ class TestCaseHandlerTest {
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.test')
       Function fn1 = new Function(path: 'fn_1', outputs: ['screenName': null], args: [new Arg(name: 'arg1')])
-      def props = [functions: ['fn_1': fn1]]
+      def props = new ToxicProperties([functions: ['fn_1': fn1]])
       new TestCaseHandler(dirItem, props).nextFile(file)
       props.screenName = 'ordering-' + props.arg1
       TestCaseHandler.completeCurrentStep(props)

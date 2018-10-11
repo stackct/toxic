@@ -107,6 +107,11 @@ class JsonValidatorTest {
   }
 
   @Test
+  void should_compare_empty_response() {
+    expectSuccess("", """{  "foo": "bar" }""")
+  }
+
+  @Test
   void should_succeed_with_variable_assignment() {
     String expected = """{ "topic": {"foo": "%=foo%"} }"""
     String actual = """{ "topic": {"foo": "bar"} }"""
