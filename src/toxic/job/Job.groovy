@@ -305,7 +305,7 @@ public class Job implements Callable, Comparable, Publisher {
   }
 
   private String[] loadJobDetailsFromRepo(String[] args) {
-    File repoPropsFile = new File(projectWorkDir, name + '.job')
+    File repoPropsFile = new File(projectWorkDir, name)
     if(!repoPropsFile.exists()) {
       repoPropsFile = new File(projectWorkDir, 'toxic.job')
     }
