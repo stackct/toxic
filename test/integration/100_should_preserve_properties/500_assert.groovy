@@ -14,6 +14,10 @@ assert memory.isNothing('foo')
 // Optional Function argument that does not exist outside the Pickle scope
 assert memory.isNothing('bar')
 
-// TODO: Arbitrary property set within a library task that should only live within
+// Arbitrary property set within a library task that should only live within
 // the Pickle scope
-// assert memory.isNothing('delete')
+assert memory.isNothing('delete')
+
+// Complex property set within a library task that should only live within
+// the Pickle scope
+assert memory.isNothing('closure')

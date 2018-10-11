@@ -1,3 +1,17 @@
+function "Func4", {
+  description "Noop"
+  
+  arg "foo"
+  arg "init"
+  arg "bar", false
+
+  step "Func3", "func", {
+    foo  "{{ foo }}"
+    bar  "{{ bar }}"
+    init "{{ init }}"
+  }
+}
+
 function "Func3" {
   description "Noop"
 

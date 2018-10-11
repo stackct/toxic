@@ -1,5 +1,7 @@
 package toxic.dsl
 
+import toxic.ToxicProperties
+
 import org.junit.After
 import org.junit.Test
 
@@ -16,7 +18,7 @@ class StepFileTest {
   @Test
   void should_complete_step() {
     Step step = new Step(name: 'fooStep', function: 'fooFn')
-    def props = [stepIndex: 0, testCases: [new TestCase(steps: [step])], functions: ['fooFn':new Function(outputs: ['foo': 'bar'])], backup: [:]]
+    def props = [stepIndex: 0, testCases: [new TestCase(steps: [step])], functions: ['fooFn':new Function(outputs: ['foo': 'bar'])], backup: [:]] as ToxicProperties
     new StepFile('foo', null, false).complete(props)
     assert 1 == props.stepIndex
     assert 'bar' == step.outputs.foo
@@ -28,7 +30,7 @@ class StepFileTest {
     Function fooFn = new Function(outputs: ['foo1': 'bar1'])
     Step barStep = new Step(name: 'barStep', function: 'barFn')
     Function barFn = new Function(outputs: ['foo2': 'bar2'])
-    def props = [stepIndex: 0, testCases: [new TestCase(steps: [fooStep])], functions: ['fooFn':fooFn, 'barFn': barFn], backup: [:]]
+    def props = [stepIndex: 0, testCases: [new TestCase(steps: [fooStep])], functions: ['fooFn':fooFn, 'barFn': barFn], backup: [:]] as ToxicProperties
     new StepFile('foo', barStep, true).complete(props)
     assert 1 == props.stepIndex
     assert 'bar1' == fooStep.outputs.foo1
