@@ -21,6 +21,10 @@ class Assertion {
     assertFunction(ying, yang, 'containsKey')
   }
 
+  Assertion contains(List ying, String yang) {
+    assertFunction(ying, yang, 'contains')
+  }
+
   Assertion startswith(Object ying, Object yang) {
     assertFunction(ying, yang, 'startsWith')
   }
@@ -51,6 +55,10 @@ class Assertion {
   
   private String format(Map value) { 
     return "[" + value.collect {k,v-> "${k}:${format(v)}" }.join('') + "]" 
+  }
+
+  private String format(List value) {
+    return "[" + value.collect {v -> format(v) }.join(',') + "]"
   }
 
   private String failureMessage(String message) {
