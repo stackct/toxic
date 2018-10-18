@@ -71,6 +71,9 @@ class Function extends StepParser {
     if(!path && !steps) {
       missingFields << '(path OR steps)'
     }
+    if(name?.contains('.')) {
+      throw new IllegalArgumentException("Function name cannot contain dots; name=${name}")
+    }
     if(missingFields) {
       throw new IllegalStateException("Missing required fields for function; name=${name}; fields=${missingFields}")
     }

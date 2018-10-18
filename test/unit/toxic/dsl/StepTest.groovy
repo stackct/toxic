@@ -60,4 +60,31 @@ class StepTest {
     def props = [foo1:'bar1', foo2:'bar2', foo3:'bar3']
     assert ['foo1':'bar1', 'foo2':'bar2', 'foo3':'bar3'] == Step.interpolate(props, [foo1: '{{ foo1 }}', foo2: '{{ foo2 }}', foo3: '{{ foo3 }}'])
   }
+
+  @Test
+  void should_get_prefix() {
+    assert null == new Step(function:'Fn').prefix
+    assert null == new Step(function:'.Fn').prefix
+    assert null == new Step(function:'Fn.').prefix
+    assert "foo" == new Step(function:'foo.Fn').prefix
+  }
+
+  @Test
+  void should_inherit_prefix() {
+
+    def apply = { String s, String p = null -> 
+      def step = new Step(function:s)
+      def parent
+      if (p) {
+        parent = new Step(function:p)
+      }
+      step.inheritPrefix(parent)
+      return step.function
+    }
+
+    assert "Bar"   == apply('Bar')             // No parent
+    assert "Bar"   == apply('Bar', 'Foo')      // noop
+    assert "a.Bar" == apply('Bar', 'a.Foo')    // Parent has prefix, child does not
+    assert "b.Bar" == apply('b.Bar', 'a.Foo')  // Parent has prefix, but so does child
+  }
 }

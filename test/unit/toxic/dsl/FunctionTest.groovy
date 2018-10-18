@@ -267,6 +267,25 @@ class FunctionTest {
   }
 
   @Test
+  void should_validate_name() {
+    def assertValidName = { Function function ->
+      try {
+        function.validate()
+        fail('Expected IllegalArgumentException')
+      }
+      catch(IllegalArgumentException e) {
+        assert "Function name cannot contain dots; name=${function.name}" == e.message
+      }
+    }
+
+    assertValidName(new Function(name:'Foo.invalid', description:'N/A', path:'/'))
+    assertValidName(new Function(name:'.Foo', description:'N/A', path:'/'))
+    assertValidName(new Function(name:'Foo.', description:'N/A', path:'/'))
+    assertValidName(new Function(name:'.', description:'N/A', path:'/'))
+    assertValidName(new Function(name:'foo.bar.baz', description:'N/A', path:'/'))
+  }
+
+  @Test
   void should_validate_path_and_steps_cannot_be_defined_together() {
     try {
       new Function(name: 'foo', description: 'bar', path: 'path', steps: [new Step()]).validate()

@@ -34,6 +34,8 @@ class TestCaseHandler extends LinkHandler {
 
   void addSteps(List<Step> steps, Step parentStep=null, List<String> functionCallStack = []) {
     steps.eachWithIndex { step, index ->
+      step.inheritPrefix(parentStep)
+
       if(!props.functions.containsKey(step.function)) {
         throw new IllegalStateException("Undefined function; name=${step.function}")
       }

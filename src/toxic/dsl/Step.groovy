@@ -5,6 +5,7 @@ class Step {
   static final String endVariableRegex = /\}\}/
   static final String interpolationWithPaddingRegex = /\s*\{\{([^}}]+)\}\}\s*/
   static final String interpolationWithoutPaddingRegex = /\{\{([^}}]+)\}\}/
+  static final String prefixDelimiter = '.'
 
   String name
   String function
@@ -20,6 +21,21 @@ class Step {
     // unpacking it to the consumer. If multiple (variadic) values are passed to the function, 
     // then it is reasonable for the consumer to expect the values in an array.
     this.args[name] = (args.size() == 1) ? args[0] : args
+  }
+
+  String getPrefix() {
+    // If the name does not look like it has the correct format: [prefix.]name, then it doesn't have a prefix
+    if (!function.contains(prefixDelimiter) || function.startsWith(prefixDelimiter) || function.endsWith(prefixDelimiter)) 
+      return null
+
+    return function.tokenize(prefixDelimiter).first()
+  }
+
+  void inheritPrefix(Step from) {
+    if (!from?.prefix || this.prefix)
+      return
+
+    this.function = from.prefix + prefixDelimiter + this.function
   }
 
   static def interpolate(def props, String property) {
