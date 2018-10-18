@@ -1,1 +1,3 @@
-job.end.script.1=if(memory['job'].failed == 0){memory['jobManager'].shutdown(); return true} else{return false}
+job.end.script.1=memory['job'].parseJUnitXmlFilesInDir(new File("${memory['project.workDir']}/gen/test/unit"))
+job.end.script.2=memory['job'].parseJUnitXmlFilesInDir(new File("${memory['project.workDir']}/gen/test/integration"))
+job.end.script.9=if(memory['job'].failed == 0){memory['jobManager'].shutdown(); return true} else{return false}
