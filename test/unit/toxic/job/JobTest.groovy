@@ -1300,12 +1300,12 @@ line4"""
   }
   
   @Test
-  void should_return_environment() {
+  void should_return_mutex() {
     def job = new Job(id:'foo')
-    assert !job.environment
+    assert !job.mutex
     
-    job = new Job('foo', null, null, "environment=hello") 
-    assert job.environment == "hello"
+    job = new Job('foo', null, null, "mutex=hello") 
+    assert job.mutex == "hello"
   }
 
   @Test
