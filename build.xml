@@ -99,11 +99,10 @@
   <target name="test-integration" depends="compile">
     <delete dir="${results-integration}" failonerror="false" />
     <mkdir dir="${results-integration}" />
-    <mkdir dir="${results-integration}/html" />
 
-    <exec executable="${bin}/toxic">
+    <exec executable="${bin}/toxic" failonerror="true">
       <arg value="-doDir=${src-test}/integration" />
-      <arg value="-junitFile=${integration}/toxic.xml" />
+      <arg value="-junitFile=${results-integration}/toxic.xml" />
     </exec>
   </target>
 

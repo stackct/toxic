@@ -1,0 +1,12 @@
+test "Higher order function namespaces" {
+  description "Proves that a higher order function has its nested functions namespaced"
+  
+  step "remote.Func3", "test", {
+    foo "bla"
+  }
+
+  assertions {
+    eq "func1_OK", "{{ step.test.func1_bar }}"
+    eq "func2_OK", "{{ step.test.func2_bar }}"
+  }
+}
