@@ -33,6 +33,13 @@ class AssertionTest {
   }
 
   @Test
+  void should_evaluate_list_contains() {
+    assert true == contains(['bar','foo'], 'foo')
+    assert '[foo, bar].contains(bla). Expression: [foo, bar].contains(bla)' == contains(['foo','bar'], 'bla')
+    assert 'foo.contains(bla). Expression: {{foo}}.contains({{bla}})' == contains('{{foo}}', '{{bla}}')
+  }
+
+  @Test
   void should_evaluate_startswith() {
     assert true == startswith('foobar', 'foo')
     assert 'foobar.startsWith(bar). Expression: foobar.startsWith(bar)' == startswith('foobar', 'bar')
