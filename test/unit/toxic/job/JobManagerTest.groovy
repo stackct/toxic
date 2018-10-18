@@ -472,12 +472,12 @@ public class JobManagerTest {
   }
 
   @Test
-  public void should_not_add_job_if_environment_unavailable() {
+  public void should_not_add_job_if_mutex_unavailable() {
     def f = tempJobFile()
     try {
       def jm = mockJobManager()
       jm.metaClass.similarJobsExist = { any -> false }
-      jm.metaClass.isEnvironmentAvailable = { String any -> false }
+      jm.metaClass.isMutexAvailable = { String any -> false }
       def jobId = jm.addJob(f)
       assert !jobId
     } finally {
@@ -925,17 +925,17 @@ another=there
   }
   
   @Test
-  void should_detect_environment_in_use() {
-    assert jobManager.isEnvironmentAvailable("test")
+  void should_detect_mutex_in_use() {
+    assert jobManager.isMutexAvailable("test")
     
     jobManager.jobs = [ mockJob("fun", JobStatus.RUNNING ) ]
-    assert jobManager.isEnvironmentAvailable("test")    
+    assert jobManager.isMutexAvailable("test")    
 
-    jobManager.jobs[0].properties.environment = "test"
-    assert !jobManager.isEnvironmentAvailable("test")    
+    jobManager.jobs[0].properties.mutex = "test"
+    assert !jobManager.isMutexAvailable("test")    
 
     jobManager.jobs[0].currentStatus = JobStatus.COMPLETED
-    assert jobManager.isEnvironmentAvailable("test")    
+    assert jobManager.isMutexAvailable("test")    
   }
 
   @Test

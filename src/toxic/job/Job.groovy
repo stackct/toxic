@@ -960,8 +960,8 @@ public class Job implements Callable, Comparable, Publisher {
     failed += stats.failures
   }
   
-  String getEnvironment() {
-    return this.properties?.environment ?: ""
+  String getMutex() {
+    return this.properties?.mutex ?: ""
   }
 }
 

@@ -556,7 +556,7 @@ public class JobManager implements Runnable,Publisher {
     } else if ((!similarExist || reqsSatisfied)
       && !PauseManager.instance.isProjectPaused(job.project)
       && !job.concurrencyLimitReached()
-      && isEnvironmentAvailable(job.getEnvironment())) {
+      && isMutexAvailable(job.mutex)) {
       FileUtils.forceMkdir(jobDir)
       if (firstRun) {
         FileUtils.moveFileToDirectory(file, jobDir, true)
@@ -990,9 +990,11 @@ public class JobManager implements Runnable,Publisher {
     return running
   }
 
-  boolean isEnvironmentAvailable(String environment) {
-    if (environment) {
-      return !getRunningJobs().find { environment.equalsIgnoreCase(it.getEnvironment()) }
+  boolean isMutexAvailable(String mutex) {
+    if (mutex) {
+      return !getRunningJobs().find { j ->
+        mutex.equalsIgnoreCase(j.mutex) 
+      }
     }
     return true
   }
