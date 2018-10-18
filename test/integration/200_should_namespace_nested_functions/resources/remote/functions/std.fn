@@ -1,0 +1,32 @@
+function "Func3" {
+  description "Noop"
+
+  arg "foo"
+
+  step "Func1", "func1", { 
+    foo "{{ foo }}"
+  }
+
+  step "Func2", "func2", { 
+    foo "{{ foo }}"
+  }
+
+  output "func1_bar", "{{  step.func1.bar }}"
+  output "func2_bar", "{{  step.func2.bar }}"
+}
+
+function "Func1" {
+  description "Noop"
+  path "{{ libPath }}/func1"
+
+  arg "foo"
+  output "bar"
+}
+
+function "Func2" {
+  description "Noop"
+  path "{{ libPath }}/func2"
+
+  arg "foo"
+  output "bar"
+}

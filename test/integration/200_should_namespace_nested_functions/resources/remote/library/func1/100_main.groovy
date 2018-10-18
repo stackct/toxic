@@ -1,0 +1,1 @@
+memory['bar'] = 'func1_OK'
