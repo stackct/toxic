@@ -45,13 +45,13 @@ public abstract class CompareTask extends Task {
 
     Wait.on { ->
       memory.lastResponse = transmit(request, expected, memory)
+      validate(memory.lastResponse, expected, memory)
       if(memory.containsKey('task.retry.condition')) {
-        return memory['task.retry.condition'](memory.lastResponse)
+        return memory['task.retry.condition']()
       }
       return true
     }.every(memory.isNothing('task.retry.every') ? 1 : memory['task.retry.every']).atMostMs(memory.isNothing('task.retry.atMostMs') ? 1 : memory['task.retry.atMostMs']).start()
 
-    validate(memory.lastResponse, expected, memory)
     return null
   }
 

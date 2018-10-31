@@ -39,7 +39,7 @@ class Wait extends Parser {
     }
 
     Closure getRetryCondition(ToxicProperties props) {
-        return { response ->
+        return { ->
             null != conditions.find { condition ->
                 try {
                     condition.assertions.each { assertion ->
