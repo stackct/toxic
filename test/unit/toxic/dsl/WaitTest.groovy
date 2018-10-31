@@ -2,6 +2,7 @@ package toxic.dsl
 
 import toxic.ToxicProperties
 import org.junit.Test
+import toxic.ToxicPropertiesTest
 
 class WaitTest {
 
@@ -54,7 +55,7 @@ class WaitTest {
     public void should_build_false_retry_closure() {
         def wait = new Wait()
         wait.conditions << new Condition(assertions: ['assert 1 == 1', 'assert 2 == 1'])
-        def retryCondition = wait.getRetryCondition()
+        def retryCondition = wait.getRetryCondition([:] as ToxicProperties)
 
         assert retryCondition instanceof Closure
         assert false == retryCondition()
@@ -64,7 +65,7 @@ class WaitTest {
     public void should_build_true_retry_closure() {
         def wait = new Wait()
         wait.conditions << new Condition(assertions: ['assert 1 == 1', 'assert 2 == 2'])
-        def retryCondition = wait.getRetryCondition()
+        def retryCondition = wait.getRetryCondition([:] as ToxicProperties)
 
         assert retryCondition instanceof Closure
         assert true == retryCondition()
@@ -76,7 +77,18 @@ class WaitTest {
         wait.conditions << new Condition(assertions: ['assert 1 == 1', 'assert 1 == 2'])
         wait.conditions << new Condition(assertions: ['assert 1 == 1', 'assert 2 == 2'])
 
-        def retryCondition = wait.getRetryCondition()
+        def retryCondition = wait.getRetryCondition([:] as ToxicProperties)
+        assert true == retryCondition()
+    }
+
+    @Test
+    public void should_build_retry_closure_with_interpolation() {
+        def props = [foo:'bar'] as ToxicProperties
+
+        def wait = new Wait()
+        wait.conditions << new Condition(assertions: ['assert "{{ foo }}" == "bar"'])
+
+        def retryCondition = wait.getRetryCondition(props)
         assert true == retryCondition()
     }
 }

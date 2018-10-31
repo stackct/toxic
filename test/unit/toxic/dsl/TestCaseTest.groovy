@@ -1,6 +1,7 @@
 package toxic.dsl
 
 import org.junit.Test
+import toxic.ToxicProperties
 
 class TestCaseTest {
 
@@ -67,7 +68,7 @@ class TestCaseTest {
         assert step.args.size() == 0
         assert step.wait.timeoutMs == 10
         assert step.wait.intervalMs == 5
-        assert false == step.wait.retryCondition()
+        assert false == step.wait.getRetryCondition([:] as ToxicProperties)()
       }
       assert tests[0].assertions.size() == 2
       assert 'assert \'{{ foo-step-1.output1 }}\' == \'foo.output.1\' : " foo-step-1.output1  == foo.output.1"' == tests[0].assertions[0]

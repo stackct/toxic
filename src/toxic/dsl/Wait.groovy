@@ -1,6 +1,7 @@
 package toxic.dsl
 
 import toxic.groovy.GroovyEvaluator
+import toxic.ToxicProperties
 
 class Wait extends Parser {
     private static final List<String> requiredFields = ['timeoutMs', 'intervalMs', 'conditions']
@@ -37,12 +38,12 @@ class Wait extends Parser {
         conditions << condition
     }
 
-    Closure getRetryCondition() {
+    Closure getRetryCondition(ToxicProperties props) {
         return { response ->
             null != conditions.find { condition ->
                 try {
                     condition.assertions.each { assertion ->
-                        new GroovyEvaluator().eval(assertion)
+                        new GroovyEvaluator().eval(Step.interpolate(props, assertion))
                     }
                     return true
                 } catch (AssertionError e) {

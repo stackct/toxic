@@ -104,7 +104,7 @@ class TestCaseHandler extends LinkHandler {
         if (step.wait) {
           props['task.retry.atMostMs'] = step.wait.timeoutMs
           props['task.retry.every'] = step.wait.intervalMs
-          props['task.retry.condition'] = step.wait.retryCondition
+          props['task.retry.condition'] = step.wait.getRetryCondition(props)
         }
 
         if(!function.path) {
