@@ -100,6 +100,13 @@ class TestCaseHandler extends LinkHandler {
         log.info("Executing step; test=\"${testCase.name}\"; name=${step.name}; fnName=${function.name}; ${fnDetails}")
         props.push()
         copyStepArgsToMemory(props)
+
+        if (step.wait) {
+          props['task.retry.atMostMs'] = step.wait.timeoutMs
+          props['task.retry.every'] = step.wait.intervalMs
+          props['task.retry.condition'] = step.wait.retryCondition
+        }
+
         if(!function.path) {
           startNextStep(props)
         }

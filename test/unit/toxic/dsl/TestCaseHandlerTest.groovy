@@ -730,6 +730,54 @@ class TestCaseHandlerTest {
   }
 
   @Test
+  void should_set_retry_properties() {
+    DirItem dirItem = new DirItem('something.test')
+    Function fn1 = new Function(path: 'fn_1', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    Function fn2 = new Function(path: 'fn_2', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    def functions = ['fn_1': fn1, 'fn_2': fn2]
+
+    def input = """
+      test "test1" {
+        description "test1 description"
+        step "fn_1", "step1", {
+            arg1 1
+            arg2 2
+        }
+        step "fn_2", "step1", {
+          wait {
+            timeoutMs  30
+            intervalMs  5
+            
+            condition {
+              eq '1', '1'
+            }
+          }
+        }
+      }
+    """
+    mockFile(input) { file ->
+      def props = new ToxicProperties([functions: functions])
+      assert 'fn_1' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      TestCaseHandler.completeCurrentStep(props)
+
+      TestCaseHandler.startNextStep(props)
+      assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
+      assert props['task.retry.atMostMs'] == 30
+      assert props['task.retry.every'] == 5
+      assert props['task.retry.condition'] instanceof Closure
+      TestCaseHandler.completeCurrentStep(props)
+
+      TestCaseHandler.startNextStep(props)
+      assert new TestCaseHandler(dirItem, props).nextFile(file) instanceof TransientFile
+
+      assert !props.containsKey('task.retry.atMostMs')
+      assert !props.containsKey('task.retry.every')
+      assert !props.containsKey('task.retry.condition')
+
+      assert null == new TestCaseHandler(dirItem, props).nextFile(file)
+    }
+  }
+  @Test
   void should_allow_input_variables_to_be_assigned_to_output_variables() {
     DirItem dirItem = new DirItem('something.test')
     Function fn = new Function(path: 'fn1', args: [new Arg(name: 'foo')], outputs: ['foo': null])
