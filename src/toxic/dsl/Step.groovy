@@ -11,6 +11,7 @@ class Step {
   String function
   Map<String,Object> args = [:]
   Map<String,Object> outputs = [:]
+  Wait wait
 
   def methodMissing(String name, args)  {
     if (this.args.containsKey(name)) {
@@ -36,6 +37,15 @@ class Step {
       return
 
     this.function = from.prefix + prefixDelimiter + this.function
+  }
+
+  def wait(Closure closure) {
+    def w = new Wait()
+    closure.setResolveStrategy(Closure.DELEGATE_FIRST)
+    closure.delegate = w
+    closure()
+
+    wait = w
   }
 
   static def interpolate(def props, String property) {

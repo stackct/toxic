@@ -89,6 +89,48 @@ test "NAME" {
 
 Steps are named invocations of a Function, that allow for  the passing of input arguments to the Function, and the exporting of outputs from the Function to be used in subsequent Steps or Assertions (see [Interpolation](#interpolation)). Tests are composed of any number of sequential Steps.
 
+Steps can be optionally run with a retry logic `wait` block. `wait` blocks require one or more `condition` blocks and the following arguments to be provided:
+
+* `timeoutMs` - Time (in milliseconds) to retry before failing the Step
+* `intervalMs` - Time (in milliseconds) between retries
+
+```groovy
+step "DoSomething", "do-it", {
+    foo "bar"
+
+    wait {
+        intervalMs   10
+        timeoutMs    30
+
+        condition {
+            eq "{{ status }}", "OK"
+        }
+    }
+}
+```
+
+`condition` blocks contain one ore more matchers (see [Assertions](#assertions)). Multiple matchers within a single `condition` block are considered `AND` operations. To specify `OR` operations, use multiple `condition` blocks.
+
+```groovy
+step "DoSomething", "do-it", {
+    foo "bar"
+
+    wait {
+        intervalMs   10
+        timeoutMs    30
+
+        condition {
+            eq "{{ status }}", "OK"
+            eq "{{ code }}", "200"
+        } // OR
+        
+        condition {
+            eq "{{ error }}", ""
+        }
+    }
+}
+```
+
 ### Assertions
 
 Tests are concluded to have passed or failed, based on the statement contained within the Assertions block. Each statement in the Assertion block is composed using _matchers_. The supported matchers are:
@@ -182,7 +224,7 @@ test "A user can place an order" {
 
   step "order.create_order", "simple-order", {
       amount   "1000"
-      currency "USD
+      currency "USD"
   }
 
   assertions {
