@@ -31,6 +31,13 @@ class JsonTaskTest {
     assert 'application/json' == props['http.header.Content-Type']
   }
 
+  @Test
+  void should_handle_request_with_no_response_file() {
+    def json = '{ "foo": "bar" }'
+    def props = runTask(json, null, json, [httpMethod:'GET'])
+    assert 'application/json' == props['http.header.Content-Type']
+  }
+
   def runTask(String request, String expectedResponse, String actualResponse, def customProps = [:]) {
     def props = mockProps(customProps)
     
@@ -64,8 +71,10 @@ class JsonTaskTest {
       requestFile = File.createTempFile('JsonTaskTest', '_req.json')
       requestFile.text = request
 
-      responseFile = new File(requestFile.parent, requestFile.name.replace('_req', '_resp'))
-      responseFile.text = response
+      if(null != response) {
+        responseFile = new File(requestFile.parent, requestFile.name.replace('_req', '_resp'))
+        responseFile.text = response
+      }
 
       c(requestFile, responseFile)
     }
