@@ -351,14 +351,15 @@ public class HttpTaskTest {
 
   @Test
   void should_retry_transmit_based_on_condition() {
+    def memory = new ToxicProperties()
     int transmitCount = 0
     def task = [ transmit:{ request, expectedResponse, m ->
       transmitCount++
-      return transmitCount == 3 ? 'SUCCESS' : 'FAIL'
+      memory['lastResponse'] = transmitCount == 3 ? 'SUCCESS' : 'FAIL'
+      return memory['lastResponse']
     }] as HttpTask
 
-    def memory = new ToxicProperties()
-    memory['task.retry.condition'] = { response -> return 'SUCCESS' == response }
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
     memory['task.retry.every'] = 1
     memory['task.retry.atMostMs'] = 1000
 
@@ -375,12 +376,13 @@ public class HttpTaskTest {
   void should_fail_after_retries_are_exhausted() {
     expectedException.expect(TimeoutException.class)
 
+    def memory = new ToxicProperties()
     def task = [ transmit:{ request, expectedResponse, m ->
-      return 'FAIL'
+      memory['lastResponse'] = 'FAIL'
+      return memory['lastResponse']
     }] as HttpTask
 
-    def memory = new ToxicProperties()
-    memory['task.retry.condition'] = { response -> return 'SUCCESS' == response }
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
     memory['task.retry.every'] = 1
     memory['task.retry.atMostMs'] = 1
 
