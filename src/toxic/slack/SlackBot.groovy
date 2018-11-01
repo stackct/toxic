@@ -36,8 +36,13 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   public void run() {
     running = true
     while (running) {
-      attemptConnection()
-      Thread.sleep(10000)
+      try {
+        attemptConnection()
+      } catch (Throwable t) {
+        log.error("Unexpected exception while attempting Slack connection; reason=${t}", t)
+      } finally {
+        Thread.sleep(60000)
+      }
     }
   }
 
@@ -54,6 +59,7 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   }
   
   public boolean shouldReconnect() {
+    log.info("Checking Slack connection state; connectionOpen=${wss?.isOpen()}; hasToken=${handler?.config("secure.slack.token") != null}")
     return handler?.config("secure.slack.token") && (!wss?.isOpen() || handler?.config("secure.slack.token") != slackToken)
   }
   
@@ -103,6 +109,11 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   @Override
   public void onError(Session session, Throwable t) {
     log.error("Unexpected error; reason=${JobManager.findReason(t)}", t)
+  }
+
+  @Override
+  public void onClose(Session session, CloseReason closeReason) {
+    log.warn("Slack websocket closed; reason=${closeReason}")
   }
 
   public User getById(String id) {
