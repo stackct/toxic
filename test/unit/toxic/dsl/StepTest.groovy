@@ -56,6 +56,12 @@ class StepTest {
   }
 
   @Test
+  void should_interpolate_variadic_args() {
+    def props = [foo1:'bar1', foo2:'bar2', foo3:'bar3']
+    assert ['bar1', 'bar2', 'bar3'] == Step.interpolate(props, ['{{ foo1 }}', '{{ foo2 }}', '{{ foo3 }}'] as String[])
+  }
+
+  @Test
   void should_interpolate_map() {
     def props = [foo1:'bar1', foo2:'bar2', foo3:'bar3']
     assert ['foo1':'bar1', 'foo2':'bar2', 'foo3':'bar3'] == Step.interpolate(props, [foo1: '{{ foo1 }}', foo2: '{{ foo2 }}', foo3: '{{ foo3 }}'])

@@ -64,7 +64,7 @@ class Step {
   }
 
   static def interpolate(def props, def value) {
-    if(value instanceof List) {
+    if ([Collection, Object[]].any { type -> type.isAssignableFrom(value.getClass()) }) {
       value = value.collect { interpolate(props, it) }
     }
     else if(value instanceof Map) {
