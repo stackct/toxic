@@ -29,3 +29,9 @@ Toxic contains a DSL (domain-specific language) that enables expressive tests to
 ## Deployment
 
 * [Helm Deployment](docs/deployment.md)
+
+### Visual Studio Code Plugin
+
+To install the Pickle code snippets, copy or symlink `resources/vscode/snippets/pickle.code-snippets` to your Visual Studio Code user preferences directory. 
+
+NOTE: On Mac, this is in `~/Library/Application\ Support/Code/User/snippets`.
