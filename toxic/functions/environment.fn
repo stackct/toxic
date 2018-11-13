@@ -60,6 +60,14 @@ function "KubeCreateSecret" {
     arg "file"
 }
 
+function "KubeApply" {
+    description "Applies a Kubernetes manifest"
+    path "{{ libPath }}/environment/kube_manifest/apply"
+
+    arg "namespace"
+    arg "file"
+}
+
 function "GetServiceUrl" {
   description "Returns the URL for a Kubernetes Service"
   path "{{ libPath }}/environment/service/get"
