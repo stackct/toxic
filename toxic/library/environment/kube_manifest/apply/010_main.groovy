@@ -1,0 +1,1 @@
+assert 0 == memory.kubeApply(memory.namespace, memory.file)

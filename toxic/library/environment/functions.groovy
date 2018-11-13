@@ -62,8 +62,12 @@ memory.kubePortForward = { ->
   return running
 }
 
-memory.kubeSecret = { String namespace, String name, String file -> 
+memory.kubeSecret = { String namespace, String name, String file, String type -> 
   execWithEnv([kubectl, '--namespace', namespace, 'create', 'secret', 'generic', name, '--from-file', file])
+}
+
+memory.kubeApply = { String namespace, String file -> 
+  execWithEnv([kubectl, '--namespace', namespace, 'apply', '-f', file])
 }
 
 memory.helmInit = {
