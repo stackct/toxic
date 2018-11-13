@@ -62,7 +62,7 @@ memory.kubePortForward = { ->
   return running
 }
 
-memory.kubeSecret = { String namespace, String name, String file, String type -> 
+memory.kubeSecret = { String namespace, String name, String file -> 
   execWithEnv([kubectl, '--namespace', namespace, 'create', 'secret', 'generic', name, '--from-file', file])
 }
 
