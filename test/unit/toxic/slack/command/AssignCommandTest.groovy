@@ -5,6 +5,18 @@ import org.junit.*
 class AssignCommandTest extends CommandTest {
   def command = new AssignCommand()
 
+  @Before
+  public void before() {
+    super.before()
+    AssignCommand.assignSymbols = []
+  }
+
+  @After
+  public void after() {
+    super.after()
+    AssignCommand.reset()
+  }
+
   @Test
   public void should_provide_help() {
     def expected = new StringBuffer() 
@@ -161,5 +173,22 @@ class AssignCommandTest extends CommandTest {
       result[user]++
     }
     assert [4, 4, 5] == result.collect { it.value }.sort()
+  }
+
+  @Test
+  public void should_prepend_items_with_symbol() {
+    AssignCommand.assignSymbols = [':foo:', ':bar:']
+
+    def topic = new StringBuffer()
+    topic << 'Some general information' + '\n'
+    topic << '%%' + '\n'
+    topic << 'item1' + '\n'
+    topic << 'item2' + '\n'
+    topic << 'item3' + '\n'
+    topic << 'item4' + '\n'
+    topic << '%%' + '\n'
+    topic << 'Thank you, and please drive through.' + '\n'
+
+    assert [':foo: item1', ':bar: item2', 'item3', 'item4'] == command.itemsFromTopic(topic.toString())
   }
 }
