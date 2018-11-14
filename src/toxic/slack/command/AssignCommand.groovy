@@ -67,7 +67,8 @@ class AssignCommand extends BaseCommand {
     def users = validUsers.collect { u -> "<@${u.id}>" }
 
     // Perform assignment
-    return "```\n" + Table.toTable(assign(items, users).findAll{ it.value }) + "\n```"
+    def assignments = assign(items, users).findAll{ it.value }
+    return assignments.collect { item, user -> "${item} ${user}" }.join('\n')
   }
 
   private boolean shouldBeAssigned(user, status) {

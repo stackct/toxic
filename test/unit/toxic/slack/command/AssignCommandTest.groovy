@@ -35,14 +35,14 @@ class AssignCommandTest extends CommandTest {
 
   @Test
   public void should_filter_bot_and_inactive_users() {
-    bot.rtm.users << [id: 'W0000001', name: 'THEBOT', is_bot: true, status: [ok:true, presence:'active']]
-    bot.rtm.users << [id: 'W0000002', name: 'USER1', is_bot: false, status: [ok:true, presence:'active']]
-    bot.rtm.users << [id: 'W0000003', name: 'USER2', is_bot: false, status: [ok:true, presence:'active']]
-    bot.rtm.users << [id: 'W0000004', name: 'USER3', is_bot: false, status: [ok:true, presence:'away']]
-    bot.metaClass.getUserStatus = { id -> bot.rtm.users.find{it.id == id}.status }
+    bot.rtm.users << [id: 'W0000001', name: 'THEBOT', is_bot: true, status: [ok: true, presence: 'active']]
+    bot.rtm.users << [id: 'W0000002', name: 'USER1', is_bot: false, status: [ok: true, presence: 'active']]
+    bot.rtm.users << [id: 'W0000003', name: 'USER2', is_bot: false, status: [ok: true, presence: 'active']]
+    bot.rtm.users << [id: 'W0000004', name: 'USER3', is_bot: false, status: [ok: true, presence: 'away']]
+    bot.metaClass.getUserStatus = { id -> bot.rtm.users.find { it.id == id }.status }
 
-    def chan = [ id: 'C12345', name: 'lobby', is_group: true, topic:[value:''] ]
-    chan.members = bot.rtm.users.collect { it.id}
+    def chan = [id: 'C12345', name: 'lobby', is_group: true, topic: [value: '']]
+    chan.members = bot.rtm.users.collect { it.id }
     chan.topic.value += '%%' + '\n'
     chan.topic.value += 'foo the thing' + '\n'
     chan.topic.value += 'bar in the other thing' + '\n'
@@ -50,14 +50,13 @@ class AssignCommandTest extends CommandTest {
     bot.rtm.channels << chan
     bot.metaClass.getChannelInfo = { id -> chan }
 
-    def actual = command.handle([], bot, [channel:'C12345'])
+    def actual = command.handle([], bot, [channel: 'C12345'])
     def lines = []
     actual.trim().eachLine { line -> lines << line }
 
-    assert lines[0] == '```'
-    assert lines[1] ==~ /Foo the thing          \| <@(W0000002|W0000003)>/
-    assert lines[2] ==~ /Bar in the other thing \| <@(W0000002|W0000003)>/
-    assert lines[3] == '```'
+    assert lines[0] ==~ /foo the thing <@(W0000002|W0000003)>/
+    assert lines[1] ==~ /bar in the other thing <@(W0000002|W0000003)>/
+
   }
 
   @Test
