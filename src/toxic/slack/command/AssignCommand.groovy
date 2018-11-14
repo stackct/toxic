@@ -7,7 +7,34 @@ import toxic.util.Table
 class AssignCommand extends BaseCommand {
   private static Logger log = Logger.getLogger(this)
 
-  private static assignToken = '%%'
+  private static String assignToken
+  public static List<String> assignSymbols = []
+
+  static {
+    reset()
+  }
+
+  public static reset() {
+    assignToken = '%%'
+    assignSymbols = [
+            ':zero:',
+            ':one:',
+            ':two:',
+            ':three:',
+            ':four:',
+            ':five:',
+            ':six:',
+            ':seven:',
+            ':eight:',
+            ':nine:',
+            ':keycap_ten:',
+            ':hash:',
+            ':keycap_star:',
+            ':a:',
+            ':b:',
+            ':o2:',
+    ]
+  }
 
   public AssignCommand(def handler) { 
     super(handler) 
@@ -51,10 +78,13 @@ class AssignCommand extends BaseCommand {
     def capture = false
     def items = []
 
+    int index = 0;
     topic.eachLine { line ->
       if (line != assignToken) {
         if (capture) {
-          items << line
+          def symbol = (index < assignSymbols.size() ? assignSymbols[index] + ' ' : '')
+          items << "${symbol}${line}"
+          index++
         }
       }
 
