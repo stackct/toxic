@@ -2,9 +2,13 @@ import toxic.ValidationException
 
 if (memory.runtime == 'k8s') {
   execWithEnv(["kubectl", "-n", memory.namespace, "get", "pods", "--no-headers"])
-  def pieces = out?.toString().split(" ")
-  if (pieces) {
-    memory.podName = pieces[0]
+  out.toString().eachLine { line ->
+    if (line.startsWith(memory.containerName)) {
+      def pieces = line.split(" ")
+      if (pieces) {
+        memory.podName = pieces[0]
+      }
+    }
   }
 }
 
