@@ -1,5 +1,13 @@
 import toxic.ValidationException
 
+if (memory.runtime == 'k8s') {
+  execWithEnv(["kubectl", "-n", memory.namespace, "get", "pods", "--no-headers"])
+  def pieces = out?.toString().split(" ")
+  if (pieces) {
+    memory.podName = pieces[0]
+  }
+}
+
 def k8sExec = ['kubectl', '-n', memory['namespace'], 'exec', memory['podName'], '-c', memory['containerName'], '--']
 def dockerExec = ['docker', 'exec', memory['containerName']]
 
