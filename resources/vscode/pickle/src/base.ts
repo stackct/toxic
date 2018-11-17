@@ -50,5 +50,4 @@ export abstract class BaseNode extends vscode.TreeItem {
     public openFile() {
         vscode.window.showTextDocument(this.resourceUri, { selection: this.selection });
     }
-
 }

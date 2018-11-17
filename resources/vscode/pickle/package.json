@@ -19,7 +19,7 @@
         "snippets": [
             {
                 "language": "groovy",
-                "path": "./snippets/pickle.code-snippets"
+                "path": "./snippets/pickle.json"
             }
         ],
         "commands": [
@@ -48,7 +48,7 @@
             "view/item/context": [
                 {
                     "command": "pickleExplorer.runTest",
-                    "when": "viewItem == pickle-test",
+                    "when": "viewItem == pickle-runnable",
                     "group": "inline"
                 },
                 {
