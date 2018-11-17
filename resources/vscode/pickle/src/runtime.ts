@@ -39,7 +39,7 @@ export class Runtime {
         Runtime.outputChannel.clear();
         Runtime.outputChannel.show(true);
 
-        let args = vscode.workspace.getConfiguration().get('pickle.runtimeArgs') as string[] | [];
+        let args = vscode.workspace.getConfiguration().get('pickle.runtimeArgs') as string[] || [];
 
         let proc = cp.spawn(this.command, ['-doDir=' + path].concat(...args));
         proc.stdout.addListener("data", (chunk) => {
