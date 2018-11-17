@@ -11,7 +11,7 @@ export class FunctionNodeProvider extends BaseNodeProvider {
     }
 
     getChildren(element?: FunctionNode): Thenable<FunctionNode[]> {
-        return vscode.workspace.findFiles('**/*.fn', 'gen/')
+        return vscode.workspace.findFiles(this.basePath + '/**/*.fn', 'gen/')
             .then(files => files.map(f => vscode.workspace.openTextDocument(f.fsPath)))
             .then(pdocs => Promise.all(pdocs))
             .then(docs => docs.map(doc => this.collectFromFile<FunctionNode>(doc, this.matchRegExp, (match, line) => new FunctionNode(doc.uri, match[1], line))))

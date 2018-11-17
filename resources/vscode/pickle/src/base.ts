@@ -4,6 +4,10 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
     abstract getTreeItem(element: BaseNode);
     abstract getChildren(element?: BaseNode): Thenable<BaseNode[]>;
 
+    get basePath(): string {
+        return 'toxic'
+    }
+
     collectFromFile<BaseNode>(doc: vscode.TextDocument, rex: RegExp, matchFn: (match: RegExpMatchArray, line: number) => BaseNode): BaseNode[] {
         let entries = [];
         let lines = doc.lineCount;
