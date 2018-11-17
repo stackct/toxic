@@ -24,7 +24,7 @@
         ],
         "commands": [
             {
-                "title": "Open File",
+                "title": "Locate",
                 "command": "pickleExplorer.openFile",
                 "icon": "resources/edit.svg",
                 "category": "Pickle"
