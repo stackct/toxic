@@ -13,7 +13,7 @@ Build the extension from source:
 
 ```
 npm install
-npm compile
+npm run compile
 ```
 
 Enable this extension by creating a symlink from directory containing this document into your Visual Studio Code extensions directory:
