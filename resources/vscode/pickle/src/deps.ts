@@ -3,8 +3,7 @@ import * as path from 'path';
 import { BaseNode, BaseNodeProvider } from './base';
 
 export class DepNodeProvider extends BaseNodeProvider {
-    
-    private rex: RegExp = /^dep "([\w\s]+)".*/;
+    private matchRegExp: RegExp = /^dep "([\w\s]+)".*/;
     
     getTreeItem(element: DepNode): vscode.TreeItem {
         return element;
@@ -14,7 +13,7 @@ export class DepNodeProvider extends BaseNodeProvider {
         return vscode.workspace.findFiles('**/*.dep', 'gen/')
             .then(files => files.map((uri) => vscode.workspace.openTextDocument(uri)))
             .then(pdocs => Promise.all(pdocs))
-            .then(docs => docs.map(doc => this.collectFromFile<DepNode>(doc, this.rex, (match, line) => new DepNode(doc.uri, match[1], line))))
+            .then(docs => docs.map(doc => this.collectFromFile<DepNode>(doc, this.matchRegExp, (match, line) => new DepNode(doc.uri, match[1], line))))
             .then(dnodes => this.flatten<DepNode>(dnodes))
     }
 }
