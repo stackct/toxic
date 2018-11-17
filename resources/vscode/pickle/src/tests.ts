@@ -31,7 +31,7 @@ export class TestNodeProvider extends BaseNodeProvider {
     private loadData() {
         this.data = [] as TestNode[];
 
-        vscode.workspace.findFiles('toxic/**/*.test', 'gen/')
+        vscode.workspace.findFiles(this.basePath + '/**/*.test', 'gen/')
             .then(files => this.data = files.map((uri) => new TestFileNode(null, uri)))
     }
 }
