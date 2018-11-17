@@ -22,6 +22,16 @@
                 "path": "./snippets/pickle.json"
             }
         ],
+        "configuration": {
+            "type": "object",
+            "title": "Pickle configuration",
+            "properties": {
+                "pickle.runtimeArgs": {
+                    "type": "array",
+                    "description": "List of runtime arguments in the format: -key=value"
+                }
+            }
+        },
         "commands": [
             {
                 "title": "Locate",
