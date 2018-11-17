@@ -1,17 +1,19 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as cp from 'child_process';
+import { BaseNode, BaseNodeProvider } from './base';
 
-export class TestNodeProvider implements vscode.TreeDataProvider<TestNode> {
+export class TestNodeProvider extends BaseNodeProvider {
+    private rex: RegExp = /^test "([\w\s]+)".*/;
     private data: TestNode[];
     private outputChannel: vscode.OutputChannel;
 
-    constructor(private workspaceRoot?: string) {
+    constructor() {
+        super();
         this.loadData();
         this.outputChannel = vscode.window.createOutputChannel('Pickle Test Runner')
-
         vscode.commands.registerCommand('pickleExplorer.runTest', (test: TestNode) => this.runTest(test.label, test.resourceUri.fsPath))
-        vscode.commands.registerCommand('pickleExplorer.openTest', (test?: TestNode) => this.openTest(test))
+        vscode.commands.registerCommand('pickleExplorer.openTest', (test: TestNode) => test.openFile())
     }
 
     getTreeItem(element: TestNode): vscode.TreeItem {
@@ -24,33 +26,13 @@ export class TestNodeProvider implements vscode.TreeDataProvider<TestNode> {
         }
 
         return vscode.workspace.openTextDocument(element.resourceUri)
-            .then(doc => this.findTestsInFile(doc))
+            .then(doc => this.collectFromFile<TestNode>(doc, this.rex, (match, line) => new TestNode(doc.uri, match[1], line)))
     }
 
     private loadData() {
         this.data = [] as TestNode[];
-        vscode.workspace.findFiles('**/*.test')
-            .then(files => this.data = files.map((uri) => new FileTestNode(null, uri)))
-    }
-
-    private openTest(test?: TestNode) {
-        vscode.window.showTextDocument(test.resourceUri, { selection: test.selection } as vscode.TextDocumentShowOptions);
-    }
-
-    private findTestsInFile(doc: vscode.TextDocument): TestNode[] {
-        let tests = [];
-        let lines = doc.lineCount;
-
-        for (let i = 0; i < lines; i++) {
-            let line = doc.lineAt(i);
-            let match = line.text.match(/^test "([\w\s]+)".*/)
-
-            if (match != null && match.length > 0) {
-                tests.push(new TestNode(doc.uri, match[1], i));
-            }
-        }
-
-        return tests;
+        vscode.workspace.findFiles('**/*.test', 'gen/')
+            .then(files => this.data = files.map((uri) => new TestFileNode(null, uri)))
     }
 
     private runTest(name: string, path: string) {
@@ -59,7 +41,7 @@ export class TestNodeProvider implements vscode.TreeDataProvider<TestNode> {
 
         let results = { success: 0, fail: 0 }
 
-        let proc = cp.spawn('/home/aalonso/git/toxic/bin/toxic', ['-doDir=' + path]);
+        let proc = cp.spawn('toxic', ['-doDir=' + path]);
         proc.stdout.addListener("data", (chunk) => {
             let s = chunk.toString()
             this.outputChannel.append(s)
@@ -71,34 +53,30 @@ export class TestNodeProvider implements vscode.TreeDataProvider<TestNode> {
             }
         });
 
+        let postOptions = (choice: string) => {
+            if (choice == 'Rerun') this.runTest(name, path)
+        }
+
+        proc.on("error", (e) => vscode.window.showErrorMessage('Failed to run test. Make sure toxic is installed in and your PATH'));
         proc.on("close", (code, signal) => {
-            vscode.window.showInformationMessage('Test run completed; success:' + results.success + ', failed:' + results.fail, 'Dismiss', 'Rerun')
-                .then(choice => {
-                    if (choice == 'Rerun') this.runTest(name, path)
-                })
+            let message = 'Test run completed; success:' + results.success + ', failed:' + results.fail;
+            let options = ['Dismiss', 'Rerun']
+
+            if (code !== 0) {
+                vscode.window.showErrorMessage(message, ...options).then(postOptions)
+                return;
+            }
+            
+            vscode.window.showInformationMessage(message, ...options).then(postOptions)
         });
     }
 }
 
-export class TestNode extends vscode.TreeItem {
-    constructor(private uri: vscode.Uri, label?: string, private line?: number) {
-        super(uri);
-        this.label = label;
-    }
-
-    get tooltip(): string {
-        return `${this.label}`;
-    }
-
-    get selection(): vscode.Selection {
-        return { start: new vscode.Position(this.line, 0), end: new vscode.Position(this.line, 0) } as vscode.Selection;
-    }
-
-    iconPath = null;
-    contextValue = 'test';
+export class TestNode extends BaseNode {
+    contextValue = 'pickle-test'
 }
 
-export class FileTestNode extends TestNode {
+export class TestFileNode extends TestNode {
     constructor(label: string, uri?: vscode.Uri) {
         super(uri, label);
         this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
@@ -109,6 +87,6 @@ export class FileTestNode extends TestNode {
         dark: path.join(__filename, '..', '..', 'resources', 'test.svg')
     }
 
-    contextValue = 'testFile'
+    contextValue = 'pickle-item-container'
 }
 
