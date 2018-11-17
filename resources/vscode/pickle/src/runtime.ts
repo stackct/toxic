@@ -31,15 +31,17 @@ export class Runtime {
             vscode.window.showInformationMessage(message, ...options).then(postOptions)
         }
 
-        this.run(path, [], handleData, null, handleClose);
+        this.run(path, handleData, null, handleClose);
     }
 
-    private static run(path: string, args?: string[], data?: (d: string) => any, error?: (e: string) => any, close?: (c: number, s: string) => any) {
+    private static run(path: string, data?: (d: string) => any, error?: (e: string) => any, close?: (c: number, s: string) => any) {
         Runtime.outputChannel = Runtime.outputChannel || vscode.window.createOutputChannel('Pickle Runtime');
         Runtime.outputChannel.clear();
         Runtime.outputChannel.show(true);
 
-        let proc = cp.spawn(this.command, ['-doDir=' + path]);
+        let args = vscode.workspace.getConfiguration().get('pickle.runtimeArgs') as string[] | [];
+
+        let proc = cp.spawn(this.command, ['-doDir=' + path].concat(...args));
         proc.stdout.addListener("data", (chunk) => {
             let s = chunk.toString()
             Runtime.outputChannel.append(s)
