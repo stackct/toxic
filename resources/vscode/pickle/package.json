@@ -24,8 +24,8 @@
         ],
         "commands": [
             {
-                "title": "Open Test",
-                "command": "pickleExplorer.openTest",
+                "title": "Open File",
+                "command": "pickleExplorer.openFile",
                 "icon": "resources/edit.svg",
                 "category": "Pickle"
             },
@@ -33,12 +33,6 @@
                 "title": "Run Test",
                 "command": "pickleExplorer.runTest",
                 "icon": "resources/run.svg"
-            },
-            {
-                "title": "Open Function",
-                "command": "pickleExplorer.openFunction",
-                "icon": "resources/edit.svg",
-                "category": "Pickle"
             }
         ],
         "viewsContainers": {
@@ -53,24 +47,19 @@
         "menus": {
             "view/item/context": [
                 {
-                    "command": "pickleExplorer.openTest",
-                    "when": "view == pickle-tests && viewItem == test",
-                    "group": "inline"
-                },
-                {
                     "command": "pickleExplorer.runTest",
-                    "when": "view == pickle-tests && viewItem == test",
+                    "when": "viewItem == pickle-test",
                     "group": "inline"
                 },
                 {
-                    "command": "pickleExplorer.openFunction",
-                    "when": "view == pickle-functions && viewItem == function",
+                    "command": "pickleExplorer.openFile",
+                    "when": "viewItem != pickle-item-container",
                     "group": "inline"
                 }
             ],
             "commandPalette": [
                 {
-                    "command": "pickleExplorer.openTest",
+                    "command": "pickleExplorer.openFile",
                     "when": "false"
                 },
                 {
