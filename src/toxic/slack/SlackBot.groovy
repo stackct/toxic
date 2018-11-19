@@ -82,6 +82,7 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
     def cec = ClientEndpointConfig.Builder.create().build()
     log.info("Connecting to Slack; wssUrl=${wssUrl}")
     wss = ClientManager.createClient().connectToServer(endpoint, cec, new URI(wssUrl))
+    wss.asyncRemote.setSendTimeout(10000)
   }
   
   @Override
@@ -189,7 +190,11 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
 
   def send(msg) {
     msg.id = msgId++
-    wss.asyncRemote?.sendText(JsonOutput.toJson(msg))
+    wss.asyncRemote?.sendText(JsonOutput.toJson(msg), new SendHandler() {
+      public void onResult(SendResult result) {
+        log.info("Message send result; isOK=${result.isOK()}; reason=${result.exception}", result.exception)
+      }
+    })
   }
   
   def sendMessage(channelId, message) {
