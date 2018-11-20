@@ -1,9 +1,23 @@
 import * as vscode from 'vscode';
 
 export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNode> {
+    private fsWatcher: vscode.FileSystemWatcher;
+    private _onDidChangeTreeData: vscode.EventEmitter<any> = new vscode.EventEmitter<any>();
+    readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
+
+    constructor() {
+        this.fsWatcher = vscode.workspace.createFileSystemWatcher(vscode.workspace.rootPath + '/toxic/**/*');
+        this.fsWatcher.onDidCreate(uri => this._onDidChangeTreeData.fire());
+        this.fsWatcher.onDidDelete(uri => this._onDidChangeTreeData.fire());
+
+        // TODO: This refreshes the entire tree. The scope of the refresh could be reduced to just the node
+        // that changed, but will require a separate data structure to map Uri -> BaseNode.
+        this.fsWatcher.onDidChange(uri => this._onDidChangeTreeData.fire());
+    }
+
     abstract getTreeItem(element: BaseNode);
     abstract getChildren(element?: BaseNode): Thenable<BaseNode[]>;
-
+    
     get basePath(): string {
         return 'toxic'
     }
@@ -11,30 +25,31 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
     collectFromFile<BaseNode>(doc: vscode.TextDocument, rex: RegExp, matchFn: (match: RegExpMatchArray, line: number) => BaseNode): BaseNode[] {
         let entries = [];
         let lines = doc.lineCount;
-    
+
         for (let i = 0; i < lines; i++) {
             let line = doc.lineAt(i);
             let match = line.text.match(rex)
-    
+
             if (match != null && match.length > 0) {
                 entries.push(matchFn(match, i))
             }
         }
-    
+
         return entries;
     }
 
     flatten<BaseNode>(nodes: BaseNode[][]): BaseNode[] {
         return [].concat(...nodes) as BaseNode[];
     }
-   
 }
 
 export abstract class BaseNode extends vscode.TreeItem {
+
     constructor(
-        public uri: vscode.Uri, 
-        public label?: string, 
-        public line?: number
+        public uri: vscode.Uri,
+        public label?: string,
+        public line?: number,
+        public parent?: BaseNode
     ) {
         super(uri);
         this.label = label;
@@ -53,5 +68,13 @@ export abstract class BaseNode extends vscode.TreeItem {
 
     public openFile() {
         vscode.window.showTextDocument(this.resourceUri, { selection: this.selection });
+    }
+}
+
+export class BaseNodeData {
+    public items: BaseNode[];
+
+    constructor(uri?: vscode.Uri) {
+        this.items = [] as BaseNode[];
     }
 }
