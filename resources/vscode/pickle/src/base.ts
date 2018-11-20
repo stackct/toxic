@@ -19,13 +19,17 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
     get basePath(): string {
         return 'toxic'
     }
-
+    
     refresh(uri: vscode.Uri) {
         // TODO: This refreshes the entire tree. The scope of the refresh could be reduced to just the node
         // that changed, but will require a separate data structure to map Uri -> BaseNode.
         this._onDidChangeTreeData.fire()
     }
-
+    
+    get args(): string[] { 
+        return [];
+    };
+    
     collectFromFile<BaseNode>(doc: vscode.TextDocument, rex: RegExp, matchFn: (match: RegExpMatchArray, line: number) => BaseNode): BaseNode[] {
         let entries = [];
         let lines = doc.lineCount;
