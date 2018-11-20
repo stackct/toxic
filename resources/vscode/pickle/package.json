@@ -83,17 +83,17 @@
                 {
                     "id": "pickle-deps",
                     "name": "Dependencies",
-                    "when": "hasPickleItems"
+                    "when": "activated"
                 },
                 {
                     "id": "pickle-functions",
                     "name": "Functions",
-                    "when": "hasPickleItems"
+                    "when": "activated"
                 },
                 {
                     "id": "pickle-tests",
                     "name": "Tests",
-                    "when": "hasPickleItems"
+                    "when": "activated"
                 }
             ]
         }

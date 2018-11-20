@@ -29,6 +29,6 @@ NOTE: If you are running on Windows, you are on your own.
 * Run all Pickle tests
 * Run all Pickle tests in a file
 * Run tests based on tags (include/exclude)
-* Refresh explorer views when files change
+* Run current test from Editor window via keystroke
 * Show available functions provided by external dependencies
 * Figure out how to unit/integration test the extension
