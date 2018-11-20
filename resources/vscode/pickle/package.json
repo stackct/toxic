@@ -60,11 +60,6 @@
                     "command": "pickleExplorer.runTest",
                     "when": "viewItem == pickle-runnable",
                     "group": "inline"
-                },
-                {
-                    "command": "pickleExplorer.openFile",
-                    "when": "viewItem != pickle-item-container",
-                    "group": "inline"
                 }
             ],
             "commandPalette": [
