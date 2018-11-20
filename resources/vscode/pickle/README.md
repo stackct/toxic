@@ -27,7 +27,6 @@ NOTE: If you are running on Windows, you are on your own.
 ## Next
 
 * Run all Pickle tests
-* Run all Pickle tests in a file
 * Run tests based on tags (include/exclude)
 * Run current test from Editor window via keystroke
 * Show available functions provided by external dependencies

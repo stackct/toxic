@@ -8,7 +8,7 @@ export class TestNodeProvider extends BaseNodeProvider {
     
     constructor() {
         super();
-        vscode.commands.registerCommand('pickleExplorer.runTest', (test: TestNode) => Runtime.runTest(test.label, test.resourceUri.fsPath))
+        vscode.commands.registerCommand('pickleExplorer.runTest', (test: TestNode) => Runtime.runTest(test.label, test.resourceUri.fsPath, test.args))
         vscode.commands.registerCommand('pickleExplorer.openTest', (test: TestNode) => test.openFile())
     }
 
@@ -30,6 +30,10 @@ export class TestNodeProvider extends BaseNodeProvider {
 }
 
 export class TestNode extends BaseNode {
+    get args(): string[] { 
+        return ['-test="' + this.label + '"'];
+    };
+
     contextValue = 'pickle-runnable'
 }
 
@@ -39,10 +43,14 @@ export class TestFileNode extends TestNode {
         this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
     }
 
+    get args(): string[] {
+        return [];
+    }
+
     iconPath = {
         light: path.join(__filename, '..', '..', 'resources', 'test.svg'),
         dark: path.join(__filename, '..', '..', 'resources', 'test.svg')
     }
 
-    contextValue = 'pickle-item-container'
+    contextValue = 'pickle-runnable'
 }
