@@ -48,7 +48,6 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
 }
 
 export abstract class BaseNode extends vscode.TreeItem {
-
     constructor(
         public uri: vscode.Uri,
         public label?: string,
@@ -72,6 +71,10 @@ export abstract class BaseNode extends vscode.TreeItem {
 
     public openFile() {
         vscode.window.showTextDocument(this.resourceUri, { selection: this.selection });
+    }
+
+    public get command(): vscode.Command {
+        return { title: "Locate", command: "pickleExplorer.openFile", arguments: [this], tooltip: "Locate" } as vscode.Command;
     }
 }
 
