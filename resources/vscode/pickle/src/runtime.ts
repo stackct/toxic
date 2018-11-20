@@ -8,7 +8,7 @@ export class Runtime {
     public static runTest(name: string, path: string, args?: string[]) {
         let results = { success: 0, fail: 0 }
         let postOptions = (choice: string) => {
-            if (choice == 'Rerun') Runtime.runTest(name, path)
+            if (choice == 'Rerun') Runtime.runTest(name, path, args)
         }
 
         let handleData = (data: string) => {
