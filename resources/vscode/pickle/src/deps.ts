@@ -5,6 +5,8 @@ import { BaseNode, BaseNodeProvider } from './base';
 export class DepNodeProvider extends BaseNodeProvider {
     private matchRegExp: RegExp = /^dep "([\w\s]+)".*/;
     
+    getExtension(): string { return "\.dep" }
+
     getTreeItem(element: DepNode): vscode.TreeItem {
         return element;
     }

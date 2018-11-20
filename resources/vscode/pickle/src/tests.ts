@@ -12,6 +12,8 @@ export class TestNodeProvider extends BaseNodeProvider {
         vscode.commands.registerCommand('pickleExplorer.openTest', (test: TestNode) => test.openFile())
     }
 
+    getExtension(): string { return "\.test" }
+
     getChildren(element?: TestNode): Thenable<TestNode[]> {
         if (!element) {
             return vscode.workspace.findFiles(this.basePath + '/**/*.test', 'gen/')

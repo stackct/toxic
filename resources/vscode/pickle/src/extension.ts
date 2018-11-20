@@ -6,14 +6,10 @@ import { FunctionNodeProvider } from './functions';
 import { TestNodeProvider } from './tests';
 
 export function activate(context: vscode.ExtensionContext) {
-    let depNodeProvider = new DepNodeProvider();
-    let fnNodeProvider = new FunctionNodeProvider();
-    let testNodeProvider = new TestNodeProvider();
-
     // Register TreeNodeProviders
-    vscode.window.registerTreeDataProvider('pickle-deps', depNodeProvider);
-    vscode.window.registerTreeDataProvider('pickle-functions', fnNodeProvider);
-    vscode.window.registerTreeDataProvider('pickle-tests', testNodeProvider);
+    vscode.window.registerTreeDataProvider('pickle-deps', new DepNodeProvider());
+    vscode.window.registerTreeDataProvider('pickle-functions', new FunctionNodeProvider());
+    vscode.window.registerTreeDataProvider('pickle-tests', new TestNodeProvider());
 
     // Register commands
     vscode.commands.registerCommand('pickleExplorer.openFile', (node: BaseNode) => node.openFile())

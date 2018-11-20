@@ -6,6 +6,8 @@ import { BaseNode, BaseNodeProvider } from './base';
 export class FunctionNodeProvider extends BaseNodeProvider {
     private matchRegExp: RegExp = /^function "([\w\s]+)".*/;
 
+    getExtension(): string { return "\.fn" }
+
     getTreeItem(element: FunctionNode): vscode.TreeItem {
         return element;
     }
