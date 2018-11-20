@@ -6,20 +6,24 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
     readonly onDidChangeTreeData: vscode.Event<any> = this._onDidChangeTreeData.event;
 
     constructor() {
-        this.fsWatcher = vscode.workspace.createFileSystemWatcher(vscode.workspace.rootPath + '/toxic/**/*');
-        this.fsWatcher.onDidCreate(uri => this._onDidChangeTreeData.fire());
-        this.fsWatcher.onDidDelete(uri => this._onDidChangeTreeData.fire());
-
-        // TODO: This refreshes the entire tree. The scope of the refresh could be reduced to just the node
-        // that changed, but will require a separate data structure to map Uri -> BaseNode.
-        this.fsWatcher.onDidChange(uri => this._onDidChangeTreeData.fire());
+        this.fsWatcher = vscode.workspace.createFileSystemWatcher(vscode.workspace.rootPath + '/toxic/**/*' + this.getExtension());
+        this.fsWatcher.onDidCreate(uri => this.refresh(uri));
+        this.fsWatcher.onDidDelete(uri => this.refresh(uri));
+        this.fsWatcher.onDidChange(uri => this.refresh(uri));
     }
 
     abstract getTreeItem(element: BaseNode);
     abstract getChildren(element?: BaseNode): Thenable<BaseNode[]>;
+    abstract getExtension(): string;
     
     get basePath(): string {
         return 'toxic'
+    }
+
+    refresh(uri: vscode.Uri) {
+        // TODO: This refreshes the entire tree. The scope of the refresh could be reduced to just the node
+        // that changed, but will require a separate data structure to map Uri -> BaseNode.
+        this._onDidChangeTreeData.fire()
     }
 
     collectFromFile<BaseNode>(doc: vscode.TextDocument, rex: RegExp, matchFn: (match: RegExpMatchArray, line: number) => BaseNode): BaseNode[] {
