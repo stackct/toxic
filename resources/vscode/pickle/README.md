@@ -9,24 +9,16 @@ This extension provides code snippets, content navigation, and test execution su
 
 ## Installation
 
-Build the extension from source:
+From the root of this repository, run:
 
 ```
-npm install
-npm run compile
-```
-
-Enable this extension by creating a symlink from directory containing this document into your Visual Studio Code extensions directory:
-
-```
-ln -s <THIS_DIR> $HOME/.vscode/extensions/pickle
+make vscode
 ```
 
 NOTE: If you are running on Windows, you are on your own.
 
 ## Next
 
-* Run all Pickle tests
 * Run tests based on tags (include/exclude)
 * Run current test from Editor window via keystroke
 * Show available functions provided by external dependencies
