@@ -6,6 +6,7 @@ import toxic.ToxicProperties
 import org.apache.log4j.Logger
 import groovy.sql.Sql
 
+import java.sql.Clob
 import java.sql.Timestamp
 import java.sql.Types
 
@@ -51,6 +52,16 @@ public class SqlTask extends CompareTask {
     
     if (obj instanceof java.math.BigDecimal) {
       val = obj.toPlainString()
+    }
+    else if(obj instanceof Clob) {
+      StringBuilder sb = new StringBuilder()
+      BufferedReader br = new BufferedReader(obj.getCharacterStream())
+      String line
+      while(null != (line = br.readLine())) {
+        sb.append(line)
+      }
+      br.close()
+      val = sb.toString()
     }
 
     return val.toString()
