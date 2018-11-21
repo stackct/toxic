@@ -8,12 +8,8 @@ export class FunctionNodeProvider extends BaseNodeProvider {
 
     getExtension(): string { return "\.fn" }
 
-    getTreeItem(element: FunctionNode): vscode.TreeItem {
-        return element;
-    }
-
     getChildren(element?: FunctionNode): Thenable<FunctionNode[]> {
-        return vscode.workspace.findFiles(this.basePath + '/**/*.fn', 'gen/')
+        return vscode.workspace.findFiles(this.basePath + '/**/*' + this.getExtension(), this.excludePath)
             .then(files => files.map(f => vscode.workspace.openTextDocument(f.fsPath)))
             .then(pdocs => Promise.all(pdocs))
             .then(docs => docs.map(doc => this.collectFromFile<FunctionNode>(doc, this.matchRegExp, (match, line) => new FunctionNode(doc.uri, match[1], line))))

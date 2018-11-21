@@ -4,6 +4,7 @@ import { BaseNode, BaseNodeProvider } from './base';
 import { DepNodeProvider } from './deps';
 import { FunctionNodeProvider } from './functions';
 import { TestNodeProvider } from './tests';
+import { Runtime } from './runtime';
 
 export function activate(context: vscode.ExtensionContext) {
     // Register TreeNodeProviders
@@ -13,6 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register commands
     vscode.commands.registerCommand('pickleExplorer.openFile', (node: BaseNode) => node.openFile())
+    vscode.commands.registerCommand('pickleExplorer.runAll', () => Runtime.runTest('all', Runtime.baseDir));
 
     // Set context value to enable display of extension icon
     vscode.commands.executeCommand('setContext', 'activated', true);

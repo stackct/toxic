@@ -16,16 +16,16 @@ export class TestNodeProvider extends BaseNodeProvider {
 
     getChildren(element?: TestNode): Thenable<TestNode[]> {
         if (!element) {
-            return vscode.workspace.findFiles(this.basePath + '/**/*.test', 'gen/')
-                .then(files => files.map((uri) => new TestFileNode(null, uri)) )
+            return vscode.workspace.findFiles(this.basePath + '/**/*' + this.getExtension(), this.excludePath)
+                .then(files => files.map(this.getTestFileNode))
         }
 
         return vscode.workspace.openTextDocument(element.resourceUri)
             .then(doc => this.collectFromFile<TestNode>(doc, this.matchRegExp, (match, line) => new TestNode(doc.uri, match[1], line)))
     }
 
-    getTreeItem(element: TestNode): vscode.TreeItem {
-        return element;
+    getTestFileNode(uri: vscode.Uri): TestFileNode {
+        return new TestFileNode(null, uri);
     }
 }
 

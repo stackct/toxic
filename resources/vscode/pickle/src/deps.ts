@@ -7,12 +7,8 @@ export class DepNodeProvider extends BaseNodeProvider {
     
     getExtension(): string { return "\.dep" }
 
-    getTreeItem(element: DepNode): vscode.TreeItem {
-        return element;
-    }
-
     getChildren(element?: DepNode): Thenable<DepNode[]> {
-        return vscode.workspace.findFiles(this.basePath + '/**/*.dep', 'gen/')
+        return vscode.workspace.findFiles(this.basePath + '/**/*' + this.getExtension(), this.excludePath)
             .then(files => files.map((uri) => vscode.workspace.openTextDocument(uri)))
             .then(pdocs => Promise.all(pdocs))
             .then(docs => docs.map(doc => this.collectFromFile<DepNode>(doc, this.matchRegExp, (match, line) => new DepNode(doc.uri, match[1], line))))

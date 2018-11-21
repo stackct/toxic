@@ -36,13 +36,17 @@
             {
                 "title": "Locate",
                 "command": "pickleExplorer.openFile",
-                "icon": "resources/edit.svg",
-                "category": "Pickle"
+                "icon": "resources/edit.svg"
             },
             {
                 "title": "Run Test",
                 "command": "pickleExplorer.runTest",
                 "icon": "resources/run.svg"
+            },
+            {
+                "title": "Run All",
+                "command": "pickleExplorer.runAll",
+                "icon": "resources/stack.svg"
             }
         ],
         "viewsContainers": {
@@ -55,6 +59,13 @@
             ]
         },
         "menus": {
+            "view/title": [
+                {
+                    "command": "pickleExplorer.runAll",
+                    "when": "view == pickle-tests",
+                    "group": "navigation"
+                }
+            ],
             "view/item/context": [
                 {
                     "command": "pickleExplorer.runTest",
@@ -69,6 +80,10 @@
                 },
                 {
                     "command": "pickleExplorer.runTest",
+                    "when": "false"
+                },
+                {
+                    "command": "pickleExplorer.runAll",
                     "when": "false"
                 }
             ]
