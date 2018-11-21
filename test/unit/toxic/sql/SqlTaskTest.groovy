@@ -6,6 +6,8 @@ import groovy.sql.Sql
 import org.junit.*
 import toxic.ToxicProperties
 
+import java.sql.Clob
+
 public class SqlTaskTest {
   @Test
   public void testInitSqlFile() {
@@ -88,8 +90,9 @@ public class SqlTaskTest {
     rows[0]["string"]     = "foo" as String
     rows[0]["integer"]    = 99 as Integer
     rows[0]["bigdecimal"] = "0.000000000" as java.math.BigDecimal
+    rows[0]["clob"] = [getCharacterStream: { new StringReader("{foo:bar}") }] as Clob
 
-    assert new SqlTask().toCsv(rows) == 'foo,99,0.000000000'
+    assert new SqlTask().toCsv(rows) == 'foo,99,0.000000000,{foo:bar}'
   }
 
 /*
