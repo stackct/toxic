@@ -12,12 +12,19 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
         this.fsWatcher.onDidChange(uri => this.refresh(uri));
     }
 
-    abstract getTreeItem(element: BaseNode);
     abstract getChildren(element?: BaseNode): Thenable<BaseNode[]>;
     abstract getExtension(): string;
     
     get basePath(): string {
         return 'toxic'
+    }
+    
+    get excludePath(): string {
+        return 'gen/';
+    }
+    
+    getTreeItem(element: BaseNode) {
+        return element;
     }
     
     refresh(uri: vscode.Uri) {
