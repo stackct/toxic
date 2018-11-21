@@ -14,7 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register commands
     vscode.commands.registerCommand('pickleExplorer.openFile', (node: BaseNode) => node.openFile())
-    vscode.commands.registerCommand('pickleExplorer.runAll', () => Runtime.runTest('all', Runtime.baseDir));
+    vscode.commands.registerCommand('pickleExplorer.runAll', () => Runtime.runTest('all'));
 
     // Set context value to enable display of extension icon
     vscode.commands.executeCommand('setContext', 'activated', true);

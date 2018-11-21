@@ -7,7 +7,7 @@ export class Runtime {
     private static command: string = 'toxic';
     private static outputChannel: vscode.OutputChannel;
 
-    public static runTest(name: string, path: string, args: string[] = []) {
+    public static runTest(name: string, path: string = this.baseDir, args: string[] = []) {
         let results = { success: 0, fail: 0 }
         let postOptions = (choice: string) => {
             if (choice == 'Rerun') Runtime.runTest(name, path, args)
