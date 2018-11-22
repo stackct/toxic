@@ -17,6 +17,32 @@ make vscode
 
 NOTE: If you are running on Windows, you are on your own.
 
+## Features
+
+* Code snippets
+* Code navigation for Deps, Functions, and Tests
+* Run tests (single, file, or all)
+
+## Configuration Options
+
+```
+{
+  // List of runtime arguments in the format: -key=value
+  "pickle.runtimeArgs": []
+}
+```
+
+## Screencasts
+
+### Navigation
+![Pickle Navigation](resources/pickle-explorer-navigation.gif)
+
+### Authoring
+![Pickle Navigation](resources/pickle-explorer-authoring.gif)
+
+### Test Execution
+![Pickle Navigation](resources/pickle-explorer-run-test.gif)
+
 ## Next
 
 * Run tests based on tags (include/exclude)
