@@ -1,4 +1,0 @@
-[submodule "common/build"]
-	path = common/build
-	url = ssh://git.eng.stackct.com/v1/repos/build
-  ignore = all
