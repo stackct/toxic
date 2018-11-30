@@ -36,7 +36,6 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   
   public void run() {
     running = true
-    lastReco
     while (running) {
       try {
         attemptConnection()
