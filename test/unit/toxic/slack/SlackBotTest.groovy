@@ -47,6 +47,15 @@ class SlackBotTest {
     assert sent.channel == 'ch1'
     assert sent.type == "message"
   }
+
+  @Test
+  void shouldRecycleConnection() {
+    def bot = SlackBot.instance
+    assert bot.forceReconnect()
+    assert bot.forceReconnect()
+    bot.lastConnectTime = System.currentTimeMillis() + 100000
+    assert !bot.forceReconnect()
+  }
   
   @Test
   void should_locate_token_in_config() {
