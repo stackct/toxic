@@ -50,7 +50,7 @@ class Assertion {
   }
   
   private String format(String value) { 
-    return "'${value}'" 
+    return "'''${value}'''" 
   }
   
   private String format(Map value) { 

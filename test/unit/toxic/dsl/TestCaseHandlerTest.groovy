@@ -967,9 +967,9 @@ class TestCaseHandlerTest {
       TransientFile transientFile = new TestCaseHandler(dirItem, props).nextFile(file)
 
       def expected = new StringBuffer()
-      expected.append("assert 'ordering-1' == 'ordering-1' : \"ordering-1 ==  step.one_line_item.screenName \"")
+      expected.append("assert '''ordering-1''' == '''ordering-1''' : \"ordering-1 ==  step.one_line_item.screenName \"")
       expected.append("\n")
-      expected.append("assert 'order' != 'ordering-1' : \"order !=  step.one_line_item.screenName \"")
+      expected.append("assert '''order''' != '''ordering-1''' : \"order !=  step.one_line_item.screenName \"")
       expected.append("\n")
 
       assert expected.toString() == transientFile.text
