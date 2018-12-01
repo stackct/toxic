@@ -49,7 +49,7 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   }
 
   public boolean forceReconnect() {
-    def reconnectInterval = 15 * 60 * 60 * 1000 // 15 minutes
+    def reconnectInterval = 15  * 60 * 1000 // 15 minutes
     if (handler?.config("slack.reconnectInterval")) {
       reconnectInterval = handler?.config("slack.reconnectInterval").toLong()
     }
