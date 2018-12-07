@@ -33,6 +33,70 @@ class FunctionTaskTest {
   }
 
   @Test
+  void should_favor_included_tag_fn() {
+    def memory = [includeTags:"bar"]
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "no"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "yes"
+          tags "bar"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+
+
+    assert 1 == memory.functions.size()
+    assert memory.functions.foo.description == "yes"
+  }
+
+  @Test
+  void should_favor_non_excluded_tag_fn() {
+    def memory = [excludeTags:"bar"]
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "no"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "yes"
+          tags "bar"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+
+
+    assert 1 == memory.functions.size()
+    assert memory.functions.foo.description == "no"
+  }
+
+  @Test
   void should_add_multiple_functions_to_memory_map() {
     def memory = [:]
     doTask("""

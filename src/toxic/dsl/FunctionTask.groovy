@@ -18,9 +18,21 @@ class FunctionTask extends toxic.Task {
         }
 
         if(memory.functions.containsKey(fnName)) {
-          throw new IllegalArgumentException("Found duplicated function name; name=${fnName}")
+          int existingFnScore = 0
+          int newFnScore = 0
+          def existingFn = memory.functions[fnName]
+          if (TestCaseHandler.isTagFound(existingFn.tags, memory.includeTags)) existingFnScore++
+          if (TestCaseHandler.isTagFound(existingFn.tags, memory.excludeTags)) existingFnScore--
+          if (TestCaseHandler.isTagFound(fn.tags, memory.includeTags)) newFnScore++
+          if (TestCaseHandler.isTagFound(fn.tags, memory.excludeTags)) newFnScore--
+
+          if (existingFnScore == newFnScore) {
+            throw new IllegalArgumentException("Found duplicated function name; name=${fnName}")
+          } else if (newFnScore < existingFnScore) {
+            fn = null
+          }
         }
-        memory.functions[(fnName)] = fn
+        if (fn) memory.functions[(fnName)] = fn
       }
     }
     return null
