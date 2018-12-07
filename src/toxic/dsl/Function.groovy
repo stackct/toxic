@@ -7,6 +7,7 @@ class Function extends StepParser {
   String path
   String description
   List<Arg> args = []
+  Set<String> tags = [] as Set
   Map<String, Object> outputs = [:]
 
   Function() {}
@@ -26,6 +27,12 @@ class Function extends StepParser {
     body()
     fn.validate()
     results << fn
+  }
+
+  def tags(String... tags) {
+    tags.each { tag ->
+      this.tags << tag.trim()
+    }
   }
 
   def path(String path) {

@@ -10,6 +10,7 @@ class FunctionTest {
       function "foo", {
         path "foo-path"
         description "foo description"
+        tags "bar"
 
         arg  "required-arg", true
         arg  "optional-arg", false
@@ -32,6 +33,7 @@ class FunctionTest {
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
       assert fn.outputs == ['a': null, 'b': null]
+      assert fn.tags?.contains('bar')
       assert fn.steps == []
     }
   }
@@ -42,6 +44,7 @@ class FunctionTest {
       function "foo", {
         path "foo-path"
         description "foo-description"
+        tags "bar"
 
         arg    "required-arg", true
         arg    "optional-arg", false
@@ -63,6 +66,7 @@ class FunctionTest {
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
       assert fn.outputs == ['a': null, 'b': null]
+      assert fn.tags?.contains('bar')
       assert fn.steps == []
     }
   }
