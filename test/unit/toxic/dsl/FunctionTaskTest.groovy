@@ -33,12 +33,12 @@ class FunctionTaskTest {
   }
 
   @Test
-  void should_favor_included_tag_fn() {
-    def memory = [includeTags:"bar"]
+  void should_favor_targetted_fn() {
+    def memory = [target:"bar"]
     doTask("""
         function "foo" {
           path "/path/to/lib"
-          description "no"
+          description "default"
           
           arg "arg1", true
           arg "arg2", false
@@ -49,8 +49,8 @@ class FunctionTaskTest {
     doTask("""
         function "foo" {
           path "/path/to/lib"
-          description "yes"
-          tags "bar"
+          description "override"
+          targets "bar"
           
           arg "arg1", true
           arg "arg2", false
@@ -61,16 +61,16 @@ class FunctionTaskTest {
 
 
     assert 1 == memory.functions.size()
-    assert memory.functions.foo.description == "yes"
+    assert memory.functions.foo.description == "override"
   }
 
   @Test
-  void should_favor_non_excluded_tag_fn() {
-    def memory = [excludeTags:"bar"]
+  void should_add_default_fn_when_target_not_matched() {
+    def memory = [target:"bar"]
     doTask("""
         function "foo" {
           path "/path/to/lib"
-          description "no"
+          description "default"
           
           arg "arg1", true
           arg "arg2", false
@@ -78,22 +78,27 @@ class FunctionTaskTest {
           output "output1"
           output "output2"
         }""", memory)
-    doTask("""
-        function "foo" {
-          path "/path/to/lib"
-          description "yes"
-          tags "bar"
-          
-          arg "arg1", true
-          arg "arg2", false
-      
-          output "output1"
-          output "output2"
-        }""", memory)
-
 
     assert 1 == memory.functions.size()
-    assert memory.functions.foo.description == "no"
+  }
+
+  @Test
+  void should_not_add_fn_when_target_not_matched() {
+    def memory = [target:"bar"]
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "default"
+          targets "baz"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+
+    assert 0 == memory.functions.size()
   }
 
   @Test
