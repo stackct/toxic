@@ -157,7 +157,7 @@ class HttpTask extends CompareTask {
     return result
   }
 
-  private void setResponseProperties(String response, ToxicProperties memory) {
+  protected void setResponseProperties(String response, ToxicProperties memory) {
     memory['http.response.headers'] = [:]
     memory['http.response.code']    = null
     memory['http.response.reason']  = null
