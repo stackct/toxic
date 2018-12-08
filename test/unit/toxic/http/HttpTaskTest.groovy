@@ -232,11 +232,22 @@ public class HttpTaskTest {
 
   @Test
   void should_read_body_with_chunked_encoding() {
-    String http = 'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\n\r\n<ok/>\r\n\r\n0\r\n\r\n'
+    String http = 'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\n<ok/>\r\n0\r\n\r\n'
+    String unchunked = 'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n<ok/>'
     def task = new HttpTask()
     task.props = new Properties()
     task.props.httpMaxChunkedSize="500"
-    assert http == task.readHttpBody(new ByteArrayInputStream(http.getBytes()))
+    assert unchunked == task.readHttpBody(new ByteArrayInputStream(http.getBytes()))
+  }
+
+  @Test
+  void should_read_body_with_multiple_chunked_encoding() {
+    String http = 'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\n<ok/>\r\n3\r\n<o>\r\n0\r\n'
+    String unchunked = 'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n<ok/><o>'
+    def task = new HttpTask()
+    task.props = new Properties()
+    task.props.httpMaxChunkedSize="500"
+    assert unchunked == task.readHttpBody(new ByteArrayInputStream(http.getBytes()))
   }
 
   @Test
