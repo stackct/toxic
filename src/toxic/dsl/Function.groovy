@@ -7,7 +7,7 @@ class Function extends StepParser {
   String path
   String description
   List<Arg> args = []
-  Set<String> tags = [] as Set
+  Set<String> targets = [] as Set
   Map<String, Object> outputs = [:]
 
   Function() {}
@@ -29,9 +29,9 @@ class Function extends StepParser {
     results << fn
   }
 
-  def tags(String... tags) {
-    tags.each { tag ->
-      this.tags << tag.trim()
+  def targets(String... targets) {
+    targets.each { t ->
+      this.targets << t.trim()
     }
   }
 
@@ -106,6 +106,11 @@ class Function extends StepParser {
     if(!arg) {
       throw new IllegalStateException("Arg is not defined for function; name=${name}; arg=${argName}")
     }
+  }
+
+  public boolean hasTarget(String t) {
+    if (!t) return true
+    this.targets.contains(t)
   }
 
   @Override

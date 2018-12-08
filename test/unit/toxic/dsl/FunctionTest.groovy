@@ -10,7 +10,7 @@ class FunctionTest {
       function "foo", {
         path "foo-path"
         description "foo description"
-        tags "bar"
+        targets "bar"
 
         arg  "required-arg", true
         arg  "optional-arg", false
@@ -26,6 +26,7 @@ class FunctionTest {
       Function fn = functions[0]
       assert fn.path == 'foo-path'
       assert fn.description == 'foo description'
+      assert fn.targets == ['bar'] as Set
       assert fn.args[0].name == 'required-arg'
       assert fn.args[0].required == true
       assert fn.args[1].name == 'optional-arg'
@@ -33,7 +34,6 @@ class FunctionTest {
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
       assert fn.outputs == ['a': null, 'b': null]
-      assert fn.tags?.contains('bar')
       assert fn.steps == []
     }
   }
@@ -44,7 +44,7 @@ class FunctionTest {
       function "foo", {
         path "foo-path"
         description "foo-description"
-        tags "bar"
+        targets "bar"
 
         arg    "required-arg", true
         arg    "optional-arg", false
@@ -66,7 +66,7 @@ class FunctionTest {
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
       assert fn.outputs == ['a': null, 'b': null]
-      assert fn.tags?.contains('bar')
+      assert fn.targets?.contains('bar')
       assert fn.steps == []
     }
   }
@@ -412,6 +412,17 @@ class FunctionTest {
     catch(IllegalStateException e) {
       assert "Cannot specify a default value on a required arg; name=foo; args=required-arg1; defaultValue=foo" == e.message
     }
+  }
+
+  @Test
+  void should_determine_has_target() {
+    def fn = new Function(targets: ['foo', 'bar'])
+
+    assert true == fn.hasTarget(null)
+    assert true == fn.hasTarget('')
+    assert true == fn.hasTarget('foo')
+    assert true == fn.hasTarget('bar')
+    assert false == fn.hasTarget('UNKNOWN')
   }
 
   @Test
