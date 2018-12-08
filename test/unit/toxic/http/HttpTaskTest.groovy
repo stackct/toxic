@@ -288,12 +288,12 @@ public class HttpTaskTest {
       [
         name: 'empty response, no body',
         response: null, 
-        expected: [ headers: [:], code:null, reason:null, body:null]
+        expected: [ headers: [:], cookies: [:], code:null, reason:null, body:null]
       ],
       [
         name: 'good response, no body',
         response: makeResponse(200, 'OK', null, ['foo: bar']), 
-        expected: [ headers: [foo: 'bar'], code:'200', reason:'OK', body:null]
+        expected: [ headers: [foo: 'bar'], cookies: [:], code:'200', reason:'OK', body:null]
       ],
       [
         name: 'good response, body',
@@ -301,14 +301,19 @@ public class HttpTaskTest {
         expected: [ headers: [foo: 'bar'], code:'200', reason:'OK', body:'{"foo":"bar"}']
       ],
       [
+        name: 'good response, body, with cookies',
+        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar'], ['best=chocolatechip', 'worst=peanutbutter']), 
+        expected: [ headers: [foo: 'bar'], cookies: [best: 'chocolatechip', worst: 'peanutbutter'], code:'200', reason:'OK', body:'{"foo":"bar"}']
+      ],
+      [
         name: 'bad response, no body',
         response: makeResponse(404, 'Not Found', null, null), 
-        expected: [ headers: [:], code:'404', reason:'Not Found', body:null]
+        expected: [ headers: [:], cookies: [:], code:'404', reason:'Not Found', body:null]
       ],
       [
         name: 'bad response, body',
         response: makeResponse(400, 'Bad Request', '{"foo":"bar"}', ['foo: bar']), 
-        expected: [ headers: [:], code:'400', reason:'Bad Request', body:'{"foo":"bar"}']
+        expected: [ headers: [:], cookies: [:], code:'400', reason:'Bad Request', body:'{"foo":"bar"}']
       ],
     ]
     
@@ -321,6 +326,10 @@ public class HttpTaskTest {
       tc.expected.headers.each { k,v -> 
         assert props['http.response.headers'][k] == v, "scenario '${tc.name}' failed; header mismatch" 
       }
+      tc.expected.cookies.each { k,v ->
+        assert props['http.response.cookies'][k] == v, "scenario '${tc.name}' failed; cookie mismatch; response=${tc.response}" 
+      }
+
       assert tc.expected.code == props['http.response.code'], "scenario '${tc.name}' failed; response code mismatch"
       assert tc.expected.reason == props['http.response.reason'], "scenario '${tc.name}' failed; response reason mismatch"
       assert tc.expected.body == props['http.response.body'], "scenario '${tc.name}' failed; body mismatch"
@@ -422,10 +431,11 @@ public class HttpTaskTest {
     task.doTask(memory)
   }
 
-  private String makeResponse(int code, String reason, String body=null, List headers=[]) {
+  private String makeResponse(int code, String reason, String body=null, List headers=[], List cookies=[]) {
     def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
     
     headers?.each { h -> sb.append(h + HttpTask.HTTP_CR) }
+    cookies?.each { c -> sb.append('Set-Cookie: ' + c + HttpTask.HTTP_CR) }
     
     if (body) {
       sb.append('Content-Length: ' + body.bytes.size() + HttpTask.HTTP_CR)

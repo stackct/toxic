@@ -159,6 +159,7 @@ class HttpTask extends CompareTask {
 
   protected void setResponseProperties(String response, ToxicProperties memory) {
     memory['http.response.headers'] = [:]
+    memory['http.response.cookies'] = [:]
     memory['http.response.code']    = null
     memory['http.response.reason']  = null
     memory['http.response.body']    = null
@@ -179,10 +180,31 @@ class HttpTask extends CompareTask {
 
     headers.each { h ->
       h.split(': ').with { parts -> 
-        memory['http.response.headers'][parts[0]] = parts[1]
+        def header = parts[0]
+        def value = parts[1]
+
+        if (header == 'Set-Cookie') {
+          value.split('=').with { cookieParts -> 
+            memory['http.response.cookies'].put(cookieParts[0], cookieParts[1])
+          }
+        } else {
+          memory['http.response.headers'].put(header,value)
+        }
+      }
+    }
+
+    // Extract cookies
+    memory['http.response.headers'].findAll { k,v -> k == 'Set-Cookie' }. each { k,v -> 
+      v.split('=').with { parts ->
+        def key = parts[0]
+        def val = parts[1]
+
+        memory['http.response.cookies'].put(key,val)
       }
     }
   }
+
+  
 
   protected Socket getSocketFromProps(memory) {
     return new Socket(memory.httpHost, new Integer(memory.httpPort.toString()))
