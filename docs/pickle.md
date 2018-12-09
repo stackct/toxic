@@ -45,6 +45,27 @@ function "NAME" {
 }
 ```
 
+#### Targetted Functions
+
+By default, functions must be unique within a namespace (see [Dependency Management](#dependency-management)). If a function does not specify any `targets` in its definition, it is considered _default_. Declaring multiple default implementations is not supported. However, it is possible to target overloaded implementations of a function. The following overloaded function definition is allowed, because the second definition targets a `legacy` value.
+
+```
+function "DoSomething" {
+    description "Default implementation of DoSomething"
+    libPath     "{{ libPath }}/dosomething"
+}
+
+function "DoSomething" {
+    description "Legacy implementation of DoSomething"
+    libPath     "{{ libPath }}/dosomething-legacy"
+
+    targets "legacy"
+}
+```
+
+To target the "legacy" implementation of `DoSomething`, specify `-target=legacy` at runtime. If no `-target` is specified at runtime, the default implementation will be used.
+
+
 ### Tests
 
 Tests are composed of a series of Steps and an optional Assertion that determines whether the test passed or failed. Tests are defined in a `.test` file. Multiple tests can be defined within a single `.test` file.
