@@ -2,6 +2,8 @@ package toxic.dsl
 
 import org.junit.Test
 import static org.junit.Assert.fail
+import toxic.*
+
 
 class FunctionTaskTest {
   @Test
@@ -34,11 +36,12 @@ class FunctionTaskTest {
 
   @Test
   void should_favor_targetted_fn() {
-    def memory = [target:"bar"]
+    def memory = [target:"bar"] as ToxicProperties
     doTask("""
         function "foo" {
           path "/path/to/lib"
-          description "default"
+          description "override"
+          targets "bar"
           
           arg "arg1", true
           arg "arg2", false
@@ -49,8 +52,7 @@ class FunctionTaskTest {
     doTask("""
         function "foo" {
           path "/path/to/lib"
-          description "override"
-          targets "bar"
+          description "default"
           
           arg "arg1", true
           arg "arg2", false
@@ -213,7 +215,7 @@ class FunctionTaskTest {
       fail('Expected IllegalArgumentException')
     }
     catch(IllegalArgumentException e) {
-      assert 'Found duplicated function name; name=foo' == e.message
+      assert 'Found duplicated function name; function=foo(arg1) []' == e.message
     }
   }
 
@@ -233,7 +235,7 @@ class FunctionTaskTest {
       fail('Expected IllegalArgumentException')
     }
     catch(IllegalArgumentException e) {
-      assert 'Found duplicated function name; name=toxic.foo' == e.message
+      assert 'Found duplicated function name; function=foo() []' == e.message
     }
   }
 

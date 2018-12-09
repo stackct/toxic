@@ -113,11 +113,20 @@ class Function extends StepParser {
     this.targets.contains(t)
   }
 
+  public boolean isDefault() {
+    !this.targets
+  }
+
+  @Override
+  public boolean equals(Object fn) {
+    (this.name == fn.name) && ((this.targets ?: []) == (fn.targets ?: []))
+  }
+
   @Override
   String getKeyword() { 'function' }
 
   @Override
   String toString() {
-    this.name + "(" +  args.collect { it.name }.join(',') + ")"
+    this.name + "(" +  args.collect { it.name }.join(',') + ") [" + targets.join(',') + "]"
   }
 }
