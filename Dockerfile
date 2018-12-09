@@ -1,6 +1,11 @@
 FROM alpine:latest
 LABEL Description="Task Execution Engine"
 
+# Set the locale
+ENV LANGUAGE en_US:en  
+ENV LANG     en_US.UTF-8  
+ENV LC_ALL   en_US.UTF-8
+
 ARG DIST_DIR_NAME
 ARG K8S_VERSION=v1.10.5
 
@@ -34,6 +39,7 @@ RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml
 VOLUME ["/data"]
 EXPOSE 8001
 USER toxic
+
 
 ENV PATH="/opt/toxic/bin:${PATH}"
 
