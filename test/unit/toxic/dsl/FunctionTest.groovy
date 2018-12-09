@@ -426,8 +426,35 @@ class FunctionTest {
   }
 
   @Test
+  void should_determine_is_default() {
+    assert true == new Function().isDefault()
+    assert true == new Function(targets: null).isDefault()
+    assert true == new Function(targets: []).isDefault()
+    assert false == new Function(targets: ['foo']).isDefault()
+  }
+
+  @Test
+  void should_compare_two_functions() {
+    shouldBeEqual(new Function(), new Function())
+    shouldBeEqual(new Function(name: 'foo'), new Function(name: 'foo'))
+    shouldBeEqual(new Function(name: 'foo', targets: []), new Function(name: 'foo', targets: []))
+    shouldBeEqual(new Function(name: 'foo', targets: []), new Function(name: 'foo', targets: null))
+    shouldNotBeEqual(new Function(name: 'foo', targets: ['foo']), new Function(name: 'foo', targets: null))
+  }
+
+  private boolean shouldBeEqual(Function a, Function b) {
+    assert a == b
+  }
+
+  private boolean shouldNotBeEqual(Function a, Function b) {
+    assert a != b
+  }
+
+  @Test
   void should_override_to_string() {
-    Function function = new Function(name: 'foo', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
-    assert 'foo(arg1,arg2)' == function.toString()
+    Function f1 = new Function(name: 'foo', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    Function f2 = new Function(name: 'bar', args: [new Arg(name: 'arg1')], targets: ['baz'])
+    assert 'foo(arg1,arg2) []' == f1.toString()
+    assert 'bar(arg1) [baz]' == f2.toString()
   }
 }

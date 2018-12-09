@@ -12,6 +12,7 @@ class FunctionTask extends toxic.Task {
     }
 
     Function.parse(input.text).each { fn ->
+      
       String fnName = fn.name
       def dep = findDep(memory)
       if(dep) {
@@ -22,20 +23,34 @@ class FunctionTask extends toxic.Task {
         fn.path = Step.interpolate(memory, fn.path)
       }
 
-      // Look for an existing Function with the fully-qualified name and targets
-      if (memory.functions.find { n, f -> n == fnName && f.targets == fn.targets }) {
-        throw new IllegalArgumentException("Found duplicated function name; name=${fnName}")
+      Function fnToAdd = null
+
+      if (exists(fn, fnName, memory)) {
+        throw new IllegalArgumentException("Found duplicated function name; function=${fn}")
       }
 
-      // Don't add this Function, since it doesn't target the value specified
-      if (memory.target && !fn.hasTarget(memory.target) && fn.targets) {
-        fn = null
+      if (fn.isDefault() && !memory.functions.containsKey(fnName)) {
+        fnToAdd = fn
       }
 
-      if (fn) memory.functions[(fnName)] = fn
+      if (memory.target && fn.hasTarget(memory.target)) {
+        fnToAdd = fn
+      }
+
+      if (fnToAdd) {
+        memory.functions[(fnName)] = fnToAdd
+      }
     }
 
     return null
+  }
+
+  private boolean shouldAdd(Function f, def memory) {
+    f.isDefault() || (memory.target && f.hasTarget(memory.target))
+  }
+
+  private boolean exists(Function f, String qualifiedName, def memory) {
+    memory.functions.find { name, fn -> name == qualifiedName && (fn == f) }
   }
 
   def findDep(def memory) {
