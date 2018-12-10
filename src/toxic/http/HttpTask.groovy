@@ -184,27 +184,17 @@ class HttpTask extends CompareTask {
         def value = parts[1]
 
         if (header == 'Set-Cookie') {
-          value.split('=').with { cookieParts -> 
-            memory['http.response.cookies'].put(cookieParts[0], cookieParts[1])
+          value.split(';').with { segments -> 
+            segments[0].split('=').with { name -> 
+              memory['http.response.cookies'].put(name[0], name[1])  
+            }
           }
         } else {
           memory['http.response.headers'].put(header,value)
         }
       }
     }
-
-    // Extract cookies
-    memory['http.response.headers'].findAll { k,v -> k == 'Set-Cookie' }. each { k,v -> 
-      v.split('=').with { parts ->
-        def key = parts[0]
-        def val = parts[1]
-
-        memory['http.response.cookies'].put(key,val)
-      }
-    }
   }
-
-  
 
   protected Socket getSocketFromProps(memory) {
     return new Socket(memory.httpHost, new Integer(memory.httpPort.toString()))

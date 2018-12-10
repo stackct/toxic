@@ -435,7 +435,7 @@ public class HttpTaskTest {
     def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
     
     headers?.each { h -> sb.append(h + HttpTask.HTTP_CR) }
-    cookies?.each { c -> sb.append('Set-Cookie: ' + c + HttpTask.HTTP_CR) }
+    cookies?.each { c -> sb.append("Set-Cookie: ${c}; domain=foo; path=/; expires=never;" + HttpTask.HTTP_CR) }
     
     if (body) {
       sb.append('Content-Length: ' + body.bytes.size() + HttpTask.HTTP_CR)
