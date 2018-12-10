@@ -50,7 +50,6 @@ class Assertion {
   }
   
   private String format(String value) {
-    value = value.replaceAll('\\\\', '\\\\\\\\') 
     return "'''${value}'''" 
   }
   
