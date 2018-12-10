@@ -302,8 +302,8 @@ public class HttpTaskTest {
       ],
       [
         name: 'good response, body, with cookies',
-        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar'], ['best=chocolatechip', 'worst=peanutbutter']), 
-        expected: [ headers: [foo: 'bar'], cookies: [best: 'chocolatechip', worst: 'peanutbutter'], code:'200', reason:'OK', body:'{"foo":"bar"}']
+        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar'], ['best=chocolatechip', 'worst=peanutbutter', 'empty=']), 
+        expected: [ headers: [foo: 'bar'], cookies: [best: 'chocolatechip', worst: 'peanutbutter', empty: ''], code:'200', reason:'OK', body:'{"foo":"bar"}']
       ],
       [
         name: 'bad response, no body',
