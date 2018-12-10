@@ -186,7 +186,7 @@ class HttpTask extends CompareTask {
         if (header == 'Set-Cookie') {
           value.split(';').with { segments -> 
             segments[0].split('=').with { name -> 
-              memory['http.response.cookies'].put(name[0], name[1])  
+              memory['http.response.cookies'][name[0]] = name.size() == 2 ? name[1] : ""
             }
           }
         } else {
