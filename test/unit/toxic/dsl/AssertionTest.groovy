@@ -26,11 +26,6 @@ class AssertionTest {
   }
 
   @Test
-  void should_evaluate_string_contains_with_unicode_escapes() {
-    assert true == contains('\\u003Cfoobar', 'oob')
-  }
-
-  @Test
   void should_evaluate_map_contains() {
     assert true == contains([foo:'bar'], 'foo')
     assert '[foo:bar].containsKey(bla). Expression: [foo:bar].containsKey(bla)' == contains([foo:'bar'], 'bla')
