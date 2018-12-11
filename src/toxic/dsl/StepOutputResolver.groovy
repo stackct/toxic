@@ -16,7 +16,7 @@ class StepOutputResolver {
 
       def isInCurrentTest = TestCaseHandler.flattenTestCaseSteps(testCase.steps, props).find { s -> s == step }
 
-      if(isInCurrentTest && sequence.level == currentStepLevel && step.name == name) {
+      if(index <= props.stepIndex && sequence.level == currentStepLevel && step.name == name) {
         resolvedStep = step
       }
     }
