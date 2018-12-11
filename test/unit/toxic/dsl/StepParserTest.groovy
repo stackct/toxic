@@ -1,6 +1,7 @@
 package toxic.dsl
 
-import org.junit.Test
+import org.junit.*
+import static org.junit.Assert.fail
 
 class StepParserTest {
   @Test
@@ -15,5 +16,30 @@ class StepParserTest {
     assert 'bar' == step.name
     assert ['input1':'value1'] == step.args
     assert [:] == step.outputs
+  }
+
+  @Test
+  void should_not_allow_duplicate_step_names() {
+    StepParser stepParser = new StepParser()
+    
+    try {
+      stepParser.step('foo', 'bar') {
+        input1 'value1'
+      }
+      
+      stepParser.step('foo', 'bar') {
+        input1 'value1'
+      }
+      fail('Expected Exception')
+    }
+    catch(IllegalArgumentException e) {
+      assert 'Found duplicated step name; step=bar' == e.message
+    }
+
+
+
+
+
+    
   }
 }
