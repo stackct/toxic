@@ -19,12 +19,12 @@ function "Func3" {
   arg "init"
   arg "bar", false
 
-  step "Func1", "func", { 
+  step "Func1", "func1", { 
     foo "{{ foo }}"
     bar "{{ bar }}"
   }
 
-  step "Func2", "func", { 
+  step "Func2", "func2", { 
     foo "{{ foo }}"
     bar "{{ bar }}"
   }
