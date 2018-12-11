@@ -35,11 +35,5 @@ class StepParserTest {
     catch(IllegalArgumentException e) {
       assert 'Found duplicated step name; step=bar' == e.message
     }
-
-
-
-
-
-    
   }
 }
