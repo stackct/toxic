@@ -79,7 +79,7 @@ Tests are composed of a collection of a `description`, an optional collection of
 * **declare** (Optional) - Immutable variables that can be used within the test case as interpolated values
 * **step** (Required) - Named invocation of a Function
    * *arg* (Optional) - Value for input argument as defined by the Function
-* **assertions** (Optional) - Assertions to drive the pass/fail of a test case 
+* **assertions** (Optional) - Assertions to drive the pass/fail of a test case
 
 ```groovy
 test "NAME" {
@@ -144,7 +144,7 @@ step "DoSomething", "do-it", {
             eq "{{ status }}", "OK"
             eq "{{ code }}", "200"
         } // OR
-        
+
         condition {
             eq "{{ error }}", ""
         }
@@ -166,7 +166,7 @@ Pickle supports interpolation of values, using `"{{ var }}"` syntax, where `var`
 
 ### Supported Interpolation
 
-* **Step Output** - If a Step invokes a Function that has an output defined, that output can be referenced using `"{{ step.STEP_NAME.OUTPUT }}"`. Step outputs and variables can be used in arg values for other Steps, or in Assertion statements. 
+* **Step Output** - If a Step invokes a Function that has an output defined, that output can be referenced using `"{{ step.STEP_NAME.OUTPUT }}"`. Step outputs and variables can be used in arg values for other Steps, or in Assertion statements.
 
    For example, given the following Function definitions:
 
@@ -346,7 +346,7 @@ Adding Tags to a test allows Toxic to target specific tests at execution time. F
 ```groovy
 test "A user can log in" {
    description "Proves that a user can log in"
-   
+
    // Tags as a List
    tags  "user", "user-essential"
 
@@ -436,7 +436,7 @@ toxic -doDir=toxic/tests -test='"my pickle test"'
 
 Pickle provides code snippets to assist in authoring tests and functions within Visual Studio Code.
 
-To install Pickle the code snippets, copy or symlink `resources/vscode/snippets/pickle.code-snippets` to your Visual Studio Code user preferences directory.
+To install Pickle the code snippets, copy or symlink `resources/vscode/pickle/snippets/pickle.json` to your Visual Studio Code user preferences directory.
   * **Windows** - `%APPDATA%\Code\User\snippets`
   * **macOS** - `$HOME/Library/Application\ Support/Code/User/snippets`
   * **Linux** - `$HOME/.config/Code/User/snippets`
