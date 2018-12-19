@@ -158,6 +158,16 @@ memory.collectSummary = { String release, String suffix = "", String outputDir =
   execWithEnv([helm, 'status', release])
   new File(outputDir, "${release}-status${suffix}.log").write(out.toString())
 
+  // Parse Load Balancer IP, if any - supports one LoadBalancer per chart
+  out.toString().eachLine { line ->
+    if (line.contains("LoadBalancer")) {
+      def pieces = line.replaceAll("  ", " ").split(" ")
+      if (pieces.size() > 3) {
+        memory.loadBalancerIp = pieces[3]
+      }
+    }
+  }
+
   return 0
 }
 

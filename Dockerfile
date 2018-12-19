@@ -17,6 +17,7 @@ RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl 
     && pip3 install --upgrade pip \
     && pip3 install cffi \
     && pip3 install azure-cli \
+    && pip3 install awscli \
     && ln -s /usr/bin/python3 /usr/bin/python \
     && apk del --purge build \
     && docker -v \

@@ -4,6 +4,8 @@ function "DeployEnvironment" {
 
   arg "spec"
   arg "namespace"
+
+  output "loadBalancerIp"
 }
 
 function "UpgradeEnvironment" {
@@ -14,6 +16,8 @@ function "UpgradeEnvironment" {
   arg "namespace"
   arg "chart"
   arg "overrides"   // Comma-separated key/value pairs
+
+  output "loadBalancerIp"
 }
 
 function "DeleteEnvironment" {
@@ -98,4 +102,18 @@ function "WaitUntilFileRemoved" {
 	input "intervalMs"
 	input "maxWaitMs"
 	input "create", false
+}
+
+function "UpdateRoute53Record" {
+  description "Updates a Route53 A record with a new value, if a non-blank/null value is given."
+  path "{{ libPath }}/environment/dns/updateRoute53"
+
+  input "zoneId"
+  input "recordName"
+  input "value"
+  input "awsAccessKeyId", false
+  input "awsAccessKeySecret", false
+  input "awsRegion", false, "us-east-1"
+
+  output "success"
 }
