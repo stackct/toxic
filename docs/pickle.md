@@ -444,7 +444,7 @@ To install Pickle the code snippets, copy or symlink `resources/vscode/pickle/sn
 For example:
 
 ```
-$ ln -s $(pwd)/resources/vscode/snippets/pickle.code-snippets` $HOME/Library/Application\ Support/Code/User/snippets/pickle.code-snippets
+$ ln -s $(pwd)/resources/vscode/pickle/snippets/pickle.json` $HOME/Library/Application\ Support/Code/User/snippets/pickle.code-snippets
 ```
 
 **NOTE** - Symlinks are preferred as changes to the source snippets will reflect automatically.
