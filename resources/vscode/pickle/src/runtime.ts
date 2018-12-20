@@ -8,6 +8,7 @@ export class Runtime {
     private static outputChannel: vscode.OutputChannel;
 
     public static runTest(name: string, path: string = this.baseDir, args: string[] = []) {
+        
         let results = { success: 0, fail: 0 }
         let postOptions = (choice: string) => {
             if (choice == 'Rerun') Runtime.runTest(name, path, args)
@@ -22,7 +23,7 @@ export class Runtime {
         }
 
         let onError = (e: string) => {
-            vscode.window.showErrorMessage('Something went wrong; reason=' + e);
+            this.notifyFailure('Something went wrong; reason=' + e);
         }
 
         let onClose = (code: number, signal: string) => {
@@ -30,11 +31,12 @@ export class Runtime {
             let options = ['Dismiss', 'Rerun']
     
             if (code !== 0) {
-                vscode.window.showErrorMessage(message, ...options).then(postOptions)
+                this.notifyFailure(message, options).then(postOptions)
+                
                 return;
             }
             
-            vscode.window.showInformationMessage(message, ...options).then(postOptions)
+            this.notifySuccess(message, options).then(postOptions)
         }
 
         this.run(path, args, onData, onError, onClose);
@@ -57,12 +59,30 @@ export class Runtime {
         });
 
         proc.on("error", (e) => {
-            vscode.window.showErrorMessage('Execution failed. Make sure ' + this.command + ' is installed in and your PATH');
+            this.notifyError('Execution failed. Make sure ' + this.command + ' is installed in and your PATH');
             if (error) error(e.message)
         });
 
         proc.on("close", (code, signal) => {
             if (close) close(code, signal);
         });
+    }
+
+    private static notifySuccess(message: string, options: string[] = []): Thenable<string> {
+        let show = vscode.workspace.getConfiguration().get('pickle.notifications.success') as boolean;
+        if (show) {
+            return vscode.window.showInformationMessage(message, ...options);
+        }
+    }
+
+    private static notifyFailure(message: string, options: string[] = []): Thenable<string> {
+        let show = vscode.workspace.getConfiguration().get('pickle.notifications.failure') as boolean;
+        if (show) {
+            return vscode.window.showErrorMessage(message, ...options);
+        }
+    }
+
+    private static notifyError(message: string, options: string[] = []): Thenable<string> {
+        return vscode.window.showErrorMessage(message, ...options);
     }
 }
