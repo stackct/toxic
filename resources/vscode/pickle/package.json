@@ -29,6 +29,16 @@
                 "pickle.runtimeArgs": {
                     "type": "array",
                     "description": "List of runtime arguments in the format: -key=value"
+                },
+                "pickle.notifications.success": {
+                    "type": "boolean",
+                    "description": "Enable notifications for successful tests",
+                    "default": true
+                },
+                "pickle.notifications.failure": {
+                    "type": "boolean",
+                    "description": "Enable notifications for failed tests",
+                    "default": true
                 }
             }
         },
