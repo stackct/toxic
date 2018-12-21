@@ -270,7 +270,7 @@ public class HttpTaskTest {
         httpPort: 9999,
         httpSsl: 'invalid'
       ] as ToxicProperties
-      
+
       t.props['httpUri'] = tc.uri
       t.setupHttpConnection()
 
@@ -283,51 +283,67 @@ public class HttpTaskTest {
   @Test
   public void should_parse_http_response() {
     def props = [httpHost:'http://foo.invalid', httpPort: 0] as ToxicProperties
-   
+
     def testCases = [
       [
         name: 'empty response, no body',
-        response: null, 
-        expected: [ headers: [:], cookies: [:], code:null, reason:null, body:null]
+        response: null,
+        expected: [ headers: [:], location:[:], cookies: [:], code:null, reason:null, body:null]
       ],
       [
         name: 'good response, no body',
-        response: makeResponse(200, 'OK', null, ['foo: bar']), 
-        expected: [ headers: [foo: 'bar'], cookies: [:], code:'200', reason:'OK', body:null]
+        response: makeResponse(200, 'OK', null, ['foo: bar']),
+        expected: [ headers: [foo: 'bar'], location:[:], cookies: [:], code:'200', reason:'OK', body:null]
       ],
       [
         name: 'good response, body',
-        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar']), 
-        expected: [ headers: [foo: 'bar'], code:'200', reason:'OK', body:'{"foo":"bar"}']
+        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar']),
+        expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [:], code:'200', reason:'OK', body:'{"foo":"bar"}']
       ],
       [
         name: 'good response, body, with cookies',
-        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar'], ['best=chocolatechip', 'worst=peanutbutter', 'empty=']), 
-        expected: [ headers: [foo: 'bar'], cookies: [best: 'chocolatechip', worst: 'peanutbutter', empty: ''], code:'200', reason:'OK', body:'{"foo":"bar"}']
+        response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar'], ['best=chocolatechip', 'worst=peanutbutter', 'empty=']),
+        expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [best: 'chocolatechip', worst: 'peanutbutter', empty: ''], code:'200', reason:'OK', body:'{"foo":"bar"}']
       ],
       [
         name: 'bad response, no body',
-        response: makeResponse(404, 'Not Found', null, null), 
-        expected: [ headers: [:], cookies: [:], code:'404', reason:'Not Found', body:null]
+        response: makeResponse(404, 'Not Found', null, null),
+        expected: [ headers: [:], location:[:], cookies: [:], code:'404', reason:'Not Found', body:null]
       ],
       [
         name: 'bad response, body',
-        response: makeResponse(400, 'Bad Request', '{"foo":"bar"}', ['foo: bar']), 
-        expected: [ headers: [:], cookies: [:], code:'400', reason:'Bad Request', body:'{"foo":"bar"}']
+        response: makeResponse(400, 'Bad Request', '{"foo":"bar"}', ['foo: bar']),
+        expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [:], code:'400', reason:'Bad Request', body:'{"foo":"bar"}']
+      ],
+      [
+        name: 'location parsing without query params',
+        response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000']),
+        expected: [ headers: ['Location':'http://foo.pizza:5000'], location:[baseUrl:'http://foo.pizza:5000', params:[:]], cookies: [:], code:'200', reason:'OK', body:null]
+      ],
+      [
+        name: 'location parsing with query params',
+        response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
+        expected: [ headers: ['Location':'http://foo.pizza:5000?something=idk&anotherthing=wow'], location:[baseUrl:'http://foo.pizza:5000', params:[something:'idk',anotherthing:'wow']], cookies: [:], code:'200', reason:'OK', body:null]
       ],
     ]
-    
+
     testCases.each { tc ->
       new HttpTask().with { task ->
         task.metaClass.getSocketFromProps = { p -> new FakeSocket(tc.response) }
         task.transmit("ok", "ok", props)
       }
 
-      tc.expected.headers.each { k,v -> 
-        assert props['http.response.headers'][k] == v, "scenario '${tc.name}' failed; header mismatch" 
+      assert tc.expected.headers.size() == props['http.response.headers'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.headers.size()}; actual=${props['http.response.headers'].size()}; expectedValue=${tc.expected.headers}; actualValue=${props['http.response.headers']}"
+      tc.expected.headers.each { k,v ->
+        assert props['http.response.headers'][k] == v, "scenario '${tc.name}' failed; header mismatch; expected=${v}; actual=${props['http.response.headers'][k]}"
       }
+      assert tc.expected.location.size() == props['http.response.location'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.location.size()}; actual=${props['http.response.location'].size()}; expected=${tc.expected.location}; actual=${props['http.response.location']}; "
+      tc.expected.location.each { k,v ->
+        assert props['http.response.location'][k] == v, "scenario '${tc.name}' failed; location mismatch; expected=${v}; actual=${props['http.response.location'][k]}"
+      }
+      assert tc.expected.cookies.size() == props['http.response.cookies'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.cookies.size()}; actual=${props['http.response.cookies'].size()}; expected=${tc.expected.cookies}; actual=${props['http.response.cookies']}"
       tc.expected.cookies.each { k,v ->
-        assert props['http.response.cookies'][k] == v, "scenario '${tc.name}' failed; cookie mismatch; response=${tc.response}" 
+        assert props['http.response.cookies'][k] == v, "scenario '${tc.name}' failed; cookie mismatch; expected=${v}; actual=${props['http.response.cookies'][k]}"
       }
 
       assert tc.expected.code == props['http.response.code'], "scenario '${tc.name}' failed; response code mismatch"
@@ -433,16 +449,16 @@ public class HttpTaskTest {
 
   private String makeResponse(int code, String reason, String body=null, List headers=[], List cookies=[]) {
     def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
-    
+
     headers?.each { h -> sb.append(h + HttpTask.HTTP_CR) }
     cookies?.each { c -> sb.append("Set-Cookie: ${c}; domain=foo; path=/; expires=never;" + HttpTask.HTTP_CR) }
-    
+
     if (body) {
       sb.append('Content-Length: ' + body.bytes.size() + HttpTask.HTTP_CR)
       sb.append(HttpTask.HTTP_CR)
       sb.append(body)
     }
-    
+
     return sb.toString()
   }
 }
@@ -453,7 +469,7 @@ public class FakeSocket extends Socket {
   protected FakeSocket(String response) {
     this.response = response
   }
-  
+
   @Override
   public boolean isClosed() {
     return false

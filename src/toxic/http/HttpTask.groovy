@@ -192,6 +192,22 @@ class HttpTask extends CompareTask {
         } else {
           memory['http.response.headers'].put(header,value)
         }
+
+        if (header == 'Location') {
+
+          URI uri = new URI(memory['http.response.headers']['Location'])
+          String url = uri.toString() - "?${uri.query}"
+
+          memory['http.response.location'] = [:]
+          memory['http.response.location']['params'] = [:]
+          memory['http.response.location']['baseUrl'] = url
+
+          uri.query?.split('&')?.collectEntries { param -> param.split('=')
+                  ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
+            memory['http.response.location']['params'][k] = v
+          }
+        }
+
       }
     }
   }
