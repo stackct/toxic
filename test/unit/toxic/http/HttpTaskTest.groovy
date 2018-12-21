@@ -291,9 +291,24 @@ public class HttpTaskTest {
                   expected: [baseUrl: 'http://foo.pizza:5000', params: [:]]
           ],
           [
+                  name: 'location parsing with one query param',
+                  response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk']),
+                  expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk']]
+          ],
+          [
                   name: 'location parsing with query params',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
                   expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
+          ],
+          [
+                  name: 'location parsing with invalid url',
+                  response: makeResponse(200, 'OK', null, ['Location: NOT A URL']),
+                  expected: [:]
+          ],
+          [
+                  name: 'location parsing with unknown scheme',
+                  response: makeResponse(200, 'OK', null, ['Location: toxic.pizza']),
+                  expected: [baseUrl:'toxic.pizza', params:[:]]
           ],
       ]
 
