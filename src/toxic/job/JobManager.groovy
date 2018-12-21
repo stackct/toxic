@@ -992,9 +992,13 @@ public class JobManager implements Runnable,Publisher {
 
   boolean isMutexAvailable(String mutex) {
     if (mutex) {
-      return !getRunningJobs().find { j ->
+      def activeJobs = []
+      activeJobs += getJobsByStatus(JobStatus.INITIALIZING)
+      activeJobs += getJobsByStatus(JobStatus.RUNNING)
+      activeJobs += getJobsByStatus(JobStatus.ENDING)
+      return !activeJobs.find { j ->
         mutex.equalsIgnoreCase(j.mutex) 
-      }
+      } 
     }
     return true
   }
