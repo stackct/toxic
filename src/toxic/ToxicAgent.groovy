@@ -54,19 +54,24 @@ public class ToxicAgent implements Callable<List<TaskResult>> {
     if (!loadedTrustStore) {
       synchronized(loadedTrustStore) {
         if (!loadedTrustStore) {
-          KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-          trustStore.load(ToxicAgent.class.getClassLoader().getResourceAsStream("toxic.jks"), null);
-          TrustManagerFactory customFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-          customFactory.init(trustStore);
-          def customManagers = customFactory.getTrustManagers() as List
-
-          TrustManagerFactory defaultFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-          defaultFactory.init((KeyStore)null);
-          def defaultManagers = defaultFactory.getTrustManagers() as List
-        
           def multiTm = new MultiX509TrustManager()
-          (customManagers + defaultManagers).each {
-            multiTm.addTrustManager(it)
+          if (props.validateCerts.toString().toLowerCase() == "false") {
+            multiTm.setTrustRequired(false)
+          } else {
+            multiTm.setTrustRequired(true)
+            KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            trustStore.load(ToxicAgent.class.getClassLoader().getResourceAsStream("toxic.jks"), null);
+            TrustManagerFactory customFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            customFactory.init(trustStore);
+            def customManagers = customFactory.getTrustManagers() as List
+
+            TrustManagerFactory defaultFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            defaultFactory.init((KeyStore)null);
+            def defaultManagers = defaultFactory.getTrustManagers() as List
+          
+            (customManagers + defaultManagers).each {
+              multiTm.addTrustManager(it)
+            }
           }
           
           def trustManagers = new TrustManager[1]
