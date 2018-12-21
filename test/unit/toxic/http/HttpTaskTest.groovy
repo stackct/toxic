@@ -281,6 +281,34 @@ public class HttpTaskTest {
   }
 
   @Test
+  public void should_parse_location() {
+      def props = [httpHost:'http://foo.invalid', httpPort: 0] as ToxicProperties
+
+      def testCases = [
+          [
+                  name: 'location parsing without query params',
+                  response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000']),
+                  expected: [baseUrl: 'http://foo.pizza:5000', params: [:]]
+          ],
+          [
+                  name: 'location parsing with query params',
+                  response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
+                  expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
+          ],
+      ]
+
+      testCases.each { tc ->
+          new HttpTask().with { task ->
+              task.metaClass.getSocketFromProps = { p -> new FakeSocket(tc.response) }
+              task.transmit("ok", "ok", props)
+          }
+
+          assert tc.expected == props['http.response.location'], "scenario '${tc.name}' failed; Location mismatch; expected=${tc.expected}; actual=${props['http.response.location']}"
+      }
+
+  }
+
+  @Test
   public void should_parse_http_response() {
     def props = [httpHost:'http://foo.invalid', httpPort: 0] as ToxicProperties
 
@@ -315,16 +343,6 @@ public class HttpTaskTest {
         response: makeResponse(400, 'Bad Request', '{"foo":"bar"}', ['foo: bar']),
         expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [:], code:'400', reason:'Bad Request', body:'{"foo":"bar"}']
       ],
-      [
-        name: 'location parsing without query params',
-        response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000']),
-        expected: [ headers: ['Location':'http://foo.pizza:5000'], location:[baseUrl:'http://foo.pizza:5000', params:[:]], cookies: [:], code:'200', reason:'OK', body:null]
-      ],
-      [
-        name: 'location parsing with query params',
-        response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
-        expected: [ headers: ['Location':'http://foo.pizza:5000?something=idk&anotherthing=wow'], location:[baseUrl:'http://foo.pizza:5000', params:[something:'idk',anotherthing:'wow']], cookies: [:], code:'200', reason:'OK', body:null]
-      ],
     ]
 
     testCases.each { tc ->
@@ -337,11 +355,13 @@ public class HttpTaskTest {
       tc.expected.headers.each { k,v ->
         assert props['http.response.headers'][k] == v, "scenario '${tc.name}' failed; header mismatch; expected=${v}; actual=${props['http.response.headers'][k]}"
       }
-      assert tc.expected.location.size() == props['http.response.location'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.location.size()}; actual=${props['http.response.location'].size()}; expected=${tc.expected.location}; actual=${props['http.response.location']}; "
+
+        assert tc.expected.location.size() == props['http.response.location'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.location.size()}; actual=${props['http.response.location'].size()}; expected=${tc.expected.location}; actual=${props['http.response.location']}; "
       tc.expected.location.each { k,v ->
         assert props['http.response.location'][k] == v, "scenario '${tc.name}' failed; location mismatch; expected=${v}; actual=${props['http.response.location'][k]}"
       }
-      assert tc.expected.cookies.size() == props['http.response.cookies'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.cookies.size()}; actual=${props['http.response.cookies'].size()}; expected=${tc.expected.cookies}; actual=${props['http.response.cookies']}"
+
+        assert tc.expected.cookies.size() == props['http.response.cookies'].size(), "scenario '${tc.name}' failed; expected=${tc.expected.cookies.size()}; actual=${props['http.response.cookies'].size()}; expected=${tc.expected.cookies}; actual=${props['http.response.cookies']}"
       tc.expected.cookies.each { k,v ->
         assert props['http.response.cookies'][k] == v, "scenario '${tc.name}' failed; cookie mismatch; expected=${v}; actual=${props['http.response.cookies'][k]}"
       }
