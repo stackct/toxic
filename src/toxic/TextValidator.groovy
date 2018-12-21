@@ -118,6 +118,10 @@ public class TextValidator implements Validator {
       }
     }
 
+    if("${getSkipRemainingToken()}${delimiter}".toString().equals(exp.remaining?.trim())) {
+      exp.skip(exp.remaining)
+    }
+
     if (exp.remaining || act.remaining) {
       throw new ValidationException("Content length mismatch -->" +
           "\n${'-'.multiply(25)}  ACTUAL  (count=${act.length}) ${'-'.multiply(25)}\n" +

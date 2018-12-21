@@ -349,6 +349,19 @@ foo3=bar3"""
   }
 
   @Test
+  void testSkipRemainingOnNewLineWhenActualIsEmpty() {
+    def xv = new TextValidator()
+    def tp = new ToxicProperties()
+
+    String expected = """foo
+%*%"""
+    String actual   = 'foo'
+    xv.validate(actual, expected, tp)
+
+    // If no validation exception is thrown, test passes
+  }
+
+  @Test
   void testEmptyStringVariableAssignment() {
     def xv = new TextValidator()
     def tp = new ToxicProperties()
