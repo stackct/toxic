@@ -427,10 +427,123 @@ toxic -doDir=toxic/tests -test=MyTest
 If the single test name has spaces, escape with single and double quotes:
 
 ```plain
-toxic -doDir=toxic/tests -test='"my pickle test"'
+toxic -doDir=toxic/tests -test='"My Pickle Test"'
 ```
 
 **NOTE: Specifying a single test case to run supercedes any positive or negative filtering.**
+
+## Naming Strategy
+
+The Pickle language is intended to be extremely reader-intuitive. Although primarily written by developers, the naming strategy should be framed for an audience of non-developers. Mixed casing across `Functions`, `Tests`, `Steps`, etc serves an intentional visual aid for readers to quickly discern between them. In all cases, shorter and better names are preferred.` 
+
+### Functions
+Function names should be in _TitleCase_, and begin with a verb.
+
+Example: 
+```
+function "CreateUser" { ... }
+```
+is better than:
+```
+function "UserCreation" { ... }
+```
+
+### Tests
+
+Test names should be short, meaningful statements that clearly reveal the intent. If it is too long to put on the cover of a book, its probably a bad test name. The test _description_ can contain further details about the intent of the test.
+
+Example: 
+```
+test "Creates a Valid User" { ... }
+    description "Proves that a user is created when the required data is valid"
+}
+```
+is better than:
+```
+test "User Creation" { ... } // Too generic
+```
+or 
+```
+test "Create a user when valid data is provided" { ... } // Too verbose
+```
+
+### Steps
+Step names should be as short and descriptive as possible, and named so that referring to the step in another step or in an assertion reads well. Single words are better than compound words. If compound words are required, _hyphen-case_ is preferred. The primary goal of the step name is to provide a readable expression when used as an interpolation.
+
+Example:
+The `CreateUser` function is responsible for creating a user and returning a `success` output indicating whether or not the operation succeeded.
+
+```
+test "Creates a Valid User", {
+    step "CreateUser", "create", { ... }
+    step "GetUserDetails", "user", { ...  }
+
+   assertions {
+        eq "{{ step.create.success }}", "1"
+        eq "{{ step.user.}}
+    }
+}
+```
+
+In the above example:
+```
+step "CreateUser", "create", { ... }
+```
+is better than
+```
+step "CreateUser", "create-user", { ... }
+```
+
+because there is no other "create" step in this test, so there is no need to disambiguate. 
+
+More examples:
+```
+step "GetProjectDetails", "project"
+```
+is better than
+```
+step "GetProjectDetails", "get-project-details"
+```
+because
+```
+{{ step.project.id }}
+```
+reads better than
+```
+{{ step.get-project-details.id }}
+```
+
+### Libraries
+As libraries represent the low-level implementation of `Functions` as Toxic tasks, they are the closest to traditional programming paradigms. Library tasks are not intended for "public" reader consumption, and should be organized similar to a RESTful naming strategy. Files and directories should be in _camel_case_, and separated by subject/functional area.
+
+For example:
+```
+function "CreateUser" {
+    description "Creates a user with a default password"
+    libPath     "{{ libPath }}/user/create"
+}
+```
+is better than
+```
+function "CreateUser" {
+    description "Creates a user with a default password"
+    libPath     "{{ libPath }}/create_user"
+}
+```
+
+This strategy allows for nesting related operations against a "user".
+
+```
+library/user/create
+library/user/edit
+library/user/delete
+```
+is better than
+```
+library/create_user
+library/edit_user
+library/delete_user
+```
 
 ## Visual Studo Code Integration
 
