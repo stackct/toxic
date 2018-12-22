@@ -17,7 +17,7 @@ fi
 echo -n "[INFO] Installing extension... "
 cd ${ROOT_DIR}
 rm -fr ${ROOT_DIR}/out
-npm install > /dev/null 2>&1 && npm run compile > /dev/null 2>&1 && ln -sf ${ROOT_DIR} ${EXTENSION_PATH}
+npm install > /dev/null 2>&1 && npm run postinstall > /dev/null 2>&1 && npm run compile > /dev/null 2>&1 && ln -sf ${ROOT_DIR} ${EXTENSION_PATH}
 exitcode=$?
 echo "Done!"
 

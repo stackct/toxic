@@ -20,6 +20,7 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
   def endpoint
   def rtm
   long silenceEndTime
+  long lastConnectTime
   
   private SlackBot() {
     endpoint = this
@@ -43,12 +44,30 @@ class SlackBot extends Endpoint implements Runnable, UserSource {
       } finally {
         Thread.sleep(60000)
       }
+      forceReconnect()
     }
+  }
+
+  public boolean forceReconnect() {
+    def reconnectInterval = 15  * 60 * 1000 // 15 minutes
+    if (handler?.config("slack.reconnectInterval")) {
+      reconnectInterval = handler?.config("slack.reconnectInterval").toLong()
+    }
+    long now = System.currentTimeMillis()
+    if (now - lastConnectTime > reconnectInterval) {
+      log.info("Recycling Slack connection; reconnectInterval=${reconnectInterval}")
+      try { wss?.close() } catch (Exception e) {}
+      return true
+    }
+    return false
   }
 
   protected void attemptConnection() {
     try {
-      if (shouldReconnect()) connect()
+      if (shouldReconnect()) {
+        connect()
+        lastConnectTime = System.currentTimeMillis()
+      }
     } catch (Exception e) {
       log.error("Failed to connect to slack; will retry after brief pause; reason=${e.toString()}", e)
     }

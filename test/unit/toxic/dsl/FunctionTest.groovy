@@ -10,6 +10,7 @@ class FunctionTest {
       function "foo", {
         path "foo-path"
         description "foo description"
+        targets "bar"
 
         arg  "required-arg", true
         arg  "optional-arg", false
@@ -25,6 +26,7 @@ class FunctionTest {
       Function fn = functions[0]
       assert fn.path == 'foo-path'
       assert fn.description == 'foo description'
+      assert fn.targets == ['bar'] as Set
       assert fn.args[0].name == 'required-arg'
       assert fn.args[0].required == true
       assert fn.args[1].name == 'optional-arg'
@@ -42,6 +44,7 @@ class FunctionTest {
       function "foo", {
         path "foo-path"
         description "foo-description"
+        targets "bar"
 
         arg    "required-arg", true
         arg    "optional-arg", false
@@ -63,6 +66,7 @@ class FunctionTest {
       assert fn.args[2].name == 'other'
       assert fn.args[2].required == true
       assert fn.outputs == ['a': null, 'b': null]
+      assert fn.targets?.contains('bar')
       assert fn.steps == []
     }
   }
@@ -411,8 +415,46 @@ class FunctionTest {
   }
 
   @Test
+  void should_determine_has_target() {
+    def fn = new Function(targets: ['foo', 'bar'])
+
+    assert true == fn.hasTarget(null)
+    assert true == fn.hasTarget('')
+    assert true == fn.hasTarget('foo')
+    assert true == fn.hasTarget('bar')
+    assert false == fn.hasTarget('UNKNOWN')
+  }
+
+  @Test
+  void should_determine_is_default() {
+    assert true == new Function().isDefault()
+    assert true == new Function(targets: null).isDefault()
+    assert true == new Function(targets: []).isDefault()
+    assert false == new Function(targets: ['foo']).isDefault()
+  }
+
+  @Test
+  void should_compare_two_functions() {
+    shouldBeEqual(new Function(), new Function())
+    shouldBeEqual(new Function(name: 'foo'), new Function(name: 'foo'))
+    shouldBeEqual(new Function(name: 'foo', targets: []), new Function(name: 'foo', targets: []))
+    shouldBeEqual(new Function(name: 'foo', targets: []), new Function(name: 'foo', targets: null))
+    shouldNotBeEqual(new Function(name: 'foo', targets: ['foo']), new Function(name: 'foo', targets: null))
+  }
+
+  private boolean shouldBeEqual(Function a, Function b) {
+    assert a == b
+  }
+
+  private boolean shouldNotBeEqual(Function a, Function b) {
+    assert a != b
+  }
+
+  @Test
   void should_override_to_string() {
-    Function function = new Function(name: 'foo', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
-    assert 'foo(arg1,arg2)' == function.toString()
+    Function f1 = new Function(name: 'foo', args: [new Arg(name: 'arg1'), new Arg(name: 'arg2')])
+    Function f2 = new Function(name: 'bar', args: [new Arg(name: 'arg1')], targets: ['baz'])
+    assert 'foo(arg1,arg2) []' == f1.toString()
+    assert 'bar(arg1) [baz]' == f2.toString()
   }
 }

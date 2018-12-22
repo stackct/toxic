@@ -2,6 +2,8 @@ package toxic.dsl
 
 import org.junit.Test
 import static org.junit.Assert.fail
+import toxic.*
+
 
 class FunctionTaskTest {
   @Test
@@ -30,6 +32,75 @@ class FunctionTaskTest {
     assert expectedFunction.path == actualFunction.path
     assert expectedFunction.args.size() == actualFunction.args.size()
     assert expectedFunction.outputs == actualFunction.outputs
+  }
+
+  @Test
+  void should_favor_targetted_fn() {
+    def memory = [target:"bar"] as ToxicProperties
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "override"
+          targets "bar"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "default"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+
+
+    assert 1 == memory.functions.size()
+    assert memory.functions.foo.description == "override"
+  }
+
+  @Test
+  void should_add_default_fn_when_target_not_matched() {
+    def memory = [target:"bar"]
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "default"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+
+    assert 1 == memory.functions.size()
+  }
+
+  @Test
+  void should_not_add_fn_when_target_not_matched() {
+    def memory = [target:"bar"]
+    doTask("""
+        function "foo" {
+          path "/path/to/lib"
+          description "default"
+          targets "baz"
+          
+          arg "arg1", true
+          arg "arg2", false
+      
+          output "output1"
+          output "output2"
+        }""", memory)
+
+    assert 0 == memory.functions.size()
   }
 
   @Test
@@ -144,7 +215,7 @@ class FunctionTaskTest {
       fail('Expected IllegalArgumentException')
     }
     catch(IllegalArgumentException e) {
-      assert 'Found duplicated function name; name=foo' == e.message
+      assert 'Found duplicated function name; function=foo(arg1) []' == e.message
     }
   }
 
@@ -164,7 +235,7 @@ class FunctionTaskTest {
       fail('Expected IllegalArgumentException')
     }
     catch(IllegalArgumentException e) {
-      assert 'Found duplicated function name; name=toxic.foo' == e.message
+      assert 'Found duplicated function name; function=foo() []' == e.message
     }
   }
 

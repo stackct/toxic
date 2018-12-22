@@ -45,6 +45,27 @@ function "NAME" {
 }
 ```
 
+#### Targetted Functions
+
+By default, functions must be unique within a namespace (see [Dependency Management](#dependency-management)). If a function does not specify any `targets` in its definition, it is considered _default_. Declaring multiple default implementations is not supported. However, it is possible to target overloaded implementations of a function. The following overloaded function definition is allowed, because the second definition targets a `legacy` value.
+
+```
+function "DoSomething" {
+    description "Default implementation of DoSomething"
+    libPath     "{{ libPath }}/dosomething"
+}
+
+function "DoSomething" {
+    description "Legacy implementation of DoSomething"
+    libPath     "{{ libPath }}/dosomething-legacy"
+
+    targets "legacy"
+}
+```
+
+To target the "legacy" implementation of `DoSomething`, specify `-target=legacy` at runtime. If no `-target` is specified at runtime, the default implementation will be used.
+
+
 ### Tests
 
 Tests are composed of a series of Steps and an optional Assertion that determines whether the test passed or failed. Tests are defined in a `.test` file. Multiple tests can be defined within a single `.test` file.
@@ -58,7 +79,7 @@ Tests are composed of a collection of a `description`, an optional collection of
 * **declare** (Optional) - Immutable variables that can be used within the test case as interpolated values
 * **step** (Required) - Named invocation of a Function
    * *arg* (Optional) - Value for input argument as defined by the Function
-* **assertions** (Optional) - Assertions to drive the pass/fail of a test case 
+* **assertions** (Optional) - Assertions to drive the pass/fail of a test case
 
 ```groovy
 test "NAME" {
@@ -94,8 +115,16 @@ Steps can be optionally run with a retry logic `wait` block. `wait` blocks requi
 * `timeoutMs` - Time (in milliseconds) to retry before failing the Step
 * `intervalMs` - Time (in milliseconds) between retries
 
+Steps are defined with the following syntax:
+
 ```groovy
-step "DoSomething", "do-it", {
+step "FunctionName", "step-name", { ... }
+```
+
+For example:
+
+```groovy
+step "DoSomething", "do", {
     foo "bar"
 
     wait {
@@ -112,7 +141,7 @@ step "DoSomething", "do-it", {
 `condition` blocks contain one ore more matchers (see [Assertions](#assertions)). Multiple matchers within a single `condition` block are considered `AND` operations. To specify `OR` operations, use multiple `condition` blocks.
 
 ```groovy
-step "DoSomething", "do-it", {
+step "DoSomething", "do", {
     foo "bar"
 
     wait {
@@ -123,7 +152,7 @@ step "DoSomething", "do-it", {
             eq "{{ status }}", "OK"
             eq "{{ code }}", "200"
         } // OR
-        
+
         condition {
             eq "{{ error }}", ""
         }
@@ -138,6 +167,8 @@ Tests are concluded to have passed or failed, based on the statement contained w
 * **eq** - Compares that two objects are equal. Usage `eq obj, obj`.
 * **neq** - Compares that two objects are not equal. Usage `neq obj, obj`.
 * **contains** - Compares that one object is contained within the other. In the case of a String, it works like a _substring_ match. Usage `contains obj, obj`. In the case of a Map, it will evaluate if the map contains a key.
+* **startswith** 
+* **endswith** 
 
 ## Interpolation
 
@@ -145,7 +176,7 @@ Pickle supports interpolation of values, using `"{{ var }}"` syntax, where `var`
 
 ### Supported Interpolation
 
-* **Step Output** - If a Step invokes a Function that has an output defined, that output can be referenced using `"{{ step.STEP_NAME.OUTPUT }}"`. Step outputs and variables can be used in arg values for other Steps, or in Assertion statements. 
+* **Step Output** - If a Step invokes a Function that has an output defined, that output can be referenced using `"{{ step.STEP_NAME.OUTPUT }}"`. Step outputs and variables can be used in arg values for other Steps, or in Assertion statements.
 
    For example, given the following Function definitions:
 
@@ -325,7 +356,7 @@ Adding Tags to a test allows Toxic to target specific tests at execution time. F
 ```groovy
 test "A user can log in" {
    description "Proves that a user can log in"
-   
+
    // Tags as a List
    tags  "user", "user-essential"
 
@@ -406,16 +437,138 @@ toxic -doDir=toxic/tests -test=MyTest
 If the single test name has spaces, escape with single and double quotes:
 
 ```plain
-toxic -doDir=toxic/tests -test='"my pickle test"'
+toxic -doDir=toxic/tests -test='"My Pickle Test"'
 ```
 
 **NOTE: Specifying a single test case to run supercedes any positive or negative filtering.**
+
+## Naming Strategy
+
+The Pickle language is intended to be extremely reader-intuitive. Although primarily written by developers, the naming strategy should be framed for an audience of non-developers. Mixed casing across `Functions`, `Tests`, `Steps`, etc serves an intentional visual aid for readers to quickly discern between them. In all cases, shorter and better names are preferred.` 
+
+### Functions
+Function names should be in _TitleCase_, and begin with a verb.
+
+Example: 
+```
+function "CreateUser" { ... }
+```
+is better than:
+```
+function "UserCreation" { ... }
+```
+
+Function arguments should use _camelCase_:
+
+```
+function "CreateUser" {
+    arg "firstName"
+    arg "lastName"
+}
+```
+
+### Tests
+
+Test names should be short, meaningful statements that clearly reveal the intent. If it is too long to put on the cover of a book, its probably a bad test name. The test _description_ can contain further details about the intent of the test.
+
+Example: 
+```
+test "Creates a Valid User" { ... }
+    description "Proves that a user is created when the required data is valid"
+}
+```
+is better than:
+```
+test "User Creation" { ... } // Too generic
+```
+or 
+```
+test "Create a user when valid data is provided" { ... } // Too verbose
+```
+
+### Steps
+Step names should be as short and descriptive as possible, and named so that referring to the step in another step or in an assertion reads well. Single words are better than compound words. If compound words are required, _hyphen-case_ is preferred. The primary goal of the step name is to provide a readable expression when used as an interpolation (see [Steps](#steps)).
+
+Example:
+The `CreateUser` function is responsible for creating a user and returning a `success` output indicating whether or not the operation succeeded.
+
+```
+test "Creates a Valid User", {
+    step "CreateUser", "create", { ... }
+    step "GetUserDetails", "user", { ...  }
+
+   assertions {
+        eq "{{ step.create.success }}", "1"
+        eq "{{ step.user.}}
+    }
+}
+```
+
+In the above example:
+```
+step "CreateUser", "create", { ... }
+```
+is better than
+```
+step "CreateUser", "create-user", { ... }
+```
+
+because there is no other "create" step in this test, so there is no need to disambiguate. 
+
+More examples:
+```
+step "GetProjectDetails", "project"
+```
+is better than
+```
+step "GetProjectDetails", "get-project-details"
+```
+because
+```
+{{ step.project.id }}
+```
+reads better than
+```
+{{ step.get-project-details.id }}
+```
+
+### Libraries
+As libraries represent the low-level implementation of `Functions` as Toxic tasks, they are the closest to traditional programming paradigms. Library tasks are not intended for "public" reader consumption, and should be organized similar to a RESTful naming strategy. Files and directories should be in _camel_case_, and separated by subject/functional area.
+
+For example:
+```
+function "CreateUser" {
+    description "Creates a user with a default password"
+    libPath     "{{ libPath }}/user/create"
+}
+```
+is better than
+```
+function "CreateUser" {
+    description "Creates a user with a default password"
+    libPath     "{{ libPath }}/create_user"
+}
+```
+
+This strategy allows for nesting related operations against a "user".
+
+```
+library/user/create
+library/user/edit
+library/user/delete
+```
+is better than
+```
+library/create_user
+library/edit_user
+library/delete_user
+```
 
 ## Visual Studo Code Integration
 
 Pickle provides code snippets to assist in authoring tests and functions within Visual Studio Code.
 
-To install Pickle the code snippets, copy or symlink `resources/vscode/snippets/pickle.code-snippets` to your Visual Studio Code user preferences directory.
+To install Pickle the code snippets, copy or symlink `resources/vscode/pickle/snippets/pickle.json` to your Visual Studio Code user preferences directory.
   * **Windows** - `%APPDATA%\Code\User\snippets`
   * **macOS** - `$HOME/Library/Application\ Support/Code/User/snippets`
   * **Linux** - `$HOME/.config/Code/User/snippets`
@@ -423,7 +576,7 @@ To install Pickle the code snippets, copy or symlink `resources/vscode/snippets/
 For example:
 
 ```
-$ ln -s $(pwd)/resources/vscode/snippets/pickle.code-snippets` $HOME/Library/Application\ Support/Code/User/snippets/pickle.code-snippets
+$ ln -s $(pwd)/resources/vscode/pickle/snippets/pickle.json` $HOME/Library/Application\ Support/Code/User/snippets/pickle.code-snippets
 ```
 
 **NOTE** - Symlinks are preferred as changes to the source snippets will reflect automatically.

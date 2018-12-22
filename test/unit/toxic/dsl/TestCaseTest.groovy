@@ -71,8 +71,8 @@ class TestCaseTest {
         assert false == step.wait.getRetryCondition([:] as ToxicProperties)()
       }
       assert tests[0].assertions.size() == 2
-      assert 'assert \'{{ foo-step-1.output1 }}\' == \'foo.output.1\' : " foo-step-1.output1  == foo.output.1"' == tests[0].assertions[0]
-      assert 'assert \'{{ foo-step-1.output2 }}\' != \'bar.output.2\' : " foo-step-1.output2  != bar.output.2"' == tests[0].assertions[1]
+      assert 'assert \'\'\'{{ foo-step-1.output1 }}\'\'\' == \'\'\'foo.output.1\'\'\' : " foo-step-1.output1  == foo.output.1"' == tests[0].assertions[0]
+      assert 'assert \'\'\'{{ foo-step-1.output2 }}\'\'\' != \'\'\'bar.output.2\'\'\' : " foo-step-1.output2  != bar.output.2"' == tests[0].assertions[1]
     }
   }
 

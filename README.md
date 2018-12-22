@@ -33,3 +33,10 @@ Toxic contains a DSL (domain-specific language) that enables expressive tests to
 ### Visual Studio Code Plugin
 
 * [Pickle Explorer](resources/vscode/pickle/README.md)
+Requires VSCode 1.29.0 or newer
+
+Run the following from within the toxic directory:
+
+```
+make vscode
+```

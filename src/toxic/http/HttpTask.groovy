@@ -157,8 +157,9 @@ class HttpTask extends CompareTask {
     return result
   }
 
-  private void setResponseProperties(String response, ToxicProperties memory) {
+  protected void setResponseProperties(String response, ToxicProperties memory) {
     memory['http.response.headers'] = [:]
+    memory['http.response.cookies'] = [:]
     memory['http.response.code']    = null
     memory['http.response.reason']  = null
     memory['http.response.body']    = null
@@ -179,7 +180,41 @@ class HttpTask extends CompareTask {
 
     headers.each { h ->
       h.split(': ').with { parts -> 
-        memory['http.response.headers'][parts[0]] = parts[1]
+        def header = parts[0]
+        def value = parts[1]
+
+        if (header == 'Set-Cookie') {
+          value.split(';').with { segments -> 
+            segments[0].split('=').with { name -> 
+              memory['http.response.cookies'][name[0]] = name.size() == 2 ? name[1] : ""
+            }
+          }
+        } else {
+          memory['http.response.headers'].put(header,value)
+        }
+
+        if (header == 'Location') {
+
+          URI uri
+          memory['http.response.location'] = [:]
+
+          try {
+            uri = new URI(memory['http.response.headers']['Location'])
+          } catch (URISyntaxException e){
+            log.warn("Could not parse uri from Location header: ${memory['http.response.headers']['Location']}")
+            return
+          }
+
+          String url = uri.toString() - "?${uri.query}"
+          memory['http.response.location']['baseUrl'] = url
+          memory['http.response.location']['params'] = [:]
+
+          uri.query?.split('&')?.collectEntries { param -> param.split('=')
+                  ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
+            memory['http.response.location']['params'][k] = v
+          }
+        }
+
       }
     }
   }
@@ -214,7 +249,10 @@ class HttpTask extends CompareTask {
         // According to the RFC7230 spec, HTTP headers are case-insensitive
         // https://tools.ietf.org/html/rfc7230#section-3.2
         if (line.toLowerCase().startsWith("content-length")) bodyLength = line.split(":")[1].trim().toInteger()
-        if (line.toLowerCase().startsWith("transfer-encoding: chunked")) bodyLength = new Integer(props["httpMaxChunkedSize"].toString())
+        if (line.toLowerCase().startsWith("transfer-encoding: chunked")) {
+          bodyLength = new Integer(props["httpMaxChunkedSize"].toString())
+          chunked = true
+        }
         response << line
       }
     }
@@ -228,14 +266,36 @@ class HttpTask extends CompareTask {
         bodyReadLength += read
       }
     }
+    if (chunked) {
+      bodyBytes = unchunk(bodyBytes, bodyReadLength)
+    }
     if (gzip) {
       response = response.toString() + uncompress(bodyBytes)
     }
     else {
-      response = response.toString() + new String(bodyBytes, 0, bodyReadLength)
+      response = response.toString() + new String(bodyBytes, 0, Math.min(bodyBytes.length,bodyReadLength))
     }
 
     response
+  }
+
+  byte[] unchunk(bytes, len) {
+    int hexStart = 0
+    byte[] result = new byte[len]
+    int idx = 0
+    for (int i = 1; i < len; i++) {
+      if (i < (len-1) && bytes[i] == '\r' && bytes[i+1] == '\n') {
+        def hexSize = new String(bytes, hexStart, i-hexStart)
+        def size = Integer.parseInt(hexSize, 16)
+        i += 2
+        log.debug("Found chunked size; offset=" + i + "; size=" + size + "; len=" + len)
+        for (int j = 0; j < size && i < len; j++) result[idx++] = bytes[i++]
+        i += 2 // advance to next chunk size start position
+        hexStart = i
+      }
+    }
+    def retval = Arrays.copyOfRange(result, 0, idx)
+    return retval
   }
 
   static readLine(input) {

@@ -36,12 +36,12 @@ class TestCaseHandlerTest {
             arg2 2
         }
         
-        step "fn_2", "step1", {
+        step "fn_2", "step2", {
             arg1 1
             arg2 2
         }
         
-        step "fn_3", "step1", {
+        step "fn_3", "step3", {
             arg1 1
             arg2 2
         }
@@ -193,7 +193,7 @@ class TestCaseHandlerTest {
       }
       test "test2" {
         description "test1 description"
-        step "fn_1", "step1", {
+        step "fn_1", "step2", {
             arg1 1
             arg2 2
         }
@@ -201,7 +201,7 @@ class TestCaseHandlerTest {
       test "test3" {
         description "test1 description"
         tags 'bar'
-        step "fn_1", "step1", {
+        step "fn_1", "step3", {
             arg1 1
             arg2 2
         }
@@ -313,7 +313,7 @@ class TestCaseHandlerTest {
       }
       test "test2" {
         description "test1 description"
-        step "fn_1", "step1", {
+        step "fn_1", "step2", {
             arg1 1
             arg2 2
         }
@@ -321,7 +321,7 @@ class TestCaseHandlerTest {
       test "test3" {
         description "test1 description"
         tags 'bar'
-        step "fn_1", "step1", {
+        step "fn_1", "step3", {
             arg1 1
             arg2 2
         }
@@ -609,7 +609,7 @@ class TestCaseHandlerTest {
             arg1 1
             arg2 2
         }
-        step "fn_2", "step1", {
+        step "fn_2", "step2", {
             arg1 1
             arg2 2
         }
@@ -656,7 +656,7 @@ class TestCaseHandlerTest {
             arg1 1
             arg2 2
         }
-        step "fn_2", "step1", {
+        step "fn_2", "step2", {
             arg1 3
             arg2 4
         }
@@ -701,7 +701,7 @@ class TestCaseHandlerTest {
             arg1 1
             arg2 2
         }
-        step "fn_2", "step1", {
+        step "fn_2", "step2", {
             arg1 3
             arg2 4
         }
@@ -743,7 +743,7 @@ class TestCaseHandlerTest {
             arg1 1
             arg2 2
         }
-        step "fn_2", "step1", {
+        step "fn_2", "step2", {
           wait {
             timeoutMs  30
             intervalMs  5
@@ -967,9 +967,9 @@ class TestCaseHandlerTest {
       TransientFile transientFile = new TestCaseHandler(dirItem, props).nextFile(file)
 
       def expected = new StringBuffer()
-      expected.append("assert 'ordering-1' == 'ordering-1' : \"ordering-1 ==  step.one_line_item.screenName \"")
+      expected.append("assert '''ordering-1''' == '''ordering-1''' : \"ordering-1 ==  step.one_line_item.screenName \"")
       expected.append("\n")
-      expected.append("assert 'order' != 'ordering-1' : \"order !=  step.one_line_item.screenName \"")
+      expected.append("assert '''order''' != '''ordering-1''' : \"order !=  step.one_line_item.screenName \"")
       expected.append("\n")
 
       assert expected.toString() == transientFile.text

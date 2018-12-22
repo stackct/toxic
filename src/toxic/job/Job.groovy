@@ -209,7 +209,7 @@ public class Job implements Callable, Comparable, Publisher {
   boolean dependsOnTrigger(String value) {
     def previousJob = properties?.jobManager?.findLatestJob(project, JobStatus.COMPLETED)
     def latestOtherJob = properties?.jobManager?.findLatestJob(value, JobStatus.COMPLETED)
-    def result = (latestOtherJob && !latestOtherJob?.failed && (latestOtherJob.completedDate > previousJob.startedDate)) 
+    def result = (latestOtherJob && !latestOtherJob?.failed && (latestOtherJob.completedDate > previousJob?.startedDate)) 
     log.debug("dependsOn Results; latestOtherJobFailed=${latestOtherJob?.failed}; latestCompletedDate=${latestOtherJob?.completedDate?.format('yyyy-MM-dd HH:mm:ss.SSS')}; previousStartedDate=${previousJob?.startedDate?.format('yyyy-MM-dd HH:mm:ss.SSS')}")
     return result
   }
