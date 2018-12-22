@@ -59,3 +59,6 @@ secret*
 
 # Custom Helm values
 values-*.yaml
+
+# NPM Vendor cache
+package-lock.json

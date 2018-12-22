@@ -27,8 +27,14 @@ NOTE: If you are running on Windows, you are on your own.
 
 ```
 {
+  // Enable notifications for failed tests
+  "pickle.notifications.failure": true,
+
+  // Enable notifications for successful tests
+  "pickle.notifications.success": true,
+
   // List of runtime arguments in the format: -key=value
-  "pickle.runtimeArgs": []
+  "pickle.runtimeArgs": [] 
 }
 ```
 

@@ -29,6 +29,16 @@
                 "pickle.runtimeArgs": {
                     "type": "array",
                     "description": "List of runtime arguments in the format: -key=value"
+                },
+                "pickle.notifications.success": {
+                    "type": "boolean",
+                    "description": "Enable notifications for successful tests",
+                    "default": true
+                },
+                "pickle.notifications.failure": {
+                    "type": "boolean",
+                    "description": "Enable notifications for failed tests",
+                    "default": true
                 }
             }
         },
@@ -117,9 +127,11 @@
     },
     "devDependencies": {
         "typescript": "^2.6.1",
-        "vscode": "^1.1.21",
         "tslint": "^5.8.0",
         "@types/node": "^8.10.25",
         "@types/mocha": "^2.2.42"
+    },
+    "dependencies": {
+        "vscode": "^1.1.22"
     }
 }

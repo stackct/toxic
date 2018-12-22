@@ -7,6 +7,7 @@ class Function extends StepParser {
   String path
   String description
   List<Arg> args = []
+  Set<String> targets = [] as Set
   Map<String, Object> outputs = [:]
 
   Function() {}
@@ -26,6 +27,12 @@ class Function extends StepParser {
     body()
     fn.validate()
     results << fn
+  }
+
+  def targets(String... targets) {
+    targets.each { t ->
+      this.targets << t.trim()
+    }
   }
 
   def path(String path) {
@@ -101,11 +108,25 @@ class Function extends StepParser {
     }
   }
 
+  public boolean hasTarget(String t) {
+    if (!t) return true
+    this.targets.contains(t)
+  }
+
+  public boolean isDefault() {
+    !this.targets
+  }
+
+  @Override
+  public boolean equals(Object fn) {
+    (this.name == fn.name) && ((this.targets ?: []) == (fn.targets ?: []))
+  }
+
   @Override
   String getKeyword() { 'function' }
 
   @Override
   String toString() {
-    this.name + "(" +  args.collect { it.name }.join(',') + ")"
+    this.name + "(" +  args.collect { it.name }.join(',') + ") [" + targets.join(',') + "]"
   }
 }

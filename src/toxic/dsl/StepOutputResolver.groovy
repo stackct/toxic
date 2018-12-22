@@ -13,7 +13,9 @@ class StepOutputResolver {
     int currentStepLevel = props.stepSequence[props.stepIndex].level
     props.stepSequence.eachWithIndex { sequence, index ->
       Step step = sequence.step
-      // Using <= so when the last child step completes, the output interpolation on the parent will resolve correctly
+
+      def isInCurrentTest = TestCaseHandler.flattenTestCaseSteps(testCase.steps, props).find { s -> s == step }
+
       if(index <= props.stepIndex && sequence.level == currentStepLevel && step.name == name) {
         resolvedStep = step
       }

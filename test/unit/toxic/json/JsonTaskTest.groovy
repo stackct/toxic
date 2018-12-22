@@ -1,6 +1,7 @@
 package toxic.json
 
 import org.junit.Test
+import groovy.mock.interceptor.*
 import toxic.ToxicProperties
 import toxic.http.HttpTask
 
@@ -22,6 +23,23 @@ class JsonTaskTest {
     def actualResponse = '{ "foo": 1 }'
     def props = runTask(request, expectedResponse, actualResponse)
     assert 1 == props.bar
+  }
+
+  @Test
+  void should_set_json_response_property() {
+    testSetResponseProperties(null, [:])
+    testSetResponseProperties('INVALID', [:])
+    testSetResponseProperties('{ "status": "ok" }', [status: 'ok'])
+  }
+
+  private void testSetResponseProperties(String response, def expected) {
+    def props = [:] as ToxicProperties
+    def task = new JsonTask()
+
+    task.metaClass.baseResponseProperties = { String r, ToxicProperties mem -> mem['http.response.body'] = response }
+    task.setResponseProperties(null, props)
+
+    assert props['http.response.json'] == expected
   }
 
   @Test

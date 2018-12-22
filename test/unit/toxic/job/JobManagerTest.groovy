@@ -931,6 +931,27 @@ another=there
     jobManager.jobs = [ mockJob("fun", JobStatus.RUNNING ) ]
     assert jobManager.isMutexAvailable("test")    
 
+    jobManager.jobs = [ mockJob("fun", JobStatus.RUNNING ) ]
+    jobManager.jobs[0].properties.mutex = "test"
+    assert !jobManager.isMutexAvailable("test")    
+
+    jobManager.jobs = [ mockJob("fun", JobStatus.INITIALIZING ) ]
+    jobManager.jobs[0].properties.mutex = "test"
+    assert !jobManager.isMutexAvailable("test")    
+
+    jobManager.jobs = [ mockJob("fun", JobStatus.INITIALIZING ), 
+                        mockJob("fun", JobStatus.RUNNING ) ]
+    jobManager.jobs[0].properties.mutex = "test"
+    assert !jobManager.isMutexAvailable("test")    
+
+    jobManager.jobs = [ mockJob("fun", JobStatus.INITIALIZING ), 
+                        mockJob("fun", JobStatus.RUNNING ) ]
+    jobManager.jobs[0].properties.mutex = "test"
+    jobManager.jobs[1].properties.mutex = "test"
+    assert !jobManager.isMutexAvailable("test")    
+
+    jobManager.jobs = [ mockJob("fun", JobStatus.ENDING ), 
+                        mockJob("fun", JobStatus.RUNNING ) ]
     jobManager.jobs[0].properties.mutex = "test"
     assert !jobManager.isMutexAvailable("test")    
 

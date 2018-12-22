@@ -3,6 +3,7 @@ package toxic
 
 import groovy.mock.interceptor.MockFor
 import org.junit.*
+import javax.net.ssl.*
 
 public class ToxicAgentTest {
   @Test
@@ -25,7 +26,45 @@ public class ToxicAgentTest {
     assert ta.isShutdown()
     assert ta.loadedTrustStore
   }
-  
+
+  @Test
+  public void testSkipSslValidation() {
+    def ta = new ToxicAgent()
+    ta.loadedTrustStore = false
+    def props = new ToxicProperties()
+    props.agentTaskMasterCount="1"
+    props.tmReps="0"
+    props.validateCerts = "false"
+    def mock = new MockFor(MultiX509TrustManager)
+    def called = false
+    def required = false
+    mock.demand.setTrustRequired(1) { boolean req -> called = true; required=req }
+    mock.use {
+      ta.init(props)
+    }
+    assert !required
+    assert called
+  }
+
+  @Test
+  public void testDontSkipSslValidation() {
+    def ta = new ToxicAgent()
+    ta.loadedTrustStore = false
+    def props = new ToxicProperties()
+    props.agentTaskMasterCount="1"
+    props.tmReps="0"
+    def mock = new MockFor(MultiX509TrustManager)
+    def called = false
+    def required = false
+    mock.demand.setTrustRequired(1) { boolean req -> called = true; required=req }
+    mock.ignore.addTrustManager { TrustManager tm -> }
+    mock.use {
+      ta.init(props)
+    }
+    assert required
+    assert called
+  }
+
   @Test
   public void test_call_formatter_empty_classname() {
     def cp = []

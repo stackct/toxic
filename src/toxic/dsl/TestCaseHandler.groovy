@@ -62,20 +62,22 @@ class TestCaseHandler extends LinkHandler {
     }
 
     boolean include = true
-
     if (props.includeTags) {
-      include &= hasAny(testCase, props.includeTags.tokenize(','))
+      include &= isTagFound(testCase.tags, props.includeTags)
     }
-
     if (props.excludeTags) {
-      include &= !hasAny(testCase, props.excludeTags.tokenize(','))
+      include &= !isTagFound(testCase.tags, props.excludeTags)
     }
-
     return include
   }
 
-  private boolean hasAny(TestCase testCase, List tags) {
-    tags.any { t -> testCase.tags.contains(t) }
+  public static boolean isTagFound(Set tags, def testTagStr) {
+    boolean found = false
+    if (testTagStr) {
+      def testTags = testTagStr.toString().tokenize(',')
+      found = testTags.any { t -> tags.contains(t) }
+    }
+    return found
   }
 
   @Override

@@ -1,17 +1,23 @@
 FROM alpine:latest
 LABEL Description="Task Execution Engine"
 
+# Set the locale
+ENV LANGUAGE en_US:en  
+ENV LANG     en_US.UTF-8  
+ENV LC_ALL   en_US.UTF-8
+
 ARG DIST_DIR_NAME
 ARG K8S_VERSION=v1.10.5
 
 COPY ${DIST_DIR_NAME} /opt/toxic
 
 # TODO: Move this to a multi-stage build
-RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl openssl-dev tar python3 \
+RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl openssl-dev tar python3 zip \
     && apk add --virtual=build gcc libffi-dev musl-dev python3-dev \
     && pip3 install --upgrade pip \
     && pip3 install cffi \
     && pip3 install azure-cli \
+    && pip3 install awscli \
     && ln -s /usr/bin/python3 /usr/bin/python \
     && apk del --purge build \
     && docker -v \
@@ -34,6 +40,7 @@ RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml
 VOLUME ["/data"]
 EXPOSE 8001
 USER toxic
+
 
 ENV PATH="/opt/toxic/bin:${PATH}"
 

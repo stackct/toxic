@@ -6,8 +6,13 @@ import javax.net.ssl.*
 
 class MultiX509TrustManager implements X509TrustManager {
   def trustManagers = []
+  boolean trustRequired = true
   
   public MultiX509TrustManager() {
+  }
+
+  public void setTrustRequired(boolean req) {
+    trustRequired = req
   }
   
   public addTrustManager(TrustManager tm) {
@@ -15,6 +20,7 @@ class MultiX509TrustManager implements X509TrustManager {
   }
   
   void checkClientTrusted(X509Certificate[] chain, String authType) {
+    if (!trustRequired) return
     for (def tm : trustManagers) {
       try {
         tm.checkClientTrusted(chain, authType) 
@@ -26,6 +32,7 @@ class MultiX509TrustManager implements X509TrustManager {
   }
   
   void checkServerTrusted(X509Certificate[] chain, String authType) {
+    if (!trustRequired) return 
     for (def tm : trustManagers) {
       try {
         tm.checkServerTrusted(chain, authType) 
