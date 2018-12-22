@@ -115,8 +115,16 @@ Steps can be optionally run with a retry logic `wait` block. `wait` blocks requi
 * `timeoutMs` - Time (in milliseconds) to retry before failing the Step
 * `intervalMs` - Time (in milliseconds) between retries
 
+Steps are defined with the following syntax:
+
 ```groovy
-step "DoSomething", "do-it", {
+step "FunctionName", "step-name", { ... }
+```
+
+For example:
+
+```groovy
+step "DoSomething", "do", {
     foo "bar"
 
     wait {
@@ -133,7 +141,7 @@ step "DoSomething", "do-it", {
 `condition` blocks contain one ore more matchers (see [Assertions](#assertions)). Multiple matchers within a single `condition` block are considered `AND` operations. To specify `OR` operations, use multiple `condition` blocks.
 
 ```groovy
-step "DoSomething", "do-it", {
+step "DoSomething", "do", {
     foo "bar"
 
     wait {
@@ -450,6 +458,15 @@ is better than:
 function "UserCreation" { ... }
 ```
 
+Function arguments should use _camelCase_:
+
+```
+function "CreateUser" {
+    arg "firstName"
+    arg "lastName"
+}
+```
+
 ### Tests
 
 Test names should be short, meaningful statements that clearly reveal the intent. If it is too long to put on the cover of a book, its probably a bad test name. The test _description_ can contain further details about the intent of the test.
@@ -470,7 +487,7 @@ test "Create a user when valid data is provided" { ... } // Too verbose
 ```
 
 ### Steps
-Step names should be as short and descriptive as possible, and named so that referring to the step in another step or in an assertion reads well. Single words are better than compound words. If compound words are required, _hyphen-case_ is preferred. The primary goal of the step name is to provide a readable expression when used as an interpolation.
+Step names should be as short and descriptive as possible, and named so that referring to the step in another step or in an assertion reads well. Single words are better than compound words. If compound words are required, _hyphen-case_ is preferred. The primary goal of the step name is to provide a readable expression when used as an interpolation (see [Steps](#steps)).
 
 Example:
 The `CreateUser` function is responsible for creating a user and returning a `success` output indicating whether or not the operation succeeded.
