@@ -209,10 +209,6 @@ public class Main {
         def children = unsorted.sort()
         def curPropFiles = []
         for (def propFile : children) {
-          if (propFile.canonicalPath == f.canonicalPath) {
-            break;
-          }
-
           if (!propFile.isDirectory() && propFile.name.endsWith(".properties")) {
             curPropFiles << propFile
           }
