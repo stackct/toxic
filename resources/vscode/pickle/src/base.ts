@@ -50,7 +50,13 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
             }
         }
 
-        return entries;
+        return entries.sort(this.sortNodes);
+    }
+
+    sortNodes(a: BaseNode, b: BaseNode): number {
+        if (a.label < b.label) return -1;
+        if (a.label > b.label) return 1;
+        return 0;
     }
 
     flatten<BaseNode>(nodes: BaseNode[][]): BaseNode[] {
