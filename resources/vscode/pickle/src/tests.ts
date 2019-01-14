@@ -4,7 +4,7 @@ import { BaseNode, BaseNodeProvider } from './base';
 import { Runtime } from './runtime';
 
 export class TestNodeProvider extends BaseNodeProvider {
-    private matchRegExp: RegExp = /^test "([\w\s]+)".*/;
+    private matchRegExp: RegExp = /^test "([\w\s\-]+)".*/;
     
     constructor() {
         super();
