@@ -7,6 +7,10 @@ import toxic.dir.LinkHandler
 class TestCaseHandler extends LinkHandler {
   private final static Log log = Log.getLogger(this)
 
+  static def getLogger(def props) {
+    return props?.log ?: log
+  }
+
   TestCaseHandler(DirItem item, def props) {
     super(item, props)
   }
@@ -94,12 +98,12 @@ class TestCaseHandler extends LinkHandler {
     if(step) {
       TestCase testCase = currentTestCase(props)
       if(step instanceof AssertionStep) {
-        log.info("Executing test assertions; test=\"${testCase.name}\"")
+        getLogger(props).info("Executing test assertions; test=\"${testCase.name}\"")
       }
       else {
         Function function = fromStep(step, props)
         String fnDetails = function.path ? "fnPath=${function.path}" : "subSteps=${function.steps.size()}"
-        log.info("Executing step; test=\"${testCase.name}\"; name=${step.name}; fnName=${function.name}; ${fnDetails}")
+        getLogger(props).info("Executing step; test=\"${testCase.name}\"; name=${step.name}; fnName=${function.name}; ${fnDetails}")
         props.push()
         copyStepArgsToMemory(props)
 
@@ -126,7 +130,7 @@ class TestCaseHandler extends LinkHandler {
   }
 
   static void completeStep(Step step, props) {
-    log.debug("Completing step; name=${step.name}")
+    getLogger(props).debug("Completing step; name=${step.name}")
     moveOutputResultsToStep(step, props)
     int stepIndex = props.stepIndex
     props.pop()
@@ -145,7 +149,7 @@ class TestCaseHandler extends LinkHandler {
     step.args.each { k, v ->
       function.validateArgIsDefined(k)
       def interpolatedValue = Step.interpolate(props, v)
-      log.debug("Copying step input to memory; test=${currentTestCase(props).name}; step=${step.function}; ${k}=${interpolatedValue}")
+      getLogger(props).debug("Copying step input to memory; test=${currentTestCase(props).name}; step=${step.function}; ${k}=${interpolatedValue}")
       props[k] = interpolatedValue
     }
   }
@@ -158,7 +162,7 @@ class TestCaseHandler extends LinkHandler {
       }
     }
     else {
-      log.debug("Skipping output result copy because function was not found for step; step=${step.name}")
+      getLogger(props).debug("Skipping output result copy because function was not found for step; step=${step.name}")
     }
   }
 
