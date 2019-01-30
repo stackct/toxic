@@ -8,6 +8,7 @@ class Wait extends Parser {
 
     int timeoutMs
     int intervalMs
+    int successes = 1
     List<Condition> conditions = []
 
     void wait(Closure closure) {
@@ -20,12 +21,16 @@ class Wait extends Parser {
         results << wait
     }
 
-    def timeoutMs(int t) {
-        this.timeoutMs = t
+    def timeoutMs(int value) {
+        this.timeoutMs = value
     }
 
-    def intervalMs(int t) {
-        this.intervalMs = t
+    def intervalMs(int value) {
+        this.intervalMs = value
+    }
+
+    def successes(int value) {
+        this.successes = value
     }
 
     def condition(Closure closure) {

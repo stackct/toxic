@@ -2,10 +2,10 @@
 package toxic.http
 
 import org.junit.*
-import groovy.mock.interceptor.*
 import org.junit.rules.ExpectedException
 import toxic.ToxicProperties
 import util.TimeoutException
+import static org.junit.Assert.fail
 
 public class HttpTaskTest {
   @Rule
@@ -462,6 +462,57 @@ public class HttpTaskTest {
     task.reqContent = ''
 
     task.doTask(memory)
+  }
+
+  @Test
+  void should_fail_when_success_threshold_is_not_met() {
+    def memory = new ToxicProperties()
+    int actualCount = 0
+    def responses = ['SUCCESS', 'FAIL']
+    def task = [ transmit:{ request, expectedResponse, m ->
+      memory['lastResponse'] = responses[actualCount++]
+      return memory['lastResponse']
+    }] as HttpTask
+
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1
+    memory['task.retry.successes'] = responses.size()
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    try {
+      task.doTask(memory)
+      fail('Expected TimeoutException')
+    }
+    catch(TimeoutException e) {
+      assert responses.size() == actualCount
+    }
+  }
+
+  @Test
+  void should_succeed_when_success_threshold_is_met() {
+    def memory = new ToxicProperties()
+    int actualCount = 0
+    def responses = ['SUCCESS', 'SUCCESS', 'SUCCESS']
+    def task = [ transmit:{ request, expectedResponse, m ->
+      memory['lastResponse'] = responses[actualCount++]
+      return memory['lastResponse']
+    }] as HttpTask
+
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1
+    memory['task.retry.successes'] = responses.size()
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+    assert responses.size() == actualCount
   }
 
   @Test
