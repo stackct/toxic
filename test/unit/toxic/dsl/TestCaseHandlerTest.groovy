@@ -747,6 +747,7 @@ class TestCaseHandlerTest {
           wait {
             timeoutMs  30
             intervalMs  5
+            successes  10
             
             condition {
               eq '1', '1'
@@ -764,6 +765,7 @@ class TestCaseHandlerTest {
       assert 'fn_2' == new TestCaseHandler(dirItem, props).nextFile(file).name
       assert props['task.retry.atMostMs'] == 30
       assert props['task.retry.every'] == 5
+      assert props['task.retry.successes'] == 10
       assert props['task.retry.condition'] instanceof Closure
       TestCaseHandler.completeCurrentStep(props)
 
@@ -773,6 +775,7 @@ class TestCaseHandlerTest {
       assert !props.containsKey('task.retry.atMostMs')
       assert !props.containsKey('task.retry.every')
       assert !props.containsKey('task.retry.condition')
+      assert !props.containsKey('task.retry.successes')
 
       assert null == new TestCaseHandler(dirItem, props).nextFile(file)
     }

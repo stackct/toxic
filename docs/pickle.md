@@ -114,6 +114,7 @@ Steps can be optionally run with a retry logic `wait` block. `wait` blocks requi
 
 * `timeoutMs` - Time (in milliseconds) to retry before failing the Step
 * `intervalMs` - Time (in milliseconds) between retries
+* `successes` - The number of consecutive success conditions required to pass the step. Optional. Defaults to 1.
 
 Steps are defined with the following syntax:
 
@@ -130,6 +131,7 @@ step "DoSomething", "do", {
     wait {
         intervalMs   10
         timeoutMs    30
+        successes    2
 
         condition {
             eq "{{ status }}", "OK"
