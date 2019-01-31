@@ -72,7 +72,7 @@ public class MainTest {
   }
 
   @Test
-  void should_not_load_parent_props_when_file_does_not_exist() {
+  void should_not_load_props_when_file_does_not_exist() {
     Log log = Log.getLogger(Main.class)
     log.track { logger ->
       ToxicProperties toxicProperties = new ToxicProperties()

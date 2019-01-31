@@ -61,7 +61,7 @@ public abstract class Task {
     memory.taskFamily = family
 
     memory.taskIterations = memory.taskIterations ? memory.taskIterations : 1
-    log.info("Executing task; family=" + family + "; name=" + name + "; tmId=" + memory.tmId + "; tmRep=" + memory.tmRep + "; taskId=" + memory.taskId + "; taskIterations=" + memory.taskIterations)
+    log.debug("Executing task; family=" + family + "; name=" + name + "; tmId=" + memory.tmId + "; tmRep=" + memory.tmRep + "; taskId=" + memory.taskId + "; taskIterations=" + memory.taskIterations)
     def iters = new Integer(memory.taskIterations)
     memory.uniqueId = System.currentTimeMillis() + "." + id
 
@@ -93,6 +93,8 @@ public abstract class Task {
         } else {
           log.debug("Task failure stack trace", t)
         }
+        log.warn("Diagnostics - Request\n${memory.lastRequest}")
+        log.warn("Diagnostics - Response\n${memory.lastResponse}")
       }
 
       if (memory.taskIteration == null) {

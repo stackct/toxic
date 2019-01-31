@@ -120,6 +120,7 @@
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
+        "clean": "rm -fr ./node_modules && rm -fr ./out",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",

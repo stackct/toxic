@@ -93,12 +93,13 @@ class HttpTask extends CompareTask {
       log.debug("httpRetries properties is not set, defaulting to 0 retries; error=${e.message}")
     }
 
-    if (memory.httpVerbose == "true") {
-      def content
-      if (gzip) content = " Gzip compressed: ${request.size()}"
-      else content = "\n${request}"
+    def content
+    if (gzip) content = " Gzip compressed: ${request.size()}"
+    else content = "\n${request}"
+    memory.lastRequest = "Sending to host=" + memory.httpHost + ":" + memory.httpPort + "; SSL=" + (ssl?"true":"false") + "; retries=${httpRetries}:${content}"
 
-      log.info("Sending to host=" + memory.httpHost + ":" + memory.httpPort + "; SSL=" + (ssl?"true":"false") + "; retries=${httpRetries}:${content}")
+    if (memory.httpVerbose == "true") {
+      log.info(memory.lastRequest)
     }
 
     int attempts = 0
