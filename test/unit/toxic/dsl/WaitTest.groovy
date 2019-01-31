@@ -24,11 +24,28 @@ class WaitTest {
     }
 
     @Test
+    public void should_set_default_wait_values() {
+        def input = { ->
+            wait {
+                timeoutMs  1
+                intervalMs 2
+                condition { eq "foo", "bar" }
+            }
+        }
+
+        Parser.parse(new Wait(), input).with { waits ->
+            assert waits.size() == 1
+            assert waits[0].successes == 1
+        }
+    }
+
+    @Test
     public void should_parse_wait_statement() {
         def input = { ->
             wait {
                 timeoutMs  1
                 intervalMs 2
+                successes  3
 
                 condition {
                     eq "foo", "bar"
@@ -44,6 +61,7 @@ class WaitTest {
             assert waits.size() == 1
             assert waits[0].timeoutMs == 1
             assert waits[0].intervalMs == 2
+            assert waits[0].successes == 3
             assert waits[0].conditions.size() == 2
             assert waits[0].conditions[0].assertions.size() == 1
             assert waits[0].conditions[1].assertions.size() == 1

@@ -43,15 +43,17 @@ public abstract class CompareTask extends Task {
     def request = prepare(reqContent)
     String expected = lookupExpectedResponse(input)
 
-    Wait.on { ->
-      memory.lastResponse = transmit(request, expected, memory)
-      validate(memory.lastResponse, expected, memory)
-      if(memory.containsKey('task.retry.condition')) {
-        return memory['task.retry.condition']()
-      }
-      return true
-    }.every(memory.isNothing('task.retry.every') ? 1 : memory['task.retry.every']).atMostMs(memory.isNothing('task.retry.atMostMs') ? 1 : memory['task.retry.atMostMs']).start()
-
+    int successes = memory['task.retry.successes'] ?: 1
+    (1..successes).every {
+      Wait.on { ->
+        memory.lastResponse = transmit(request, expected, memory)
+        validate(memory.lastResponse, expected, memory)
+        if(memory.containsKey('task.retry.condition')) {
+          return memory['task.retry.condition']()
+        }
+        return true
+      }.every(memory.isNothing('task.retry.every') ? 1 : memory['task.retry.every']).atMostMs(memory.isNothing('task.retry.atMostMs') ? 1 : memory['task.retry.atMostMs']).start()
+    }
     return null
   }
 
