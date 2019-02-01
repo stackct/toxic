@@ -145,7 +145,7 @@ memory.execWithValues = { cmds, values, overrides ->
     if (overrides) {
       cmds << '--set'; cmds << overrides
     }
-    exitCode = execWithEnv(cmds)  
+    exitCode = execWithEnv(cmds,[:],600)  
   }
   finally {
     f?.delete()
