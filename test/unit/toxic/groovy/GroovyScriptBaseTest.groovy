@@ -64,7 +64,7 @@ public class GroovyScriptBaseTest {
   @Test
   public void testExecWithEnvLogging() {
     assert 0 == shell.evaluate("execWithEnv(['echo','password=foo'])")
-    assert infos[0] == "Executing shell command; cmd=echo password=***"
+    assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo password=***"
     assert infos[1].startsWith("Process stdout; elapsedMs=")
     assert infos[1].endsWith("\npassword=foo\n")
     assert infos[2].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
@@ -75,7 +75,7 @@ public class GroovyScriptBaseTest {
   public void testExecWithEnvLoggingSuppressed() {
     // Should not log cmd output
     assert 0 == shell.evaluate("execWithEnvNoLogging(['echo','password=foo'],[:])")
-    assert infos[0] == "Executing shell command; cmd=echo password=***"
+    assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo password=***"
     assert infos[1].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
 
     // But should still capture it
@@ -88,7 +88,7 @@ public class GroovyScriptBaseTest {
 
     // Should not log cmd output
     assert 0 == shell.evaluate("execWithEnvNoLogging(['echo','secret=hideme'],[:])")
-    assert infos[0] == "Executing shell command; cmd=echo secret=***"
+    assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo secret=***"
     assert infos[1].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
 
     // But should still capture it

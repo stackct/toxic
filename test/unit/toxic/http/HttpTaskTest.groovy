@@ -488,7 +488,10 @@ public class HttpTaskTest {
       fail('Expected TimeoutException')
     }
     catch(TimeoutException e) {
-      assert responses.size() == actualCount
+      // Fast machines will keep retrying before 1ms expires, so as long as at least two attempts 
+      // were made, it's fine. Note that additional attempts beyond the size of the responses list
+      // will return [:], which isn't a problem.
+      assert responses.size() <= actualCount
     }
   }
 
