@@ -3,6 +3,7 @@ import groovy.json.*
 def helm = "helm"
 def kubectl = "kubectl"
 def env = System.getenv()
+def execTimeout = new Integer(memory['execTimeout'] ?: 1200)
 
 memory.parseEnvironment =  { String file ->
   new JsonSlurper().parseText(new File(file).text)  
@@ -100,6 +101,7 @@ memory.helmInstall = { String name, String chart, def values, def overrides = nu
   cmds << helm
   cmds << 'install'
   cmds << '--wait'
+  cmds << '--timeout'; cmds << execTimeout.toString()
   cmds << '--namespace'; cmds << memory['namespace']
   cmds << '--name'; cmds << release
   memory.addHelmAuth(cmds)
@@ -145,7 +147,7 @@ memory.execWithValues = { cmds, values, overrides ->
     if (overrides) {
       cmds << '--set'; cmds << overrides
     }
-    exitCode = execWithEnv(cmds,[:],600)  
+    exitCode = execWithEnv(cmds,[:],execTimeout)  
   }
   finally {
     f?.delete()
