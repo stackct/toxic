@@ -1,3 +1,4 @@
+httpRetries=5
 make.target=all
 artifactsDir=`"${memory.job.jobDir}/artifacts"`
 job.trigger.repoCommit=true
