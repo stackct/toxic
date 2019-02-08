@@ -163,7 +163,12 @@ memory.collectSummary = { String release, String suffix = "", String outputDir =
   // Parse Load Balancer IP, if any - supports one LoadBalancer per chart
   out.toString().eachLine { line ->
     if (line.contains("LoadBalancer")) {
-      def pieces = line.replaceAll("  ", " ").split(" ")
+      // Use space as a delimiter, but first make sure there are no extra spaces,
+      // which can happen if an IP address contains fewer digits in some cases.
+      10.times {
+        line = line.replaceAll("  ", " ")
+      }
+      def pieces = line.split(" ")
       if (pieces.size() > 3) {
         memory.loadBalancerIp = pieces[3]
       }
