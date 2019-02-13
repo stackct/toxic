@@ -46,7 +46,9 @@ export class TestNode extends BaseNode {
 export class TestFileNode extends TestNode {
     constructor(label: string, uri?: vscode.Uri) {
         super(uri, label);
-        this.collapsibleState = vscode.TreeItemCollapsibleState.Expanded;
+
+        let expanded = vscode.workspace.getConfiguration().get('pickle.expand.tests') as boolean;
+        this.collapsibleState = expanded ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
     }
 
     get args(): string[] {

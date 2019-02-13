@@ -39,6 +39,11 @@
                     "type": "boolean",
                     "description": "Enable notifications for failed tests",
                     "default": true
+                },
+                "pickle.expand.tests": {
+                    "type": "boolean",
+                    "description": "Expand test files to show all test cases",
+                    "default": false
                 }
             }
         },
