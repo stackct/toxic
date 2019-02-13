@@ -139,12 +139,12 @@ class HttpTask extends CompareTask {
         log.error("Try adding '-Djavax.net.ssl.trustStore=\${TOXIC_HOME}/conf/toxic.jks' as a vm arg.", e)
         throw e
       }
-      catch (SocketException se) {
+      catch (IOException ioe) {
         if (attempts > httpRetries) {
-          log.error("Exceeded allowed connection attempts; attempts=${attempts}", se)
-          throw se
+          log.error("Exceeded allowed connection attempts; attempts=${attempts}", ioe)
+          throw ioe
         } else {
-          log.warn("Socket exception; attempts=${attempts}", se)
+          log.warn("Socket exception; attempts=${attempts}", ioe)
         }
       }
     }
