@@ -20,7 +20,7 @@
     </thead>
     <tr ng-repeat="artifact in artifacts | orderBy:artifactsSortField:artifactsSortReverse">
       <td>
-        <a href="/api/job/{{job.id}}/artifact/{{artifact.name}}">{{ artifact.name }}</a>
+        <a href="/api/job/{{job.id}}/artifact/{{ artifact.name | urlEncode }}">{{ artifact.name }}</a>
       </td>
       <td class="text-right">
         {{ artifact.size | bytes }} 
