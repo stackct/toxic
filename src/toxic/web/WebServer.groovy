@@ -419,15 +419,15 @@ public class WebServer implements Runnable {
 
       if (user) {
         SlackBot.instance.sendMessageToUsers(user.name, event.text)
-        return makeResponse([message: "Message sent to ${user.name}"])
       }
-
-      if (channels) {
+      else if (channels) {
         SlackBot.instance.sendMessageToChannels(channels, event.text)
-        return makeResponse([message: "Message sent to ${channels}"])
+      }
+      else {
+        log.warn("No suitable recipient found for Upsource discussion event notification")
       }
 
-      makeResponse([message: "Message not sent - no suitable recipients found"])
+      makeResponse([:])
     }
 
     addRoute("/metrics") { req, resp ->
