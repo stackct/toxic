@@ -417,8 +417,6 @@ public class WebServer implements Runnable {
       def user = SlackBot.instance.findUser(null, event.user, event.email)
       def channels = jobManager.currentProperties().find { k,v -> k == 'job.slack.channels' }?.value
 
-      log.info('addPostRoute() +++ user=' + user)
-
       if (user) {
         SlackBot.instance.sendMessageToUsers(user.name, event.text)
         return makeResponse([message: "Message sent to ${user.name}"])
