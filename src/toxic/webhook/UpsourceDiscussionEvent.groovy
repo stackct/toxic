@@ -18,6 +18,8 @@ public class UpsourceDiscussionEvent {
 
     public UpsourceDiscussionEvent(String data) {
         try {
+          log.debug("parsing Upsource event data; ${data}")
+
           def d = new JsonSlurper().parseText(data)
           this.type = d.dataType;
           this.reviewId = d?.data?.base?.reviewId
