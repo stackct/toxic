@@ -8,74 +8,83 @@ public class UpsourceDiscussionEventTest {
 
   @Test(expected = IllegalArgumentException)
   public void should_handle_parse_exception() {
-    new UpsourceDiscussionEvent('asdfasdf')
+    new UpsourceDiscussionEvent('http://localhost', 'asdfasdf')
   }
 
   @Test
   public void should_only_handle_supported_types() {
     try {
-      new UpsourceDiscussionEvent('{ "dataType": "foo" }')
+      new UpsourceDiscussionEvent('http://localhost', '{ "dataType": "foo" }')
       fail("This should not have worked!")
     }
     catch(IllegalArgumentException e) {
-      assert e.message == "Invalid event; type=foo; commentId=null; reviewId=null; commentator=null; author=null"
+      assert e.message == "Invalid event; type=foo; projectId=null; reviewId=null; commentId=null; author=null; recipients=null"
     }
   }
 
   @Test
   public void should_construct_handler_for_discussion_event() {
-    def handler = new UpsourceDiscussionEvent(discussionFeedEvent())
+    def event = new UpsourceDiscussionEvent('http://localhost', discussionFeedEvent())
 
-    assert handler.commentId == 'c1f4de8e6c5aca9b5615fa6656e1f26e4f26d0d0'
-    assert handler.commentText == 'Hey, that was awesome!'
-    assert handler.reviewId == 'PROJECT-CR-1234'
-    assert handler.commentator == 'bar.name'
-    assert handler.author == 'foobar'
-    assert handler.authorEmail == 'foo@home.invalid'
+    assert event.projectId == 'my-project'
+    assert event.reviewId == 'MYPROJECT-CR-150'
+    assert event.commentId == '1deb662e-6a4f-4625-a985-dc22ae6d1b4b'
+    assert event.commentText == 'Hey, that was awesome!'
+    assert event.author == 'jdoe@invalid.co'
+    assert event.recipients == ['jdoe@invalid.co', 'fwilson@invalid.co']
   }
 
   @Test
   public void should_return_message() {
-    def message = new UpsourceDiscussionEvent(discussionFeedEvent()).getMessage()
+    def message = new UpsourceDiscussionEvent('http://localhost', discussionFeedEvent()).getMessage()
 
-    assert message.user == 'foobar'
-    assert message.email == 'foo@home.invalid'
-    assert message.text == 'A new comment has been posted to [PROJECT-CR-1234] by bar.name\n>Hey, that was awesome!'
+    assert message.author == 'jdoe@invalid.co'
+    assert message.recipients == ['fwilson@invalid.co']
+    assert message.text == 'A new comment has been posted to [MYPROJECT-CR-150] by jdoe@invalid.co\n>Hey, that was awesome!\nhttp://localhost/my-project/review/MYPROJECT-CR-150?commentId=1deb662e-6a4f-4625-a985-dc22ae6d1b4b'
+  }
+
+  @Test
+  public void should_return_url() {
+    def url = new UpsourceDiscussionEvent('http://localhost', discussionFeedEvent()).getUrl()
+
+    assert url == 'http://localhost/my-project/review/MYPROJECT-CR-150?commentId=1deb662e-6a4f-4625-a985-dc22ae6d1b4b'
   }
 
   private discussionFeedEvent() {
-    '''
-      {
-          "majorVersion": 3,
-          "minorVersion": 0,
-          "projectId": "demo-project",
+    '''{
+          "majorVersion": 2018,
+          "minorVersion": 2,
+          "projectId": "my-project",
           "dataType": "DiscussionFeedEventBean",
           "data": {
               "base": {
-                  "userId": {
-                      "userId": "foo",
-                      "userName": "foobar",
-                      "userEmail": "foo@home.invalid"
-                  },
-                  "userIds": [],
-                  "reviewNumber": 5,
-                  "reviewId": "PROJECT-CR-1234",
-                  "date": 1454432013000,
+                  "userIds": [
+                      {
+                          "userId": "fa0eda66-ee79-4441-a266-1b163aeeffe9",
+                          "userName": "jdoe",
+                          "userEmail": "jdoe@invalid.co"
+                      },
+                      {
+                          "userId": "f054e8b7-b48c-4559-a2b8-8159fcb0b0bb",
+                          "userName": "fwilson",
+                          "userEmail": "fwilson@invalid.co"
+                      }
+                  ],
+                  "reviewNumber": 150,
+                  "reviewId": "MYPROJECT-CR-150",
+                  "date": 1550257278709,
                   "actor": {
-                      "userId": "bar",
-                      "userName": "bar.name",
-                      "userEmail": "bar@home.invalid"
+                      "userId": "fa0eda66-ee79-4441-a266-1b163aeeffe9",
+                      "userName": "jdoe",
+                      "userEmail": "jdoe@invalid.co"
                   },
-                  "feedEventId": "51f4de8e6c5aca9b5615fa6656e1f26e4f26d0d3"
+                  "feedEventId": "1550257278710#my-project#a4c73bee-9789-4d4b-948b-7b23f384023a"
               },
-              "commentId": "c1f4de8e6c5aca9b5615fa6656e1f26e4f26d0d0",
-              "discussionId": "d1f4de8e6c5aca9b5615fa6656e1f26e4f26d0d9",
-              "commentText": "Hey, that was awesome!",
-              "isEdit": true,
-              "resolveAction": true,
-              "notificationReason": "ParticipatedInReview"
+              "notificationReason": 0,
+              "discussionId": "1550257278698#my-project#f2b94741-1089-4786-8a50-e1dd347c7b21",
+              "commentId": "1deb662e-6a4f-4625-a985-dc22ae6d1b4b",
+              "commentText": "Hey, that was awesome!"
           }
-      }
-      '''
+      }'''
   }
 }

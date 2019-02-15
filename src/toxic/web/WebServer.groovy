@@ -413,12 +413,13 @@ public class WebServer implements Runnable {
     }
 
     addPostRoute("/api/webhook/upsource") { req, resp ->
-      def event = new UpsourceDiscussionEvent(req.body()).getMessage()
-      def user = SlackBot.instance.findUser(null, event.user, event.email)
+      def server = jobManager.currentProperties().find { k,v -> k == 'upsource.serverUrl' }?.value
       def channels = jobManager.currentProperties().find { k,v -> k == 'job.slack.channels' }?.value
+      def event = new UpsourceDiscussionEvent(server, req.body()).getMessage()
+      def recipients = event.recipients.collect { r -> SlackBot.instance.findUser(null, null, r)?.name }.findAll { it != null }
 
-      if (user) {
-        SlackBot.instance.sendMessageToUsers(user.name, event.text)
+      if (recipients) {
+        SlackBot.instance.sendMessageToUsers(recipients.join(','), event.text)
       }
       else if (channels) {
         SlackBot.instance.sendMessageToChannels(channels, event.text)
