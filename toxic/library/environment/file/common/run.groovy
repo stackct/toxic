@@ -20,22 +20,26 @@ def dockerCopy = ['docker', 'cp', memory['src'], "${memory['containerName']}:mem
 
 def touchFileCmd = ['/bin/sh', '-c', "touch ${memory['file']}"]
 def fileExistsCmd = ['/bin/sh', '-c', "stat ${memory['file']}"]
-def standaloneCopy = ['/bin/sh', '-c', "mkdir -p \$(dirname ${memory['dest']}) ; cp ${memory['src']} ${memory['dest']}"]
+def makeParentDirCmd = ['/bin/sh', '-c', "mkdir -p \$(dirname ${memory['dest']})"]
+def standaloneCopy = ['/bin/sh', '-c', "cp ${memory['src']} ${memory['dest']}"]
 
 def fileCmds = [
     'k8s': [
         'create': k8sExec + touchFileCmd,
         'exists': k8sExec + fileExistsCmd,
+        'mkParentDir': k8sExec + makeParentDirCmd,
         'copy': k8sCopy,
     ],
     'docker': [
         'create': dockerExec + touchFileCmd,
         'exists': dockerExec + fileExistsCmd,
+        'mkParentDir': dockerExec + makeParentDirCmd,
         'copy': dockerCopy,
     ],
     'standalone': [
         'create': touchFileCmd,
         'exists': fileExistsCmd,
+        'mkParentDir': makeParentDirCmd,
         'copy': standaloneCopy,
     ]
 ]
