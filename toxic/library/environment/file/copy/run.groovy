@@ -1,0 +1,1 @@
+memory.success = (0 == execWithEnv(memory['file.cmds'][memory.runtime].copy))

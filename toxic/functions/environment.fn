@@ -117,3 +117,14 @@ function "UpdateRoute53Record" {
 
   output "success"
 }
+
+function "CopyFile" {
+  description "Copies a local file to a local or remote destination based on the runtime configuration"
+  path "{{ libPath }}/environment/file/copy"
+
+  input "src"
+  input "dest"
+  input "runtime"
+
+  output "success"
+}
