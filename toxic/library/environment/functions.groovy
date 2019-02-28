@@ -27,7 +27,7 @@ memory.createNamespace = { ->
 }
 
 memory.deleteNamespace = { ->
-  return execWithEnv([kubectl, 'delete', 'ns', memory['namespace']])
+  return execWithEnv([kubectl, 'delete', 'ns', memory['namespace'], '--grace-period=0', '--force'])
 }
 
 memory.kubePortForward = { ->
