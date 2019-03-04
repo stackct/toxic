@@ -61,3 +61,7 @@ function "VerifyDatabase" {
   output "result"
 }
 
+function "FlushOutput" {
+  description "A noop function used to instruct pickle to copy output results to memory when the last step in a higher order function would have been a call to another higher order function"
+  path "{{ libPath }}/std/flushOutput"
+}
