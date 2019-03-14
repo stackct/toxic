@@ -12,7 +12,7 @@ ARG K8S_VERSION=v1.10.5
 COPY ${DIST_DIR_NAME} /opt/toxic
 
 # TODO: Move this to a multi-stage build
-RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl openssl-dev tar python3 zip \
+RUN apk update && apk add bash curl docker git jq make openjdk8 openssh openssl openssl-dev tar python3 zip p7zip \
     && apk add --virtual=build gcc libffi-dev musl-dev python3-dev \
     && pip3 install --upgrade pip \
     && pip3 install cffi \
