@@ -44,6 +44,13 @@ class StepTest {
   }
 
   @Test
+  void should_interpolate_string_with_literal_key()
+  {
+    def props = [ 'foo.bar': 'baz' ]
+    assert 'baz' == Step.interpolate(props, "{{ `foo.bar` }}")
+  }
+
+  @Test
   void should_interpolate_nested_map() {
     def props = [foo: [foo: [foo: 'bar']]]
     assert 'bar' == Step.interpolate(props, '{{ foo.foo.foo }}')

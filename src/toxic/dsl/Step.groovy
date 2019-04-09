@@ -76,10 +76,19 @@ class Step {
   }
 
   static def resolve(def props, def match) {
+    def key = match.trim()
     def value = props
-    match.trim().split('\\.').each { key ->
-      value = value[key]
+
+    if (key.startsWith("`") && key.endsWith("`")) {
+      println "++++++++++ Resolving ${key}"
+      println props
+      return props[key.replaceAll("`", "")]
     }
-    value
+
+    key.split('\\.').each { k ->
+      value = value[k]
+    }
+
+    return value
   }
 }
