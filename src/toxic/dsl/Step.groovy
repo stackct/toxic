@@ -80,8 +80,6 @@ class Step {
     def value = props
 
     if (key.startsWith("`") && key.endsWith("`")) {
-      println "++++++++++ Resolving ${key}"
-      println props
       return props[key.replaceAll("`", "")]
     }
 
