@@ -203,4 +203,39 @@ public class SqlTaskTest {
     task.init("test", toxicProperties)
     task.execute('EXEC stored_procedure')
   }
+
+  @Test
+  void should_execute_with_retry() {
+    testRetries("", "timeout", true)
+    testRetries("0", "timeout", true)
+    testRetries("1", "timeout", true)
+    testRetries("2", "timeout", true)
+    testRetries("3", "timeout", false)
+    testRetries("3", "something else", true)
+  }
+
+  def testRetries(String retries, String exceptionMessage, boolean shouldThrow) {
+    int executions = 0
+    SqlTask task = new SqlTask() {
+      protected def execute(String sql) {
+        executions++
+        if (executions <= 3) {
+          throw new java.sql.SQLException(exceptionMessage)
+        }
+        return "success"
+      }
+    }
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.sqlConnection = [unused:true]
+    task.init("test", toxicProperties)
+    try {
+      def result = task.transmit('some query', 'not used', [sqlRetries:retries])
+      assert !shouldThrow, "should have thrown an exception"
+      assert result == 'success'
+      assert executions == 4
+    } catch (java.sql.SQLException se) {
+      assert executions <= 3
+      assert shouldThrow, "shoult not have thrown an exception"
+    }
+  }
 }
