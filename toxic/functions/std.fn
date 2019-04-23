@@ -1,13 +1,13 @@
 function "Debug" {
   description "Prints out debugging information"
-  path "{{ libPath }}/std/debug"
+  path        "{{ libPath }}/std/debug"
 
   arg "value"
 }
 
 function "ExportProperty" {
   description "Set a global property"
-  path "{{ libPath }}/std/property/export"
+  path        "{{ libPath }}/std/property/export"
 
   arg "key"
   arg "value"
@@ -16,7 +16,7 @@ function "ExportProperty" {
 
 function "RandomString" {
   description "Generates a random alphanumeric string of the given length"
-  path "{{ libPath }}/std/random_string"
+  path        "{{ libPath }}/std/random_string"
 
   arg "length"
   arg "prefix", false
@@ -26,7 +26,7 @@ function "RandomString" {
 
 function "RandomNumericString" {
   description "Generates a random numeric string of the given length"
-  path "{{ libPath }}/std/random_numeric_string"
+  path        "{{ libPath }}/std/random_numeric_string"
 
   arg "length"
   arg "prefix", false
@@ -37,14 +37,14 @@ function "RandomNumericString" {
 
 function "UUID" {
   description "Generates a UUID"
-  path "{{ libPath }}/std/uuid"
+  path        "{{ libPath }}/std/uuid"
 
   output "value"
 }
 
 function "VerifyUrls" {
   description "Verifies a 200 on GET request on a URL or a list of URLs; if waitMs is provided retries every second, up to the give number of waitMs milliseconds for each url, before failing"
-  path "{{ libPath }}/std/verify"
+  path        "{{ libPath }}/std/verify"
 
   arg "url"
   arg "waitMs", false
@@ -54,7 +54,7 @@ function "VerifyUrls" {
 
 function "VerifyDatabase" {
   description "Verifies that a database is responsive before returning, or timesout after a waitMs milliseconds"
-  path "{{ libPath }}/std/verifyDatabase"
+  path        "{{ libPath }}/std/verifyDatabase"
 
   arg "waitMs", false
 
@@ -63,5 +63,16 @@ function "VerifyDatabase" {
 
 function "FlushOutput" {
   description "A noop function used to instruct pickle to copy output results to memory when the last step in a higher order function would have been a call to another higher order function"
-  path "{{ libPath }}/std/flushOutput"
+  path        "{{ libPath }}/std/flush_output"
+}
+
+function "GetDate", {
+  description "Returns the current date offset by optional number of days"
+  path        "{{ libPath }}/std/get_date"
+
+  arg "offsetDays", false, 0
+  arg "utc",        false, true
+  arg "format",     false, "yyyyMMdd"
+  
+  output "date"
 }
