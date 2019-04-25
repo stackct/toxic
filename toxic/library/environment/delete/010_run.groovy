@@ -10,5 +10,7 @@ memory.deleteNamespace()
 
 
 // Wait for namespace to be deleted
-int wait = 1000 * 300
-Wait.on { -> !memory.namespaceExists() }.every(3000).atMostMs(wait).start()
+int wait = 1000 * 600
+int interval = 1000 * 3
+
+Wait.on { -> !memory.namespaceExists() }.every(interval).atMostMs(wait).start()
