@@ -7,6 +7,7 @@ import org.apache.log4j.Logger
 import groovy.sql.Sql
 
 import java.sql.Clob
+import java.sql.SQLException
 import java.sql.Timestamp
 import java.sql.Types
 
@@ -108,11 +109,33 @@ public class SqlTask extends CompareTask {
       }
     }
 
+    int sqlRetries = 0
+    try {
+      sqlRetries = new Integer(memory.sqlRetries)
+    } catch (Exception e) {
+      log.debug("sqlRetries properties is not set, defaulting to 0 retries; error=${e.message}")
+    }
+
+
     def result
-    if (request.toLowerCase().startsWith("select")) {
-      result = toCsv(query(request))
-    } else {
-      result = execute(request)
+    int attempts = 0
+    while (attempts++ <= sqlRetries) {
+      try {
+        if (request.toLowerCase().startsWith("select")) {
+          result = toCsv(query(request))
+        } else {
+          result = execute(request)
+        }
+        break
+      } catch (SQLException se) {
+        if (!se.toString().toLowerCase().contains("timeout")) throw se
+        if (attempts > sqlRetries) {
+          log.error("Exceeded allowed connection attempts; attempts=${attempts}", se)
+          throw se
+        } else {
+          log.warn("Sql timeout exception; attempts=${attempts}", se)
+        }
+      }
     }
 
     if (memory.sqlVerbose == "true") {

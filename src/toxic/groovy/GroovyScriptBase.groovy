@@ -160,7 +160,7 @@ abstract class GroovyScriptBase extends Script {
     def env = pb.environment()
     env << envVars
 
-    logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmdAndArgs.join(' '), memory['sanitize.terms'] ?: [])}")
+    logger.info("Executing shell command; timeoutSecs=${timeoutSecs}; cmd=${Sanitizer.sanitize(cmdAndArgs.join(' '), memory['sanitize.terms'] ?: [])}")
     memory.lastStartedProc = pb.start()
     execExitCode = monitorProc(logger, memory.lastStartedProc, logOutput, timeoutSecs)
     return execExitCode
