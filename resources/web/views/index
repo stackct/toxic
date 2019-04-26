@@ -341,6 +341,7 @@
 <script src="/app/js/routes.js"></script>
 <script src="/app/filters/bytes.js"></script>
 <script src="/app/filters/regex.js"></script>
+<script src="/app/filters/urlencode.js"></script>
 <script src="/app/directives/on-enter-key.js"></script>
 <script src="/app/directives/toxic-d3.js"></script>
 <script src="/app/controllers/AboutCtrl.js"></script>

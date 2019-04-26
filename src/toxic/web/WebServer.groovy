@@ -5,8 +5,11 @@ import toxic.*
 import toxic.job.*
 import toxic.user.*
 import toxic.notification.*
+import toxic.slack.*
 
 import spark.*
+import toxic.webhook.UpsourceDiscussionEvent
+
 import java.io.*
 import java.net.*
 import java.util.zip.*
@@ -407,6 +410,25 @@ public class WebServer implements Runnable {
       map.log = jobManager.getLogContents()
 
       makeResponse(map)
+    }
+
+    addPostRoute("/api/webhook/upsource") { req, resp ->
+      def server = jobManager.currentProperties().find { k,v -> k == 'upsource.serverUrl' }?.value
+      def channels = jobManager.currentProperties().find { k,v -> k == 'job.slack.channels' }?.value
+      def event = new UpsourceDiscussionEvent(server, req.body()).getMessage()
+      def recipients = event.recipients.collect { r -> SlackBot.instance.findUser(null, null, r)?.name }.findAll { it != null }
+
+      if (recipients) {
+        SlackBot.instance.sendMessageToUsers(recipients.join(','), event.text)
+      }
+      else if (channels) {
+        SlackBot.instance.sendMessageToChannels(channels, event.text)
+      }
+      else {
+        log.warn("No suitable recipient found for Upsource discussion event notification")
+      }
+
+      makeResponse([:])
     }
 
     addRoute("/metrics") { req, resp ->
