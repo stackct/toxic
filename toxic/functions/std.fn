@@ -76,3 +76,19 @@ function "GetDate", {
   
   output "date"
 }
+
+function "StartHttpServer", {
+  description "starts a http server that can be used as a partner simulator"
+  path "{{ libPath }}/std/interceptor/start"
+  arg "port", false, 8080
+  arg "route", false, "/"
+
+  output "httpServer"
+}
+
+function "StopHttpServer", {
+  description "stops the provided http server"
+  path "{{ libPath }}/std/interceptor/stop"
+
+  arg "httpServer"
+}
