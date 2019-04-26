@@ -3,7 +3,6 @@ import util.Wait
 
 memory.httpServer = HttpServer.create(new InetSocketAddress(memory.port), 0)
 def requests = []
-byte[] requestBytes = []
 
 memory.httpServer.with {
     log.info("HttpServer is starting")
