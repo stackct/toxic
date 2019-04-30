@@ -101,4 +101,6 @@ function "WaitForRequests", {
   arg "requestCounter"
   arg "waitForCount"
   arg "waitForAtMostMilliseconds"
+
+  output "requestCounter"
 }
