@@ -1,6 +1,7 @@
 package toxic.dir
 
 import toxic.dsl.DepHandler
+import toxic.dsl.TestCaseHandler
 
 public class DirItemHandlerFactory {
   public static DirItemHandler make(DirItem item, props) {
@@ -15,6 +16,10 @@ public class DirItemHandlerFactory {
 
     if (item.isLinkedSuite()) {
       return new LinkedSuiteHandler(item, props)
+    }
+
+    if (item.isTestCase()) {
+      return new TestCaseHandler(item, props)
     }
 
     if (item.isDep()) {

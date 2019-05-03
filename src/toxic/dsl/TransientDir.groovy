@@ -1,6 +1,6 @@
 package toxic.dsl
 
-class TransientDir extends File {
+class TransientDir extends StepFile {
   File file
 
   TransientDir(File file) {
