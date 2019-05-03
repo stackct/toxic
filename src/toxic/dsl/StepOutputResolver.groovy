@@ -1,9 +1,6 @@
 package toxic.dsl
 
-import log.Log
-
 class StepOutputResolver {
-  private final static Log log = Log.getLogger(this)
   def props
 
   StepOutputResolver(def props) {
@@ -11,13 +8,15 @@ class StepOutputResolver {
   }
 
   def propertyMissing(String name)  {
-    TestCase testCase = props.testCase
+    TestCase testCase = TestCaseHandler.currentTestCase(props)
     Step resolvedStep
-    int currentStepLevel = testCase.stepSequence[props.stepIndex].level
-    testCase.stepSequence.eachWithIndex { sequence, index ->
+    int currentStepLevel = props.stepSequence[props.stepIndex].level
+    props.stepSequence.eachWithIndex { sequence, index ->
       Step step = sequence.step
+
+      def isInCurrentTest = TestCaseHandler.flattenTestCaseSteps(testCase.steps, props).find { s -> s == step }
+
       if(index <= props.stepIndex && sequence.level == currentStepLevel && step.name == name) {
-        log.debug("Resolving output from step; index=${index}; stepIndex=${props.stepIndex}; level=${sequence.level}; currentStepLevel=${currentStepLevel}; test=${testCase.name}; step=${step.name}; fn=${step.function}")
         resolvedStep = step
       }
     }

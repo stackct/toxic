@@ -76,14 +76,10 @@ public abstract class Task {
         def errMsg = t.message?.take(new Integer(props.maxErrorLength ?: 500))
         def result = new TaskResult(id, family, name, this.class.name)
         result.error = errMsg
-        result.errorType = t.class.name
         result.success = false
         overallResult.success = false
         if(!overallResult.error) {
           overallResult.error = errMsg
-        }
-        if(!overallResult.errorType) {
-          overallResult.errorType = result.errorType
         }
         // Add an error result if more than one iteration and continuing iterations, otherwise the
         // overall result will hold the single error
@@ -91,7 +87,7 @@ public abstract class Task {
           results << result
         }
 
-        log.error("Task failed; family='$family'; name='${name}'; iteration='${memory.taskIteration}'; exception='${result.errorType}'; message='${result.error}'")
+        log.error("Task failed; family='$family'; name='${name}'; iteration='${memory.taskIteration}'; exception='${t.class.name}'; message='${result.error}'")
         if (!(t instanceof AssertionError) && !(t instanceof ValidationException)) {
           log.error("Error stack trace", t)
         } else {
