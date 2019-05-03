@@ -8,6 +8,6 @@ class VariableResolver {
   }
 
   def propertyMissing(String name)  {
-    TestCaseHandler.currentTestCase(props).vars[name]
+    props.testCase.vars[name]
   }
 }

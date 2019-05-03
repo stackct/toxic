@@ -8,11 +8,15 @@ import groovy.time.Duration
  */
 public class TaskResult implements Serializable {
   public static areAllSuccessful(List<TaskResult> results) {
-    return results.find { !it.success } == null
+    return getFailedTask(results) == null
   }
 
   public static countFailures(List<TaskResult> results) {
     return results.findAll { !it.success }.size()
+  }
+
+  public static getFailedTask(List<TaskResult> results) {
+    return results.find { !it.success }
   }
 
   public static shouldAbort(def props, List<TaskResult> results) {
@@ -25,6 +29,7 @@ public class TaskResult implements Serializable {
   public def name
   public def type
   private String error
+  private String errorType
   private boolean success
   private Long startTime
   private Long stopTime
