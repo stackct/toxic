@@ -3,11 +3,15 @@ package toxic.dsl
 import log.Log
 
 class StepOutputResolver {
-  private final static Log log = Log.getLogger(this)
+  private final static Log slog = Log.getLogger(this)
   def props
 
   StepOutputResolver(def props) {
     this.props = props
+  }
+
+  def getLog() {
+    return props?.log ?: this.slog
   }
 
   def propertyMissing(String name)  {
