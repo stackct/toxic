@@ -1,6 +1,7 @@
 
 package toxic
 
+import toxic.dsl.TestCaseRunner
 import toxic.groovy.GroovyEvaluator
 import java.util.concurrent.Callable
 import org.apache.log4j.Logger
@@ -112,9 +113,12 @@ public class TaskMaster implements Callable {
       }
       memory.taskId++
     }
-    memory.clear()
 
-    // return repResults
+    synchronized(results) {
+      results.addAll(TestCaseRunner.run(this, memory))
+    }
+
+    memory.clear()
   }
 
   /**
