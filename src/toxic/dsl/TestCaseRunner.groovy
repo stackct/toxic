@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
 class TestCaseRunner implements Callable<TestCaseRunner> {
-  private final static Log log = Log.getLogger(this)
+  private final static Log slog = Log.getLogger(this)
   private TaskMaster taskMaster
   private TestCase testCase
   private Step step
@@ -29,6 +29,10 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     this.props.step = new StepOutputResolver(props)
     this.props.var = new VariableResolver(props)
     this.results = new ArrayList<TaskResult>()
+  }
+
+  static def getLog(props) {
+    return props?.log ?: slog
   }
 
   static List<TaskResult> run(TaskMaster tm, ConfigObject props) {
@@ -52,7 +56,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         values.message = t.error ?: t.errorType
         logStackTrace = false
       }
-      log.error("Task failed", values, logStackTrace ? runner.error : null)
+      getLog(props).error("Task failed", values, logStackTrace ? runner.error : null)
     }
     return results
   }
@@ -102,11 +106,11 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
     pool.shutdownNow()
     try {
-      log.info("Waiting for in flight test cases to complete")
+      getLog(props).info("Waiting for in flight test cases to complete")
       pool.awaitTermination(60, TimeUnit.SECONDS);
     }
     catch (InterruptedException e) {
-      log.error("Failed to properly shutdown test case pool", e)
+      getLog(props).error("Failed to properly shutdown test case pool", e)
     }
 
     if(runner?.error) {
@@ -116,7 +120,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
   @Override
   TestCaseRunner call() {
-    log.info("Starting test case; test=${props.testCase.name}")
+    getLog(props).info("Starting test case; test=${props.testCase.name}")
     def success = false
     try {
       testCase.stepSequence.eachWithIndex { seq, stepIndex ->
@@ -130,7 +134,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     catch(Exception e) {
       error = e
     }
-    finally { log.info("Finished test case; test=${props.testCase.name}; success=${success}") }
+    finally { getLog(props).info("Finished test case; test=${props.testCase.name}; success=${success}") }
 
     return this
   }
@@ -146,13 +150,13 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     postStepExecution(step)
     if(step.lastStepInSequence)
     {
-      log.info("Completing step sequence; test=${props.testCase.name}; step=${step.parentStep.name}; fn=${step.parentStep.function}")
+      getLog(props).info("Completing step sequence; test=${props.testCase.name}; step=${step.parentStep.name}; fn=${step.parentStep.function}")
       postStepExecution(step.parentStep)
     }
   }
 
   void executeAssertions() {
-    log.info("Executing assertions; test=${props.testCase.name}")
+    getLog(props).info("Executing assertions; test=${props.testCase.name}")
     def resolver = { contents ->
       def interpolatedContents = ''<<''
       contents.eachLine { interpolatedContents << Step.interpolate(props, it) + '\n' }
@@ -163,7 +167,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
   void preStepExecution(Step step) {
     props.push()
-    log.info("Executing step; test=${props.testCase.name}; step=${step.name}; fn=${step.function}")
+    getLog(props).info("Executing step; test=${props.testCase.name}; step=${step.name}; fn=${step.function}")
     step.copyArgsToMemory(props)
   }
 

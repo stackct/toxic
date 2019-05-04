@@ -3,7 +3,7 @@ package toxic.dsl
 import log.Log
 
 class Step implements Serializable {
-  static final Log log = Log.getLogger(this)
+  static final Log slog = Log.getLogger(this)
   static final String beginVariableRegex = /\{\{/
   static final String endVariableRegex = /\}\}/
   static final String interpolationWithPaddingRegex = /\s*\{\{([^}}]+)\}\}\s*/
@@ -17,6 +17,10 @@ class Step implements Serializable {
   Wait wait
   Step parentStep
   boolean lastStepInSequence
+
+  def getLog(props) {
+    return props?.log ?: this.slog
+  }
 
   def methodMissing(String name, args)  {
     if (this.args.containsKey(name)) {
@@ -68,12 +72,12 @@ class Step implements Serializable {
     args.each { k, v ->
       function.validateArgIsDefined(k)
       def interpolatedValue = interpolate(props, v)
-      log.debug("Copying step input to memory; test=${props.testCase.name}; step=${name}; fn=${function}; ${k}=${interpolatedValue}")
+      getLog(props).debug("Copying step input to memory; test=${props.testCase.name}; step=${name}; fn=${function}; ${k}=${interpolatedValue}")
       props[k] = interpolatedValue
     }
 
     if (wait) {
-      log.debug("Detected wait condition")
+      getLog(props).debug("Detected wait condition")
       props['task.retry.atMostMs'] = wait.timeoutMs
       props['task.retry.every'] = wait.intervalMs
       props['task.retry.successes'] = wait.successes
@@ -86,12 +90,12 @@ class Step implements Serializable {
     if(function) {
       function.outputs.each { k, v ->
         def interpolatedValue = v ? interpolate(props, v) : props[k]
-        log.debug("Copying step output from memory; test=${props.testCase.name}; step=${name}; fn=${function}; ${k}=${interpolatedValue}")
+        getLog(props).debug("Copying step output from memory; test=${props.testCase.name}; step=${name}; fn=${function}; ${k}=${interpolatedValue}")
         outputs[k] = interpolatedValue
       }
     }
     else {
-      log.debug("Skipping output result copy because function was not defined for step; step=${name}")
+      getLog(props).debug("Skipping output result copy because function was not defined for step; step=${name}")
     }
   }
 
