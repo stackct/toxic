@@ -1,6 +1,6 @@
 package toxic.dsl
 
-abstract class Parser {
+abstract class Parser implements Serializable {
   def results = []
 
   static def parse(Parser parser, String input) {
