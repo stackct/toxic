@@ -103,4 +103,5 @@ function "WaitForRequests", {
   arg "waitForAtMostMilliseconds"
 
   output "requestCounter"
+  output "success"
 }
