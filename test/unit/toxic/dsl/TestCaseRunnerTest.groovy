@@ -13,7 +13,7 @@ class TestCaseRunnerTest {
 
   TestCaseRunnerTest() {
     taskMaster = new TaskMaster()
-    testCase = new TestCase(name: 'test')
+    testCase = new TestCase(name: 'test', file: new File("noop"))
     props = new ToxicProperties()
     testCaseRunner = new TestCaseRunner(taskMaster, testCase, props)
   }
