@@ -56,7 +56,8 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         values.message = t.error ?: t.errorType
         logStackTrace = false
       }
-      getLog(props).error("Task failed", values, logStackTrace ? runner.error : null)
+
+      getLog(props).error(Log.collectMap("Task failed", values), logStackTrace ? runner.error : null)
     }
 
     // TODO: See if we can "stream" the results back up instead of all at once at the end.
