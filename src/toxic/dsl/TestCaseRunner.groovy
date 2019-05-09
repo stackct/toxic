@@ -211,7 +211,9 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       def taskResults = task.execute(props)
 
       def t = TaskResult.getFailedTask(taskResults)
-      if (t) throw new AbortExecutionException(this, t.error)
+      if (t) {
+        throw new AbortExecutionException(this, t.error ?: t.name + " failed")
+      }
 
       props.taskId++
     }
