@@ -114,9 +114,7 @@ public class TaskMaster implements Callable {
       memory.taskId++
     }
 
-    synchronized(results) {
-      results.addAll(TestCaseRunner.run(this, memory))
-    }
+    TestCaseRunner.run(this, memory, results)
 
     memory.clear()
   }
