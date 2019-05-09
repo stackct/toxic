@@ -89,7 +89,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
     def finishedFutures = []
     TestCaseRunner runner = null
-    while (finishedFutures.size() < futures.size()) {
+    while (!TaskResult.shouldAbort(props, results) && finishedFutures.size() < futures.size()) {
       futures.find {
         if (!finishedFutures.contains(it)) {
           try {
