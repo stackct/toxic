@@ -35,8 +35,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     return props.log ?: slog
   }
 
-  static List<TaskResult> run(TaskMaster tm, ConfigObject props) {
-    def results = new ArrayList<TaskResult>()
+  static run(TaskMaster tm, ConfigObject props, List<TaskResult> results) {
     try {
       runSerial(props.setupTestCases, results, tm, props)
       runParallel(props.testCases, results, tm, props)
@@ -59,9 +58,6 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
       getLog(props).error(Log.collectMap("Task failed", values), logStackTrace ? runner.error : null)
     }
-
-    // TODO: See if we can "stream" the results back up instead of all at once at the end.
-    return results
   }
 
   static void runSerial(def testCases, List<TaskResult> results, TaskMaster tm, ConfigObject props) {
@@ -72,7 +68,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     TestCaseRunner runner = null
     testCases.find {
       runner = new TestCaseRunner(tm, it, props.clone())
-      results.addAll(runner.call().results)
+      appendResults(results, runner.call().results)
       return runner.error
     }
     if(runner?.error) {
@@ -98,7 +94,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         if (!finishedFutures.contains(it)) {
           try {
             runner = it.get(20, TimeUnit.MILLISECONDS)
-            results.addAll(runner.results)
+            appendResults(results, runner.results)
             finishedFutures << it
           }
           catch(TimeoutException to) { }
@@ -117,6 +113,18 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
     if(runner?.error) {
       throw new AbortExecutionException(runner)
+    }
+  }
+
+  static void appendResults(List<TaskResult> results, List<TaskResult> added) {
+    synchronized (results) {
+      results.addAll(added)
+    }
+  }
+
+  static void appendResults(List<TaskResult> results, TaskResult added) {
+    synchronized (results) {
+      results.add(added)
     }
   }
 
@@ -143,7 +151,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       error = e
     }
     finally {
-      this.results.add(new TaskResult([
+      appendResults(this.results, new TaskResult([
               id:        UUID.randomUUID().toString(),
               family:    testCase.file.name,
               name:      testCase.name,
