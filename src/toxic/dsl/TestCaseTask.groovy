@@ -35,6 +35,7 @@ class TestCaseTask extends toxic.Task {
   List<TestCase> parse(String input) {
     def testCases = TestCase.parse(input).findAll { shouldInclude(it) }
     testCases.each { testCase ->
+      testCase.file = this.input
       addSteps(testCase, testCase.steps)
     }
     return testCases

@@ -32,7 +32,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   }
 
   static def getLog(props) {
-    return props?.log ?: slog
+    return props.log ?: slog
   }
 
   static List<TaskResult> run(TaskMaster tm, ConfigObject props) {
@@ -58,6 +58,8 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       }
       getLog(props).error("Task failed", values, logStackTrace ? runner.error : null)
     }
+
+    // TODO: See if we can "stream" the results back up instead of all at once at the end.
     return results
   }
 
@@ -90,14 +92,13 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
     def finishedFutures = []
     TestCaseRunner runner = null
-    while (!runner?.error && finishedFutures.size() < futures.size()) {
+    while (finishedFutures.size() < futures.size()) {
       futures.find {
         if (!finishedFutures.contains(it)) {
           try {
             runner = it.get(20, TimeUnit.MILLISECONDS)
             results.addAll(runner.results)
             finishedFutures << it
-            return runner.error
           }
           catch(TimeoutException to) { }
         }
@@ -121,20 +122,41 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   @Override
   TestCaseRunner call() {
     getLog(props).info("Starting test case; test=${props.testCase.name}")
+
     def success = false
+    long start = 0
+    long end = 0
+
     try {
+      start = System.currentTimeMillis()
       testCase.stepSequence.eachWithIndex { seq, stepIndex ->
         props.stepIndex = stepIndex
         step = seq.step
         executeStep(step)
       }
       executeAssertions()
-      success = true
+      end = System.currentTimeMillis()
+      success = TaskResult.areAllSuccessful(this.results)
     }
     catch(Exception e) {
       error = e
     }
-    finally { getLog(props).info("Finished test case; test=${props.testCase.name}; success=${success}") }
+    finally {
+      this.results.add(new TaskResult([
+              id:        UUID.randomUUID().toString(),
+              family:    testCase.file.name,
+              name:      testCase.name,
+              type:      TestCaseTask.class.name,
+              success:   success,
+              error:     error?.message,
+              startTime: start,
+              stopTime:  end,
+              complete:  true,
+              duration:  (end - start)
+      ]))
+
+      getLog(props).info("Finished test case; test=${testCase.name}; file=${testCase.file.name}; success=${success}")
+    }
 
     return this
   }
@@ -162,6 +184,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       contents.eachLine { interpolatedContents << Step.interpolate(props, it) + '\n' }
       interpolatedContents.toString()
     }
+
     executeDirItem(new DirItem(testCase.assertionFile(new File("noop"), resolver)))
   }
 
@@ -173,13 +196,14 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
   void executeDirItem(DirItem dirItem) {
     DirOrganizer organizer = new DirOrganizer(props: props, dirItem: dirItem)
+
     while (organizer.hasNext() && !taskMaster.shutdown()) {
       Task task = organizer.next()
       def taskResults = task.execute(props)
-      results.addAll(taskResults)
-      if (TaskResult.shouldAbort(props, taskResults)) {
-        throw new AbortExecutionException(this)
-      }
+
+      def t = TaskResult.getFailedTask(taskResults)
+      if (t) throw new AbortExecutionException(this, t.error)
+
       props.taskId++
     }
   }
@@ -194,7 +218,11 @@ class AbortExecutionException extends Exception {
   TestCaseRunner testCaseRunner
 
   AbortExecutionException(TestCaseRunner testCaseRunner) {
-    super()
+    this.testCaseRunner = testCaseRunner
+  }
+
+  AbortExecutionException(TestCaseRunner testCaseRunner, String message) {
+    super(message)
     this.testCaseRunner = testCaseRunner
   }
 }
