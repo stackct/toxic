@@ -10,6 +10,6 @@ memory.parseEnvironment(memory.spec).repositories.each { name, url ->
 }
 
 // Install all the charts
-memory.parseEnvironment(memory.spec).charts.each { chart, props ->
+memory.inParallelMap(memory.parseEnvironment(memory.spec).charts, { chart, props ->
   assert 0 == memory.helmInstall(chart, props.chart, props.values)
-}
+})
