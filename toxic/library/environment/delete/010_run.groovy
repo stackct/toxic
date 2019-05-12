@@ -1,6 +1,5 @@
 import util.Wait
 
-def thre
 // Delete the charts
 memory.inParallelMap(memory.parseEnvironment(memory.spec).charts, { chart, props ->
   memory.helmDelete(chart)
