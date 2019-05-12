@@ -1,9 +1,10 @@
 import util.Wait
 
+def thre
 // Delete the charts
-memory.parseEnvironment(memory.spec).charts.each { chart, props ->
+memory.inParallelMap(memory.parseEnvironment(memory.spec).charts, { chart, props ->
   memory.helmDelete(chart)
-}
+})
 
 // Delete the namespace
 memory.deleteNamespace()

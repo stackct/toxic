@@ -253,3 +253,27 @@ memory.namespaceExists = { String namespace = memory['namespace'] ->
     item.metadata.name == namespace
   }
 }
+
+memory.inParallelList = { List list, Closure c ->
+  def threads = []
+
+  list.each {
+    threads << Thread.start { c(it) }
+  }
+
+  threads.each {
+    it.join()
+  }
+}
+
+memory.inParallelMap = { Map map, Closure c ->
+  def threads = []
+
+  map.each { key, value ->
+    threads << Thread.start { c(key, value) }
+  }
+
+  threads.each {
+    it.join()
+  }
+}
