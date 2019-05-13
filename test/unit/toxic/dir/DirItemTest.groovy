@@ -2,9 +2,7 @@
 package toxic.dir
 
 import toxic.ToxicProperties
-import toxic.dsl.StepFile
 import toxic.groovy.GroovyReplacer
-import groovy.mock.interceptor.MockFor
 import org.junit.*
 
 public class DirItemTest {
@@ -426,15 +424,6 @@ public class DirItemTest {
   }
 
   @Test
-  void should_support_test_cases() {
-    assert false == new DirItem('test').isTestCase()
-    assert false == new DirItem('test.testDisabled').isTestCase()
-    assert false == new DirItem('test.fail').isTestCase()
-    assert false == new DirItem('test.disabled').isTestCase()
-    assert true == new DirItem('sample.test').isTestCase()
-  }
-
-  @Test
   void should_support_deps() {
     assert false == new DirItem('dep').isDep()
     assert false == new DirItem('dep.depDisabled').isDep()
@@ -442,38 +431,5 @@ public class DirItemTest {
     assert false == new DirItem('dep.disabled').isDep()
     assert false == new DirItem('dep.deps').isDep()
     assert true == new DirItem('sample.dep').isDep()
-  }
-
-  @Test
-  void should_complete_task_file() {
-    DirItemHandlerFactory.metaClass.'static'.make = { DirItem item, props ->
-      [nextFile:{File f -> null}, resume: {true}]
-    }
-
-    def props = ['test1':'value1']
-    def mockFile = new MockFor(StepFile)
-    mockFile.demand.asBoolean { true }
-    mockFile.demand.getName(3) { 'test' }
-    mockFile.demand.complete { def p -> assert p == props }
-    mockFile.use {
-      StepFile taskFile = new StepFile('test', null, false)
-      new DirItem(taskFile).nextFile(props)
-    }
-  }
-
-  @Test
-  void should_not_complete_task_file_when_tasks_are_not_complete() {
-    DirItemHandlerFactory.metaClass.'static'.make = { DirItem item, props ->
-      [nextFile:{File f -> new File('someOtherTask')}, resume: {true}]
-    }
-
-    def mockFile = new MockFor(StepFile)
-    mockFile.demand.asBoolean { true }
-    mockFile.demand.getName(3) { 'test' }
-    mockFile.demand.complete(0) { def p -> }
-    mockFile.use {
-      StepFile taskFile = new StepFile('test', null, false)
-      new DirItem(taskFile).nextFile(['test1':'value1'])
-    }
   }
 }

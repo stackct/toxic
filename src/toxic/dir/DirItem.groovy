@@ -1,7 +1,6 @@
 
 package toxic.dir
 
-import toxic.dsl.StepFile
 import org.apache.log4j.Logger
 
 /**
@@ -88,10 +87,6 @@ public class DirItem implements Comparable<DirItem> {
     file?.name?.endsWith(".suite")
   }
 
-  protected boolean isTestCase() {
-    file?.name?.endsWith('.test')
-  }
-
   protected boolean isDep() {
     file?.name?.endsWith('.dep')
   }
@@ -115,10 +110,6 @@ public class DirItem implements Comparable<DirItem> {
     if (!nextFile && props?.pushpop) {
       props.pop()
       log.debug("Popped memory stack; stackSize=${props.stackSize()}; parent=${parent?.file}")
-    }
-
-    if(!nextFile && file instanceof StepFile) {
-      file.complete(props)
     }
     
     return nextFile
