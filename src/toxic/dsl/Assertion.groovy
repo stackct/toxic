@@ -1,6 +1,6 @@
 package toxic.dsl
 
-class Assertion {
+class Assertion implements Serializable {
   static final String variableReplacement = ''
 
   List<String> assertions = []

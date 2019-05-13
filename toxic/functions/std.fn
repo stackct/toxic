@@ -84,6 +84,7 @@ function "StartHttpServer", {
   arg "route", false, "/"
 
   output "httpServer"
+  output "requestCounter"
 }
 
 function "StopHttpServer", {
@@ -91,4 +92,16 @@ function "StopHttpServer", {
   path "{{ libPath }}/std/interceptor/stop"
 
   arg "httpServer"
+}
+
+function "WaitForRequests", {
+  description "waits until the specified number of requests have been received by the server started from StartHttpServer. This is useful when waiting for a queued job to send a http request"
+  path "{{ libPath }}/std/interceptor/wait_for_requests"
+
+  arg "requestCounter"
+  arg "waitForCount"
+  arg "waitForAtMostMilliseconds"
+
+  output "requestCounter"
+  output "success"
 }

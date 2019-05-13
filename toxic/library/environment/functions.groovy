@@ -158,10 +158,10 @@ memory.execWithValues = { cmds, values, overrides ->
 
 memory.collectSummary = { String release, String suffix = "", String outputDir = memory['artifactsDir'] ->
   execWithEnv([helm, 'status', release])
-  new File(outputDir, "${release}-status${suffix}.log").write(out.toString())
+  new File(outputDir, "${release}-status${suffix}.log").write(outputBuffer.toString())
 
   // Parse Load Balancer IP, if any - supports one LoadBalancer per chart
-  out.toString().eachLine { line ->
+  outputBuffer.toString().eachLine { line ->
     if (line.contains("LoadBalancer")) {
       // Use space as a delimiter, but first make sure there are no extra spaces,
       // which can happen if an IP address contains fewer digits in some cases.
@@ -180,7 +180,7 @@ memory.collectSummary = { String release, String suffix = "", String outputDir =
 
 memory.collectDetails = { String namespace, String suffix = "", String outputDir = memory['artifactsDir'] ->
   execWithEnv([kubectl, '--namespace', namespace, 'describe', 'all'])
-  new File(outputDir, "${namespace}-details${suffix}.log").write(out.toString())
+  new File(outputDir, "${namespace}-details${suffix}.log").write(outputBuffer.toString())
 
   return 0
 }
@@ -228,7 +228,7 @@ memory.collectLogs = { String outputDir = memory['artifactsDir'], String namespa
 memory.getPods = { String namespace = memory['namespace'] ->
   execWithEnv([kubectl, '-n', namespace, 'get', 'pods', '-o=json'])
 
-  def response = out.toString()
+  def response = outputBuffer.toString()
   def parser = new JsonSlurper()
   def json = parser.parseText(response)
 
@@ -242,14 +242,38 @@ memory.getPods = { String namespace = memory['namespace'] ->
 
 memory.getLogs = { String pod, String container, String namespace = memory['namespace'] ->
   execWithEnv([kubectl, '-n', namespace, 'logs', pod, '-c', container])
-  return out.toString()
+  return outputBuffer.toString()
 }
 
 memory.namespaceExists = { String namespace = memory['namespace'] ->
-  execWithEnvNoLogging([kubectl, 'get', 'ns', '-o=json'])
-  def ns = out.toString()
+  execWithEnvNoLogging([kubectl, 'get', 'ns', '--include-uninitialized=true', '-o=json'])
+  def ns = outputBuffer.toString()
   
   new JsonSlurper().parseText(ns).items.any { item ->
     item.metadata.name == namespace
+  }
+}
+
+memory.inParallelList = { List list, Closure c ->
+  def threads = []
+
+  list.each {
+    threads << Thread.start { c(it) }
+  }
+
+  threads.each {
+    it.join()
+  }
+}
+
+memory.inParallelMap = { Map map, Closure c ->
+  def threads = []
+
+  map.each { key, value ->
+    threads << Thread.start { c(key, value) }
+  }
+
+  threads.each {
+    it.join()
   }
 }
