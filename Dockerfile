@@ -8,6 +8,7 @@ ENV LC_ALL   en_US.UTF-8
 
 ARG DIST_DIR_NAME
 ARG K8S_VERSION=v1.10.5
+ARG YQ_VERSION=2.4.0
 
 COPY ${DIST_DIR_NAME} /opt/toxic
 
@@ -34,6 +35,10 @@ RUN curl https://storage.googleapis.com/kubernetes-helm/helm-v2.9.0-linux-amd64.
 RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/${K8S_VERSION}/bin/linux/amd64/kubectl \
 	&& chmod +x ./kubectl \
 	&& mv ./kubectl /usr/local/bin/kubectl
+
+RUN curl -LO https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 \
+    && chmod +x ./yq_linux_amd64 \
+    && mv ./yq_linux_amd64 /usr/local/bin/yq
 
 RUN npm i -g redoc-cli
 
