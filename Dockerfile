@@ -36,8 +36,9 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/${K8S_VER
 	&& chmod +x ./kubectl \
 	&& mv ./kubectl /usr/local/bin/kubectl
 
-RUN curl -LO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 \
-    && chmod +x /usr/local/bin/yq
+RUN curl -LO https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 \
+    && chmod +x ./yq_linux_amd64 \
+    && mv ./yq_linux_amd64 /usr/local/bin/yq
 
 RUN npm i -g redoc-cli
 
