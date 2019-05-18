@@ -10,7 +10,7 @@ memory.deleteNamespace()
 
 
 // Wait for namespace to be deleted
-int wait = 1000 * 200
+int wait = 1000 * 600
 int interval = 1000 * 3
 int verifications = 3
 
