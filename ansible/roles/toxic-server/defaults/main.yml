@@ -1,4 +1,4 @@
-# The defaults shown below represent how it would look if the Git reposority
+# The defaults shown below represent how it would look if the Git repository
 # was hosted in AWS CodeCommit.
 toxic_home: /opt/toxic_home
 toxic_data: /data
