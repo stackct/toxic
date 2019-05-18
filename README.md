@@ -16,6 +16,10 @@ Toxic originally was created to automated the repeatable tests that humans were 
 
 One significant drawback to Toxic's upbringing is that it was never a formal project with resource budgeting, codereview requirements, unit test coverage. So when you observe deficiencies with the product, such as the lack of built-in multi-lingual support, consider this background.
 
+## Setup with Intellij™
+
+* [Setup Guide](docs/intellij.md)
+
 ## User Guide
 
 * [User Guide](docs/user-guide.md)
