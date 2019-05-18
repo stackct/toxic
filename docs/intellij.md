@@ -1,4 +1,4 @@
-# Setup with Intellij™
+# Setup with Intellij IDEA™
 
 ### Prerequisites
 
