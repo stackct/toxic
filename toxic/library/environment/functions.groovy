@@ -186,7 +186,7 @@ memory.collectDetails = { String namespace, String suffix = "", String outputDir
 }
 
 memory.helmDelete = { String name ->
-  int exitCode = 0
+  int exitCode = -1
 
   def namespace = memory['namespace']
   def release = namespace + '-' + name
@@ -200,7 +200,11 @@ memory.helmDelete = { String name ->
   cmds << '--purge'
   cmds << release
 
-  exitCode = execWithEnv(cmds)
+  int attempts = 0
+  int maxAttempts = 5
+  while (exitCode != 0 && attempts++ < maxAttempts) {
+    exitCode = execWithEnv(cmds)
+  }
 
   return exitCode
 }
