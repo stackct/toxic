@@ -115,7 +115,7 @@ public class SqlTask extends CompareTask {
     } catch (Exception e) {
       log.debug("sqlRetries properties is not set, defaulting to 0 retries; error=${e.message}")
     }
-
+    memory.lastRequest = "Sending to host=" + props.sqlUrl + "; retries=${sqlRetries}:${request}"
 
     def result
     int attempts = 0
