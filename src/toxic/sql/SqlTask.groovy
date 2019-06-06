@@ -128,7 +128,7 @@ public class SqlTask extends CompareTask {
         }
         break
       } catch (SQLException se) {
-        if (!se.toString().toLowerCase().contains("timeout")) throw se
+        if (!se.toString().toLowerCase().contains("timeout") && !se.toString().toLowerCase().contains("timed out")) throw se
         if (attempts > sqlRetries) {
           log.error("Exceeded allowed connection attempts; attempts=${attempts}", se)
           throw se
