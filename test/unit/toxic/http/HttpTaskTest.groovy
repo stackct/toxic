@@ -582,6 +582,35 @@ public class HttpTaskTest {
   }
 
   @Test
+  void should_retry_after_validation_failure() {
+    def memory = new ToxicProperties()
+    int transmitCount = 0
+    def task = [ transmit:{ request, expectedResponse, m ->
+      transmitCount++
+      memory['lastResponse'] = transmitCount == 3 ? 'SUCCESS' : 'FAILURE'
+      return memory['lastResponse']
+    },
+     lookupExpectedResponse: { input ->
+       return 'SUCCESS'
+     }
+    ] as HttpTask
+
+    memory['task.validator.1'] = 'toxic.HttpValidator'
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1000
+    memory['task.retry.onError'] = true
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+    assert 3 == transmitCount
+    assert 'SUCCESS' == memory.lastResponse
+  }
+
+  @Test
   void should_fail_transmit_retry_after_retries_are_exhausted() {
     expectedException.expect(TimeoutException.class)
 

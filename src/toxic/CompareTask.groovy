@@ -48,6 +48,7 @@ public abstract class CompareTask extends Task {
       Wait.on { ->
         try {
           memory.lastResponse = transmit(request, expected, memory)
+          validate(memory.lastResponse, expected, memory)
         }
         catch(Exception e) {
           if(memory['task.retry.onError']) {
@@ -57,7 +58,6 @@ public abstract class CompareTask extends Task {
           throw e
         }
 
-        validate(memory.lastResponse, expected, memory)
         if(memory.containsKey('task.retry.condition')) {
           return memory['task.retry.condition']()
         }
