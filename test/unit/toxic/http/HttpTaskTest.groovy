@@ -536,6 +536,72 @@ public class HttpTaskTest {
     task.doTask(memory)
   }
 
+  @Test
+  void should_fail_on_transmit_error() {
+    expectedException.expect(Exception.class)
+
+    def task = [ transmit:{ request, expectedResponse, m ->
+      throw new Exception('OOPS!')
+    }] as HttpTask
+
+    def memory = new ToxicProperties()
+    memory['task.retry.condition'] = { response -> return 'SUCCESS' == response }
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+  }
+
+  @Test
+  void should_retry_after_transmit_failure() {
+    def memory = new ToxicProperties()
+    int transmitCount = 0
+    def task = [ transmit:{ request, expectedResponse, m ->
+      transmitCount++
+      if(transmitCount == 3) {
+        memory['lastResponse'] = 'SUCCESS'
+        return memory['lastResponse']
+      }
+      throw new Exception('OOPS!')
+    }] as HttpTask
+
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1000
+    memory['task.retry.onError'] = true
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+    assert 3 == transmitCount
+    assert 'SUCCESS' == memory.lastResponse
+  }
+
+  @Test
+  void should_fail_transmit_retry_after_retries_are_exhausted() {
+    expectedException.expect(TimeoutException.class)
+
+    def memory = new ToxicProperties()
+    def task = [ transmit:{ request, expectedResponse, m ->
+      throw new Exception('OOPS!')
+    }] as HttpTask
+
+    memory['task.retry.condition'] = { -> return 'SUCCESS' == memory['lastResponse'] }
+    memory['task.retry.every'] = 1
+    memory['task.retry.atMostMs'] = 1
+    memory['task.retry.onError'] = true
+
+    task.props = memory
+    task.input = new File('/foo')
+    task.reqContent = ''
+
+    task.doTask(memory)
+  }
+
   private String makeResponse(int code, String reason, String body=null, List headers=[], List cookies=[]) {
     def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
 
