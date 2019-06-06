@@ -103,45 +103,60 @@ public class SqlTask extends CompareTask {
   }
 
   protected transmit(request, expectedResponse, def memory) {
-    synchronized (props) {
-      if (!props.sqlConnection || memory.sqlReconnect == "true") {
-        props.sqlConnection = Sql.newInstance(props.sqlUrl, props.sqlUser, props.sqlPass, props.sqlDriver)
-      }
-    }
+    int sqlRetries = getIntProperty(memory, 'sqlRetries')
+    int sqlRetriesDelayMs = getIntProperty(memory, 'sqlRetriesDelayMs')
 
-    int sqlRetries = 0
-    try {
-      sqlRetries = new Integer(memory.sqlRetries)
-    } catch (Exception e) {
-      log.debug("sqlRetries properties is not set, defaulting to 0 retries; error=${e.message}")
-    }
+    retry(sqlRetries, sqlRetriesDelayMs, {
+      synchronized (props) {
+        if (!props.sqlConnection || memory.sqlReconnect == "true") {
+          props.sqlConnection = Sql.newInstance(props.sqlUrl, props.sqlUser, props.sqlPass, props.sqlDriver)
+        }
+      }
+    })
+
     memory.lastRequest = "Sending to host=" + props.sqlUrl + "; retries=${sqlRetries}:${request}"
-
     def result
-    int attempts = 0
-    while (attempts++ <= sqlRetries) {
-      try {
-        if (request.toLowerCase().startsWith("select")) {
-          result = toCsv(query(request))
-        } else {
-          result = execute(request)
-        }
-        break
-      } catch (SQLException se) {
-        if (!se.toString().toLowerCase().contains("timeout") && !se.toString().toLowerCase().contains("timed out")) throw se
-        if (attempts > sqlRetries) {
-          log.error("Exceeded allowed connection attempts; attempts=${attempts}", se)
-          throw se
-        } else {
-          log.warn("Sql timeout exception; attempts=${attempts}", se)
-        }
+    retry(sqlRetries, sqlRetriesDelayMs, {
+      if (request.toLowerCase().startsWith("select")) {
+        result = toCsv(query(request))
+      } else {
+        result = execute(request)
       }
-    }
+    })
 
     if (memory.sqlVerbose == "true") {
       log.info("Received:\n" + result)
     }
 
     return result.toString()
+  }
+
+  void retry(int maxAttempts, int delayMs, Closure c) {
+    int attempts = 0
+    while (attempts++ <= maxAttempts) {
+      try {
+        c()
+        break
+      } catch (SQLException se) {
+        def message = se.toString().toLowerCase()
+        if (!['timeout', 'timed out'].find { message.contains(it) }) throw se
+        if (attempts > maxAttempts) {
+          log.error("Exceeded allowed connection attempts; attempts=${attempts}", se)
+          throw se
+        } else {
+          log.warn("Sql timeout exception; attempts=${attempts}", se)
+          Thread.sleep(delayMs)
+        }
+      }
+    }
+  }
+
+  int getIntProperty(def memory, String property) {
+    try {
+      return new Integer(memory[property])
+    } catch (Exception e) {
+      log.debug("${property} properties is not set, defaulting to 0 retries; error=${e.message}")
+    }
+    return 0
   }
 }
