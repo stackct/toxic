@@ -52,15 +52,6 @@ function "VerifyUrls" {
   output "result"
 }
 
-function "VerifyDatabase" {
-  description "Verifies that a database is responsive before returning, or timesout after a waitMs milliseconds"
-  path        "{{ libPath }}/std/verifyDatabase"
-
-  arg "waitMs", false
-
-  output "result"
-}
-
 function "FlushOutput" {
   description "A noop function used to instruct pickle to copy output results to memory when the last step in a higher order function would have been a call to another higher order function"
   path        "{{ libPath }}/std/flush_output"
