@@ -81,6 +81,7 @@ class Step implements Serializable {
       props['task.retry.atMostMs'] = wait.timeoutMs
       props['task.retry.every'] = wait.intervalMs
       props['task.retry.successes'] = wait.successes
+      props['task.retry.onError'] = wait.retry
       props['task.retry.condition'] = wait.getRetryCondition(props)
     }
   }

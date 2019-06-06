@@ -9,6 +9,7 @@ class Wait extends Parser {
     int timeoutMs
     int intervalMs
     int successes = 1
+    boolean retry = false
     List<Condition> conditions = []
 
     void wait(Closure closure) {
@@ -31,6 +32,10 @@ class Wait extends Parser {
 
     def successes(int value) {
         this.successes = value
+    }
+
+    def retry(boolean value) {
+        this.retry = value
     }
 
     def condition(Closure closure) {

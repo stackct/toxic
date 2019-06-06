@@ -46,7 +46,17 @@ public abstract class CompareTask extends Task {
     int successes = memory['task.retry.successes'] ?: 1
     (1..successes).every {
       Wait.on { ->
-        memory.lastResponse = transmit(request, expected, memory)
+        try {
+          memory.lastResponse = transmit(request, expected, memory)
+        }
+        catch(Exception e) {
+          if(memory['task.retry.onError']) {
+            log.warn("Task will be retried; reason=${e.message}")
+            return false
+          }
+          throw e
+        }
+
         validate(memory.lastResponse, expected, memory)
         if(memory.containsKey('task.retry.condition')) {
           return memory['task.retry.condition']()
