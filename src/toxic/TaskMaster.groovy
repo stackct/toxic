@@ -116,7 +116,7 @@ public class TaskMaster implements Callable {
 
     int runs = memory['pickle.testCaseRuns'] ? new Integer(memory['pickle.testCaseRuns']) : 1
     for (memory.pickleRun = 0; memory.pickleRun < runs && !shutdown; memory.pickleRun++) {
-      TestCaseRunner.run(this, memory, results)
+      TestCaseRunner.run(this, memory.clone(), results)
       if (TaskResult.shouldAbort(props, results)) {
         log.info("Aborting TestCaseRunner due to task failure")
         break
