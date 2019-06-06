@@ -155,7 +155,7 @@ public class SqlTask extends CompareTask {
     try {
       return new Integer(memory[property])
     } catch (Exception e) {
-      log.debug("${property} properties is not set, defaulting to 0 retries; error=${e.message}")
+      log.debug("${property} property is not set, defaulting to 0; error=${e.message}")
     }
     return 0
   }
