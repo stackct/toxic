@@ -1,4 +1,4 @@
-# Pickle Extension for Visual Studio COde
+# Pickle Extension for Visual Studio Code
 
 This extension provides code snippets, content navigation, and test execution support for Pickle.
 
