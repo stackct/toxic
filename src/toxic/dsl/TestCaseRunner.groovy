@@ -206,7 +206,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   void executeDirItem(DirItem dirItem) {
     DirOrganizer organizer = new DirOrganizer(props: props, dirItem: dirItem)
 
-    while (organizer.hasNext() && !taskMaster.shutdown()) {
+    while (organizer.hasNext() && !taskMaster.isShutdown()) {
       Task task = organizer.next()
       def taskResults = task.execute(props)
 

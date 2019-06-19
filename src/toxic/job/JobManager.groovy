@@ -303,6 +303,7 @@ public class JobManager implements Runnable,Publisher {
       }
       uri.query?.split('&')?.collectEntries { param -> param.split('=')
           ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
+        if (!v) v = ""
         if (k == "name") {
           jobName = v
         } else {

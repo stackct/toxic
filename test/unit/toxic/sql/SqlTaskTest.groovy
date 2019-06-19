@@ -4,11 +4,16 @@ package toxic.sql
 import groovy.mock.interceptor.MockFor
 import groovy.sql.Sql
 import org.junit.*
+import org.junit.rules.ExpectedException
 import toxic.ToxicProperties
 
 import java.sql.Clob
+import java.sql.SQLException
 
 public class SqlTaskTest {
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none()
+
   @Test
   public void testInitSqlFile() {
     def st = new SqlTask()
@@ -235,7 +240,58 @@ public class SqlTaskTest {
       assert executions == 4
     } catch (java.sql.SQLException se) {
       assert executions <= 3
-      assert shouldThrow, "shoult not have thrown an exception"
+      assert shouldThrow, "should not have thrown an exception"
+    }
+  }
+
+  @Test
+  void should_create_new_sql_instance_with_retry() {
+    ToxicProperties tp = new ToxicProperties()
+    tp.sqlUrl="jdbc:jtds:sqlserver://lab-sql-1/master"
+    tp.sqlUser="sa"
+    tp.sqlPass="Test12"
+    tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
+    tp.sqlRetries=3
+
+    def connMock = new Object() {
+      def rows = { sql, rsMeta -> [[c1:"123",c2:"456",c3:"789"]] }
+      def execute = { sql ->  }
+    }
+
+    def sqlMock = new MockFor(Sql)
+    sqlMock.demand.newInstance(3) { s1, s2, s3, s4 -> throw new SQLException('Network error IOException: Operation timed out (Connection timed out)') }
+    sqlMock.demand.newInstance { s1, s2, s3, s4 -> connMock }
+
+    SqlTask st = new SqlTask()
+    st.init(null, tp)
+
+    def result
+    sqlMock.use {
+      result = st.transmit("SELECT 123 as A, 456 as B, 789 as C", null, tp)
+    }
+    assert result == "123,456,789"
+  }
+
+  @Test
+  void should_fail_new_sql_instance_after_exhausted_retry() {
+    expectedException.expect(SQLException.class)
+    expectedException.expectMessage('Network error IOException: Operation timed out (Connection timed out)')
+
+    ToxicProperties tp = new ToxicProperties()
+    tp.sqlUrl="jdbc:jtds:sqlserver://lab-sql-1/master"
+    tp.sqlUser="sa"
+    tp.sqlPass="Test12"
+    tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
+    tp.sqlRetries=3
+
+    def sqlMock = new MockFor(Sql)
+    sqlMock.demand.newInstance(4) { s1, s2, s3, s4 -> throw new SQLException('Network error IOException: Operation timed out (Connection timed out)') }
+
+    SqlTask st = new SqlTask()
+    st.init(null, tp)
+
+    sqlMock.use {
+      st.transmit("SELECT 123 as A, 456 as B, 789 as C", null, tp)
     }
   }
 }
