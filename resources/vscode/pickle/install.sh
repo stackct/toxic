@@ -1,29 +1,24 @@
 #!/bin/bash
 
 ROOT_DIR=`cd $(dirname "$0");pwd`
-EXTENSION_DIR=${HOME}/.vscode/extensions
-EXTENSION_PATH=${EXTENSION_DIR}/pickle
+EXTENSION_ID=dotariel.pickle
 
-verbose=0
+exists() {
+    code --list-extensions | grep ${EXTENSION_ID} 2>&1 >/dev/null
+    echo $?
+}
 
-if [[ $1 == "-v" ]]; then
-    verbose = 1
-fi
+uninstall() {
+    code --uninstall-extension ${EXTENSION_ID}
+}
 
-if [[ ! -d ${EXTENSION_DIR} ]]; then
-    echo "[ERROR] Extensions directory not found: ${EXTENSION_DIR}"
-    exit 1;
-fi
+install() {
+    cd ${ROOT_DIR}
+    npm i vsce
+    ./node_modules/.bin/vsce package --baseContentUrl https://dev/null --baseImagesUrl https://dev/null -o ${EXTENSION_ID}.vsix \
+        && code --install-extension ${EXTENSION_ID}.vsix --force \
+        && rm ${EXTENSION_ID}.vsix
+    cd - 2>&1 >/dev/null
+}
 
-if [[ -L ${EXTENSION_DIR}/pickle ]]; then
-    echo "[INFO] Found symlink to '${EXTENSION_PATH}', deleting."
-    rm -f ${EXTENSION_PATH}
-fi
-
-echo -n "[INFO] Installing extension... "
-cd ${ROOT_DIR}
-npm run clean && npm install && npm run postinstall && npm run compile && ln -sf ${ROOT_DIR} ${EXTENSION_PATH}
-exitcode=$?
-echo "Done!"
-
-exit $exitcode
+([[ $(exists) -eq 1 ]] || uninstall) && install

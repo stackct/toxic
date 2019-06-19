@@ -62,3 +62,5 @@ values-*.yaml
 
 # NPM Vendor cache
 package-lock.json
+
+common/build
