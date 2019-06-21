@@ -101,6 +101,7 @@ class HttpTask extends CompareTask {
     if (memory.httpVerbose == "true") {
       log.info(memory.lastRequest)
     }
+    int delayMs = getIntProperty(memory, 'httpRetriesDelayMs')
 
     int attempts = 0
     while (attempts++ <= httpRetries) {
@@ -145,6 +146,7 @@ class HttpTask extends CompareTask {
           throw ioe
         } else {
           log.warn("Socket exception; attempts=${attempts}", ioe)
+          Thread.sleep(delayMs)
         }
       }
     }
