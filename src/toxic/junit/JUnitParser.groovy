@@ -62,15 +62,18 @@ public class JUnitParser {
           
           discoveredTests++
           def result = new TaskResult(id, family, testcase.@name.toString(), null)
-          def failure = testcase.failure
-          failure = failure?.isEmpty() ? testcase.error : failure
-          failure = failure?.isEmpty() ? null : failure
-          if (failure) {
-            result.success = false
-            result.type = failure.@type.toString()
-            if (result.type) {
-              result.error = failure.@message.toString()
+          def failureMsg = testcase.error?.toString()
+          testcase.failure?.each { failure ->
+            result.type = failure.@type.toString() // save last one found
+            if (failureMsg) {
+              failureMsg += "\n-----------------------------------------------------------\n"
             }
+            failureMsg += failure.@message.toString()
+          }
+          if (failureMsg) {
+            result.success = false
+            result.error = failureMsg
+            print "failureMsg=" + failureMsg
             suiteFailed = true
           } else {
             result.success = true
