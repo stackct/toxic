@@ -1,6 +1,6 @@
 # toxic
 
-[![Build Status](https://travis-ci.org/plxis/toxic.svg?branch=master)](https://travis-ci.org/plxis/toxic)
+[![Build Status](https://travis-ci.org/stackct/toxic.svg?branch=master)](https://travis-ci.org/stackct/toxic)
 
 Toxic (Task Orchestrator for XHTTP-Integrated Components) is a software development tool with standalone task orchestration capabilites from the command-line, as well as optional hosted functionality.
 

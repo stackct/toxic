@@ -208,8 +208,21 @@ class HttpTask extends CompareTask {
             return
           }
 
-          String url = uri.toString() - "?${uri.query}"
-          memory['http.response.location']['baseUrl'] = url
+          String urlAndPath = uri.toString() - "?${uri.query}"    // http://localhost:5000/somepath
+          String url = urlAndPath - uri.path                      // http://localhost:5000/
+
+          String pathAndQuery = ""
+          if (uri.scheme || uri.host) {
+            pathAndQuery = uri.toString() - url   
+            pathAndQuery = pathAndQuery.startsWith("/") ? pathAndQuery : "/${pathAndQuery}"
+          }
+          pathAndQuery = pathAndQuery ?: "/${pathAndQuery}"
+
+          // To support easy following of redirects
+          memory['http.response.location']['httpUri'] = url
+          memory['http.response.location']['httpMethod'] = "GET ${pathAndQuery} HTTP/1.1"
+         
+          memory['http.response.location']['baseUrl'] = urlAndPath
           memory['http.response.location']['params'] = [:]
 
           uri.query?.split('&')?.collectEntries { param -> param.split('=')
@@ -217,7 +230,6 @@ class HttpTask extends CompareTask {
             memory['http.response.location']['params'][k] = v
           }
         }
-
       }
     }
   }

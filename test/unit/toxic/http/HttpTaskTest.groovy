@@ -288,17 +288,17 @@ public class HttpTaskTest {
           [
                   name: 'location parsing without query params',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000']),
-                  expected: [baseUrl: 'http://foo.pizza:5000', params: [:]]
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET / HTTP/1.1", baseUrl: 'http://foo.pizza:5000', params: [:]]
           ],
           [
                   name: 'location parsing with one query param',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk']),
-                  expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk']]
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET /?something=idk HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [something:'idk']]
           ],
           [
                   name: 'location parsing with query params',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
-                  expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET /?something=idk&anotherthing=wow HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
           ],
           [
                   name: 'location parsing with invalid url',
@@ -308,7 +308,12 @@ public class HttpTaskTest {
           [
                   name: 'location parsing with unknown scheme',
                   response: makeResponse(200, 'OK', null, ['Location: toxic.pizza']),
-                  expected: [baseUrl:'toxic.pizza', params:[:]]
+                  expected: [httpUri: "", httpMethod:"GET / HTTP/1.1", baseUrl:'toxic.pizza', params:[:]]
+          ],
+          [
+                  name: 'parse httpUri and httpMethod',
+                  response: makeResponse(200, 'OK', null, ['Location: http://toxic.pizza:123/path?a=b']),
+                  expected: [httpUri:'http://toxic.pizza:123', httpMethod:"GET /path?a=b HTTP/1.1", baseUrl:'http://toxic.pizza:123/path', params:["a":"b"]]
           ],
       ]
 
