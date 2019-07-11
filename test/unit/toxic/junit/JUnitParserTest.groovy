@@ -188,5 +188,40 @@ public class JUnitParserTest {
     assert actualResults[0].stopTime == 288
     assert actualResults[0].error == null
   }
+
+  @Test
+  void should_parse_junit_nightwatch_format() {
+    tmpFile.text = '''
+<testsuites errors="0"
+            failures="1"
+            tests="1">
+  <testsuite name="downloadSupportDocs"
+    errors="0" failures="1" hostname="" id="" package="downloadSupportDocs" skipped="0"
+    tests="1" time="127.4" timestamp="">  
+    <testcase name="Should successfully download support documents" classname="downloadSupportDocs" time="127.4" assertions="13">
+      <failure message="Timed out while waiting for element &lt;i[data-id=&#34;modifyFolderByName-int-ksip8z0lbo&#34;]:not([class*=&#34;disable&#34;])&gt; to be visible for 120000 milliseconds. - expected &#34;visible&#34; but got: &#34;not visible&#34;">    at CommandInstance.ClickButton.command (/opt/node/nightwatch/dist/common/commands/clickButton.js:26:14)
+    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</failure>
+    <failure message="    at CommandInstance.ClickButton.command (/opt/node/nightwatch/dist/common/commands/clickButton.js:26:14)">    at &lt;anonymous&gt;
+    at process._tickCallback (internal/process/next_tick.js:188:7)</failure>
+    </testcase>
+  </testsuite>
+</testsuites>'''
+
+    def actualResults = []
+    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    assert actualResults.size() == 1
+    assert actualResults[0].id == "downloadSupportDocs.Should successfully download support documents"
+    assert actualResults[0].family == "downloadSupportDocs"
+    assert actualResults[0].name == "Should successfully download support documents"
+    assert actualResults[0].type == ""
+    assert actualResults[0].success == false
+    assert actualResults[0].startTime == 0
+    assert actualResults[0].stopTime > actualResults[0].startTime
+    assert actualResults[0].error.toString().contains("modifyFolderByName")
+
+    assert stats.suites == 1
+    assert stats.failures == 1
+  }
 }
 
