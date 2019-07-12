@@ -371,6 +371,11 @@ public class HttpTaskTest {
         expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [best: 'chocolatechip', worst: 'peanutbutter', empty: ''], code:'200', reason:'OK', body:'{"foo":"bar"}']
       ],
       [
+        name: 'good response, body, with lower case cookie header',
+        response: makeResponse(200, 'OK', null, ["set-cookie: name=value"]),
+        expected: [ headers: [:], location:[:], cookies: ["name":"value"], code:'200', reason:'OK', body:null]
+      ],
+      [
         name: 'bad response, no body',
         response: makeResponse(404, 'Not Found', null, null),
         expected: [ headers: [:], location:[:], cookies: [:], code:'404', reason:'Not Found', body:null]
