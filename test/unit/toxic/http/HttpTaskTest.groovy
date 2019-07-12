@@ -296,6 +296,11 @@ public class HttpTaskTest {
                   expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET /?something=idk HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [something:'idk']]
           ],
           [
+                  name: 'location parsing with a lower case location header',
+                  response: makeResponse(200, 'OK', null, ['location: http://foo.pizza:5000']),
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET / HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [:]]
+          ],
+          [
                   name: 'location parsing with query params',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
                   expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET /?something=idk&anotherthing=wow HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
