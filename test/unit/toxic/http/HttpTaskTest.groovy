@@ -312,8 +312,20 @@ public class HttpTaskTest {
           ],
           [
                   name: 'parse httpUri and httpMethod',
-                  response: makeResponse(200, 'OK', null, ['Location: http://toxic.pizza:123/path?a=b']),
-                  expected: [httpUri:'http://toxic.pizza:123', httpMethod:"GET /path?a=b HTTP/1.1", baseUrl:'http://toxic.pizza:123/path', params:["a":"b"]]
+                  response: makeResponse(200, 'OK', null, ['Location: http://toxic.pizza:123/path?a=b&c=d']),
+                  expected: [httpUri:'http://toxic.pizza:123', httpMethod:"GET /path?a=b&c=d HTTP/1.1", baseUrl:'http://toxic.pizza:123/path', params:["a":"b","c":"d"]]
+          ],
+          [
+                  name: 'parse httpUri and httpMethod from procore redirect url',
+                  response: makeResponse(200, 'OK', null, ['Location: https://login-sandbox.procore.com/oauth/authorize?client_id=c5176466bb47b6e77efd1af650f25eed18be193a6a79c5c8a244ca0a3df340db&procore_host=https%3A%2F%2Fsandbox.procore.com&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2FOAuth%2FCallback%3FpartnerId%3D146&response_type=code&state=2b87ce6b-1208-4bf9-aa75-cf2923fefd1a']),
+                  expected: [httpUri:'https://login-sandbox.procore.com', httpMethod:"GET /oauth/authorize?client_id=c5176466bb47b6e77efd1af650f25eed18be193a6a79c5c8a244ca0a3df340db&procore_host=https%3A%2F%2Fsandbox.procore.com&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2FOAuth%2FCallback%3FpartnerId%3D146&response_type=code&state=2b87ce6b-1208-4bf9-aa75-cf2923fefd1a HTTP/1.1", baseUrl:'https://login-sandbox.procore.com/oauth/authorize', 
+                    params:[
+                      "client_id":"c5176466bb47b6e77efd1af650f25eed18be193a6a79c5c8a244ca0a3df340db",
+                      "procore_host":"https://sandbox.procore.com",
+                      "redirect_uri":"http://localhost:5000/OAuth/Callback?partnerId=146",
+                      "response_type":"code",
+                      "state":"2b87ce6b-1208-4bf9-aa75-cf2923fefd1a",
+                    ]]
           ],
       ]
 

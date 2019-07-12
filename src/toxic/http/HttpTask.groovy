@@ -208,8 +208,8 @@ class HttpTask extends CompareTask {
             return
           }
 
-          String urlAndPath = uri.toString() - "?${uri.query}"    // http://localhost:5000/somepath
-          String url = urlAndPath - uri.path                      // http://localhost:5000/
+          String urlAndPath = uri.toString() - "?${uri.rawQuery}"    // http://localhost:5000/somepath
+          String url = urlAndPath - uri.path                         // http://localhost:5000/
 
           String pathAndQuery = ""
           if (uri.scheme || uri.host) {
@@ -225,7 +225,7 @@ class HttpTask extends CompareTask {
           memory['http.response.location']['baseUrl'] = urlAndPath
           memory['http.response.location']['params'] = [:]
 
-          uri.query?.split('&')?.collectEntries { param -> param.split('=')
+          uri.rawQuery?.split('&')?.collectEntries { param -> param.split('=')
                   ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
             memory['http.response.location']['params'][k] = v
           }
