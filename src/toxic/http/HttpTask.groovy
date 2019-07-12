@@ -209,7 +209,7 @@ class HttpTask extends CompareTask {
           }
 
           String urlAndPath = uri.toString() - "?${uri.rawQuery}"    // http://localhost:5000/somepath
-          String url = urlAndPath - uri.path                         // http://localhost:5000/
+          String url = urlAndPath - ~/${uri.path}$/                  // http://localhost:5000/
 
           String pathAndQuery = ""
           if (uri.scheme || uri.host) {
