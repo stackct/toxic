@@ -186,7 +186,7 @@ class HttpTask extends CompareTask {
         def header = parts[0]
         def value = parts.size() > 1 ? parts[1] : ""
 
-        if (header == 'Set-Cookie') {
+        if (header == 'Set-Cookie' || header == 'set-cookie') {
           value.split(';').with { segments -> 
             segments[0].split('=').with { name -> 
               memory['http.response.cookies'][name[0]] = name.size() == 2 ? name[1] : ""
