@@ -45,7 +45,7 @@ public class JUnitParserTest {
     assert parsed == [f1,f3]
     assert exists
   }
-  
+
   @Test
   void should_not_parse_junit_xmls_in_dir_if_dir_missing() {
     def parsed = []
@@ -63,7 +63,7 @@ public class JUnitParserTest {
     assert !stats.failures
     assert !parsed
   }
-  
+
   @Test
   void should_parse_junit_xml() {
     tmpFile.text = '''<testsuites>
@@ -114,7 +114,7 @@ public class JUnitParserTest {
     assert stats.suites == 0
     assert stats.failures == 0
   }
-  
+
   @Test
   void should_parse_junit_spec_format_xml() {
     tmpFile.text = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -132,7 +132,7 @@ public class JUnitParserTest {
     </testcase>
   </testsuite>
 </testsuites>'''
- 
+
     def actualResults = []
     def stats = new JUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 3
@@ -197,7 +197,7 @@ public class JUnitParserTest {
             tests="1">
   <testsuite name="downloadSupportDocs"
     errors="0" failures="1" hostname="" id="" package="downloadSupportDocs" skipped="0"
-    tests="1" time="127.4" timestamp="">  
+    tests="1" time="127.4" timestamp="">
     <testcase name="Should successfully download support documents" classname="downloadSupportDocs" time="127.4" assertions="13">
       <failure message="Timed out while waiting for element &lt;i[data-id=&#34;modifyFolderByName-int-ksip8z0lbo&#34;]:not([class*=&#34;disable&#34;])&gt; to be visible for 120000 milliseconds. - expected &#34;visible&#34; but got: &#34;not visible&#34;">    at CommandInstance.ClickButton.command (/opt/node/nightwatch/dist/common/commands/clickButton.js:26:14)
     at &lt;anonymous&gt;
@@ -223,5 +223,43 @@ public class JUnitParserTest {
     assert stats.suites == 1
     assert stats.failures == 1
   }
+
+  @Test
+  void should_parse_junit_cs_format() {
+    tmpFile.text = '''
+<testsuites xmlns:a="http://microsoft.com/schemas/VisualStudio/TeamTest/2006" xmlns:b="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <testsuite name="MSBuildTest" tests="462" time="0" timestamp="2019-07-14T02:31:08.4439510+00:00" failures="5" errors="0" skipped="0">
+    <testcase classname="CTKO.CombinedServer.Tests" name="CTKO.Api.Controllers.v2.PagesControllerTest.ShouldLogMessageIfAccessViolationOccurs" time="0.171">
+      <failure>
+                    MESSAGE:
+                    Assert.Contains() Failure
+Not found: userId
+In value:  KeyCollection&lt;String, Object&gt; ["exceptionMessage", "baseExceptionMessage"]
+                    +++++++++++++++++++
+                    STACK TRACE:
+                       at CTKO.LibTest.Log.LogTracker.AssertIsLogged(LogEventInfo logEvent, Object props, String nestedMessage) in /src/lib/src/CTKO.LibTest/Log/LogTracker.cs:line 274
+   at CTKO.LibTest.Log.LogTracker.AssertIsLogged(LogLevel level, String message, Object props, String nestedMessage) in /src/lib/src/CTKO.LibTest/Log/LogTracker.cs:line 246
+   at CTKO.LibTest.Log.LogTracker.AssertIsInfo(String message, Object props, String nestedMessage) in /src/lib/src/CTKO.LibTest/Log/LogTracker.cs:line 232
+   at CTKO.Api.Controllers.v2.PagesControllerTest.ShouldLogMessageIfAccessViolationOccurs() in /src/app/tests/CTKO.CombinedServer.Tests/Controllers/Api/v2/PagesControllerTest.cs:line 184</failure>
+    </testcase>
+  </testsuite>
+</testsuites>'''
+
+    def actualResults = []
+    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    assert actualResults.size() == 1
+    assert actualResults[0].id == "CTKO.CombinedServer.Tests.CTKO.Api.Controllers.v2.PagesControllerTest.ShouldLogMessageIfAccessViolationOccurs"
+    assert actualResults[0].family == "CTKO.CombinedServer.Tests"
+    assert actualResults[0].name == "CTKO.Api.Controllers.v2.PagesControllerTest.ShouldLogMessageIfAccessViolationOccurs"
+    assert actualResults[0].type == ""
+    assert actualResults[0].success == false
+    assert actualResults[0].startTime > 0
+    assert actualResults[0].stopTime > actualResults[0].startTime
+    assert actualResults[0].error.toString().contains("baseExceptionMessage")
+
+    assert stats.suites == 1
+    assert stats.failures == 1
+  }
+
 }
 
