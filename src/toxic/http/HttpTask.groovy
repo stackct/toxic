@@ -101,6 +101,7 @@ class HttpTask extends CompareTask {
     if (memory.httpVerbose == "true") {
       log.info(memory.lastRequest)
     }
+    int delayMs = getIntProperty(memory, 'httpRetriesDelayMs')
 
     int attempts = 0
     while (attempts++ <= httpRetries) {
@@ -145,6 +146,7 @@ class HttpTask extends CompareTask {
           throw ioe
         } else {
           log.warn("Socket exception; attempts=${attempts}", ioe)
+          Thread.sleep(delayMs)
         }
       }
     }
@@ -182,9 +184,9 @@ class HttpTask extends CompareTask {
     headers.each { h ->
       h.split(': ').with { parts -> 
         def header = parts[0]
-        def value = parts[1]
+        def value = parts.size() > 1 ? parts[1] : ""
 
-        if (header == 'Set-Cookie') {
+        if (header.toLowerCase() == 'set-cookie') {
           value.split(';').with { segments -> 
             segments[0].split('=').with { name -> 
               memory['http.response.cookies'][name[0]] = name.size() == 2 ? name[1] : ""
@@ -194,28 +196,40 @@ class HttpTask extends CompareTask {
           memory['http.response.headers'].put(header,value)
         }
 
-        if (header == 'Location') {
+        if (header.toLowerCase() == 'location') {
 
           URI uri
           memory['http.response.location'] = [:]
 
           try {
-            uri = new URI(memory['http.response.headers']['Location'])
+            uri = new URI(memory['http.response.headers'][header])
           } catch (URISyntaxException e){
             log.warn("Could not parse uri from Location header: ${memory['http.response.headers']['Location']}")
             return
           }
 
-          String url = uri.toString() - "?${uri.query}"
-          memory['http.response.location']['baseUrl'] = url
+          String urlAndPath = uri.toString() - "?${uri.rawQuery}"    // http://localhost:5000/somepath
+          String url = urlAndPath - ~/${uri.path}$/                  // http://localhost:5000/
+
+          String pathAndQuery = ""
+          if (uri.scheme || uri.host) {
+            pathAndQuery = uri.toString() - url   
+            pathAndQuery = pathAndQuery.startsWith("/") ? pathAndQuery : "/${pathAndQuery}"
+          }
+          pathAndQuery = pathAndQuery ?: "/${pathAndQuery}"
+
+          // To support easy following of redirects
+          memory['http.response.location']['httpUri'] = url
+          memory['http.response.location']['httpMethod'] = "GET ${pathAndQuery} HTTP/1.1"
+         
+          memory['http.response.location']['baseUrl'] = urlAndPath
           memory['http.response.location']['params'] = [:]
 
-          uri.query?.split('&')?.collectEntries { param -> param.split('=')
+          uri.rawQuery?.split('&')?.collectEntries { param -> param.split('=')
                   ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
             memory['http.response.location']['params'][k] = v
           }
         }
-
       }
     }
   }

@@ -137,7 +137,7 @@ public class SqlTask extends CompareTask {
       try {
         c()
         break
-      } catch (SQLException se) {
+      } catch (Exception se) {
         def message = se.toString().toLowerCase()
         if (!['timeout', 'timed out'].find { message.contains(it) }) throw se
         if (attempts > maxAttempts) {
@@ -149,14 +149,5 @@ public class SqlTask extends CompareTask {
         }
       }
     }
-  }
-
-  int getIntProperty(def memory, String property) {
-    try {
-      return new Integer(memory[property])
-    } catch (Exception e) {
-      log.debug("${property} property is not set, defaulting to 0; error=${e.message}")
-    }
-    return 0
   }
 }

@@ -28,18 +28,18 @@ public class JUnitParser {
     }
     return stats
   }
-  
+
   def parseFile(File xmlFile, List taskResults) {
     def stats = [:]
     stats.suites = 0
     stats.failures = 0
 
-    long startTime = 0 // Default to beginning of time if tests do not include start 
+    long startTime = 0 // Default to beginning of time if tests do not include start
     if (!xmlFile?.isFile()) {
       log.warn("jUnit XML file not found; file=${xmlFile}")
       return stats
     }
-    
+
     try {
       def xml = new XmlSlurper().parse(xmlFile)
       def fileTimestamp
@@ -59,18 +59,21 @@ public class JUnitParser {
           def id = family + "." + testcase.@name.toString()
           def alreadyExists = taskResults.find { it.id == id }
           if (alreadyExists) return
-          
+
           discoveredTests++
           def result = new TaskResult(id, family, testcase.@name.toString(), null)
-          def failure = testcase.failure
-          failure = failure?.isEmpty() ? testcase.error : failure
-          failure = failure?.isEmpty() ? null : failure
-          if (failure) {
-            result.success = false
-            result.type = failure.@type.toString()
-            if (result.type) {
-              result.error = failure.@message.toString()
+          def failureMsg = testcase.error?.toString()
+          testcase.failure?.each { failure ->
+            result.type = failure.@type.toString() // save last one found
+            if (failureMsg) {
+              failureMsg += "\n"
             }
+            failureMsg += failure.@message.toString() ?: failure.text()
+          }
+          if (failureMsg) {
+            result.success = false
+            result.error = failureMsg
+            print "failureMsg=" + failureMsg
             suiteFailed = true
           } else {
             result.success = true
@@ -84,7 +87,7 @@ public class JUnitParser {
             startTime = result.stopTime
           }
           taskResults << result
-        }      
+        }
         if (discoveredTests > 0) {
           stats.suites++
           if (suiteFailed) stats.failures++
