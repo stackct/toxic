@@ -288,17 +288,22 @@ public class HttpTaskTest {
           [
                   name: 'location parsing without query params',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000']),
-                  expected: [baseUrl: 'http://foo.pizza:5000', params: [:]]
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET / HTTP/1.1", baseUrl: 'http://foo.pizza:5000', params: [:]]
           ],
           [
                   name: 'location parsing with one query param',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk']),
-                  expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk']]
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET /?something=idk HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [something:'idk']]
+          ],
+          [
+                  name: 'location parsing with a lower case location header',
+                  response: makeResponse(200, 'OK', null, ['location: http://foo.pizza:5000']),
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET / HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [:]]
           ],
           [
                   name: 'location parsing with query params',
                   response: makeResponse(200, 'OK', null, ['Location: http://foo.pizza:5000?something=idk&anotherthing=wow']),
-                  expected: [baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
+                  expected: [httpUri:"http://foo.pizza:5000", httpMethod:"GET /?something=idk&anotherthing=wow HTTP/1.1",baseUrl: 'http://foo.pizza:5000', params: [something:'idk', anotherthing: 'wow']]
           ],
           [
                   name: 'location parsing with invalid url',
@@ -308,7 +313,29 @@ public class HttpTaskTest {
           [
                   name: 'location parsing with unknown scheme',
                   response: makeResponse(200, 'OK', null, ['Location: toxic.pizza']),
-                  expected: [baseUrl:'toxic.pizza', params:[:]]
+                  expected: [httpUri: "", httpMethod:"GET / HTTP/1.1", baseUrl:'toxic.pizza', params:[:]]
+          ],
+          [
+                  name: 'parse httpUri and httpMethod',
+                  response: makeResponse(200, 'OK', null, ['Location: http://toxic.pizza:123/path?a=b&c=d']),
+                  expected: [httpUri:'http://toxic.pizza:123', httpMethod:"GET /path?a=b&c=d HTTP/1.1", baseUrl:'http://toxic.pizza:123/path', params:["a":"b","c":"d"]]
+          ],
+          [
+                  name: 'parse httpUri and httpMethod fro procore login redirect',
+                  response: makeResponse(200, 'OK', null, ['location: https://login-sandbox.procore.com/']),
+                  expected: [httpUri:'https://login-sandbox.procore.com', httpMethod:"GET / HTTP/1.1", baseUrl:'https://login-sandbox.procore.com/', params:[:]]
+          ],
+          [
+                  name: 'parse httpUri and httpMethod from procore redirect url',
+                  response: makeResponse(200, 'OK', null, ['Location: https://login-sandbox.procore.com/oauth/authorize?client_id=c5176466bb47b6e77efd1af650f25eed18be193a6a79c5c8a244ca0a3df340db&procore_host=https%3A%2F%2Fsandbox.procore.com&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2FOAuth%2FCallback%3FpartnerId%3D146&response_type=code&state=2b87ce6b-1208-4bf9-aa75-cf2923fefd1a']),
+                  expected: [httpUri:'https://login-sandbox.procore.com', httpMethod:"GET /oauth/authorize?client_id=c5176466bb47b6e77efd1af650f25eed18be193a6a79c5c8a244ca0a3df340db&procore_host=https%3A%2F%2Fsandbox.procore.com&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2FOAuth%2FCallback%3FpartnerId%3D146&response_type=code&state=2b87ce6b-1208-4bf9-aa75-cf2923fefd1a HTTP/1.1", baseUrl:'https://login-sandbox.procore.com/oauth/authorize', 
+                    params:[
+                      "client_id":"c5176466bb47b6e77efd1af650f25eed18be193a6a79c5c8a244ca0a3df340db",
+                      "procore_host":"https://sandbox.procore.com",
+                      "redirect_uri":"http://localhost:5000/OAuth/Callback?partnerId=146",
+                      "response_type":"code",
+                      "state":"2b87ce6b-1208-4bf9-aa75-cf2923fefd1a",
+                    ]]
           ],
       ]
 
@@ -339,6 +366,11 @@ public class HttpTaskTest {
         expected: [ headers: [foo: 'bar'], location:[:], cookies: [:], code:'200', reason:'OK', body:null]
       ],
       [
+        name: 'good response, empty header value',
+        response: makeResponse(200, 'OK', null, ['foo: ']),
+        expected: [ headers: [foo: ''], location:[:], cookies: [:], code:'200', reason:'OK', body:null]
+      ],
+      [
         name: 'good response, body',
         response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar']),
         expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [:], code:'200', reason:'OK', body:'{"foo":"bar"}']
@@ -347,6 +379,11 @@ public class HttpTaskTest {
         name: 'good response, body, with cookies',
         response: makeResponse(200, 'OK', '{"foo":"bar"}', ['foo: bar'], ['best=chocolatechip', 'worst=peanutbutter', 'empty=']),
         expected: [ headers: [foo: 'bar', 'Content-Length': '13'], location:[:], cookies: [best: 'chocolatechip', worst: 'peanutbutter', empty: ''], code:'200', reason:'OK', body:'{"foo":"bar"}']
+      ],
+      [
+        name: 'good response, body, with lower case cookie header',
+        response: makeResponse(200, 'OK', null, ["set-cookie: name=value"]),
+        expected: [ headers: [:], location:[:], cookies: ["name":"value"], code:'200', reason:'OK', body:null]
       ],
       [
         name: 'bad response, no body',
