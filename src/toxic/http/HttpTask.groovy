@@ -223,12 +223,7 @@ class HttpTask extends CompareTask {
           memory['http.response.location']['httpMethod'] = "GET ${pathAndQuery} HTTP/1.1"
          
           memory['http.response.location']['baseUrl'] = urlAndPath
-          memory['http.response.location']['params'] = [:]
-
-          uri.rawQuery?.split('&')?.collectEntries { param -> param.split('=')
-                  ?.collect { URLDecoder.decode(it, 'UTF-8') }}?.each { k, v ->
-            memory['http.response.location']['params'][k] = v
-          }
+          memory['http.response.location']['params'] = getQueryParams(uri)
         }
       }
     }
@@ -376,5 +371,15 @@ class HttpTask extends CompareTask {
       gzip?.close()
     }
     return out
+  }
+
+  static def getQueryParams(URI uri) {
+    def queryParams = [:]
+    uri.rawQuery
+      ?.split('&')
+      ?.collectEntries { param -> param.split('=')
+      ?.collect { URLDecoder.decode(it, 'UTF-8') }}
+      ?.each { k, v -> queryParams[k] = v }
+    return queryParams
   }
 }
