@@ -81,9 +81,13 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       return
     }
 
+    int maxAttempts = Integer.parseInt(props['pickle.testCaseAttempts'])
+    def testAttempts = [:]
+
     def futures = []
     def pool = Executors.newFixedThreadPool(Integer.parseInt(props['pickle.testCaseThreads']))
     testCases.each {
+      testAttempts[it] = 1
       futures << pool.submit(new TestCaseRunner(tm, it, props.clone()))
     }
 
@@ -94,7 +98,13 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         if (!finishedFutures.contains(it)) {
           try {
             runner = it.get(20, TimeUnit.MILLISECONDS)
-            appendResults(results, runner.results)
+            if (!TaskResult.areAllSuccessful(runner.results) && testAttempts[runner.testCase] < maxAttempts) {
+              testAttempts[runner.testCase]++
+              getLog(props).warn("Test case failed, will retry; attempt=" + testAttempts[runner.testCase] + "; maxAttempts=" + maxAttempts)
+              futures << pool.submit(new TestCaseRunner(tm, runner.testCase, props.clone()))
+            } else {
+              appendResults(results, runner.results)
+            }
             finishedFutures << it
           }
           catch(TimeoutException to) { }
