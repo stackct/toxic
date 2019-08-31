@@ -13,6 +13,10 @@ class AssertionTest {
 
   @Test
   void should_evaluate_greater() {
+    assert gt('b', 'a')
+    assert 'a > a. Expression: (a > a)' == gt('a', 'a')
+    assert 'a > b. Expression: (a > b)' == gt('a', 'b')
+
     assert gt('123', '122')
     assert gt('123', '122.12')
     assert gt('123.12', '122')
@@ -27,6 +31,10 @@ class AssertionTest {
 
   @Test
   void should_evaluate_greater_or_equal() {
+    assert gte('b', 'a')
+    assert gte('b', 'b')
+    assert 'a >= b. Expression: (a >= b)' == gte('a', 'b')
+
     assert gte('123', '122')
     assert gte('123', '123')
     assert gte('123', '123.12')
@@ -40,6 +48,10 @@ class AssertionTest {
 
   @Test
   void should_evaluate_lesser() {
+    assert lt('a', 'b')
+    assert 'a < a. Expression: (a < a)' == lt('a', 'a')
+    assert 'b < a. Expression: (b < a)' == lt('b', 'a')
+
     assert lt('121', '122')
     assert lt('121', '122.12')
     assert lt('121.12', '122')
@@ -53,6 +65,10 @@ class AssertionTest {
 
   @Test
   void should_evaluate_lesser_or_equal() {
+    assert lte('a', 'b')
+    assert lte('a', 'a')
+    assert 'b <= a. Expression: (b <= a)' == lte('b', 'a')
+
     assert lte('121', '122')
     assert lte('121', '121')
     assert lte('121', '121.12')
