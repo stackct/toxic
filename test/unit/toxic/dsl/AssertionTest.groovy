@@ -12,6 +12,60 @@ class AssertionTest {
   }
 
   @Test
+  void should_evaluate_greater() {
+    assert gt('123', '122')
+    assert gt('123', '122.12')
+    assert gt('123.12', '122')
+    assert '123 > 123. Expression: (123 > 123)' == gt('123', '123')
+    assert '123 > 124. Expression: (123 > 124)' == gt('123', '124')
+    assert '123 > 124.12. Expression: (123 > 124.12)' == gt('123', '124.12')
+
+    assert gt('123.21', '122.21')
+    assert '123.21 > 123.21. Expression: (123.21 > 123.21)' == gt('123.21', '123.21')
+    assert '123.21 > 124.21. Expression: (123.21 > 124.21)' == gt('123.21', '124.21')
+  }
+
+  @Test
+  void should_evaluate_greater_or_equal() {
+    assert gte('123', '122')
+    assert gte('123', '123')
+    assert gte('123', '123.12')
+    assert gte('123.12', '123')
+    assert '123 >= 124. Expression: (123 >= 124)' == gte('123', '124')
+
+    assert gte('123.21', '122.21')
+    assert gte('123.21', '123.21')
+    assert '123.21 >= 124.21. Expression: (123.21 >= 124.21)' == gte('123.21', '124.21')
+  }
+
+  @Test
+  void should_evaluate_lesser() {
+    assert lt('121', '122')
+    assert lt('121', '122.12')
+    assert lt('121.12', '122')
+    assert '121 < 121. Expression: (121 < 121)' == lt('121', '121')
+    assert '121 < 120. Expression: (121 < 120)' == lt('121', '120')
+
+    assert lt('121.21', '122.21')
+    assert '121.21 < 121.21. Expression: (121.21 < 121.21)' == lt('121.21', '121.21')
+    assert '121.21 < 120.21. Expression: (121.21 < 120.21)' == lt('121.21', '120.21')
+  }
+
+  @Test
+  void should_evaluate_lesser_or_equal() {
+    assert lte('121', '122')
+    assert lte('121', '121')
+    assert lte('121', '121.12')
+    assert lte('121.12', '122')
+    assert '121 <= 120. Expression: (121 <= 120)' == lte('121', '120')
+    assert '121.12 <= 121. Expression: (121.12 <= 121)' == lte('121.12', '121')
+
+    assert lte('121.21', '122.21')
+    assert lte('121.21', '121.21')
+    assert '121.21 <= 120.21. Expression: (121.21 <= 120.21)' == lte('121.21', '120.21')
+  }
+
+  @Test
   void should_evaluate_not_equal() {
     assert true == neq('foo', 'bar')
     assert 'foo != foo. Expression: (foo != foo)' == neq('foo', 'foo')
@@ -55,6 +109,22 @@ class AssertionTest {
 
   def eq(Object ying, Object yang) {
     evaluateAssertion(new Assertion().eq(ying, yang))
+  }
+
+  def gt(Object ying, Object yang) {
+    evaluateAssertion(new Assertion().gt(ying, yang))
+  }
+
+  def gte(Object ying, Object yang) {
+    evaluateAssertion(new Assertion().gte(ying, yang))
+  }
+
+  def lt(Object ying, Object yang) {
+    evaluateAssertion(new Assertion().lt(ying, yang))
+  }
+
+  def lte(Object ying, Object yang) {
+    evaluateAssertion(new Assertion().lte(ying, yang))
   }
 
   def neq(Object ying, Object yang) {
