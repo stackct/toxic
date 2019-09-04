@@ -140,47 +140,55 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
   @Override
   TestCaseRunner call() {
-    getLog(props).info("Starting test case; test=${props.testCase.name}")
+    if (!taskMaster.shouldAbort()) {
+      getLog(props).info("Starting test case; test=${props.testCase.name}")
 
-    def success = false
-    long start = 0
-    long end = 0
+      def success = false
+      long start = 0
+      long end = 0
 
-    try {
-      start = System.currentTimeMillis()
-      testCase.stepSequence.eachWithIndex { seq, stepIndex ->
-        props.stepIndex = stepIndex
-        step = seq.step
-        executeStep(step)
+      try {
+        start = System.currentTimeMillis()
+        testCase.stepSequence.eachWithIndex { seq, stepIndex ->
+            props.stepIndex = stepIndex
+            step = seq.step
+            executeStep(step)
+        }
+        executeAssertions()
+        end = System.currentTimeMillis()
+        success = TaskResult.areAllSuccessful(this.results)
       }
-      executeAssertions()
-      end = System.currentTimeMillis()
-      success = TaskResult.areAllSuccessful(this.results)
-    }
-    catch(Exception e) {
-      error = e
-    }
-    finally {
-      appendResults(this.results, new TaskResult([
-              id:        UUID.randomUUID().toString(),
-              family:    testCase.file.name,
-              name:      testCase.name,
-              type:      TestCaseTask.class.name,
-              success:   success,
-              error:     error?.message,
-              startTime: start,
-              stopTime:  end,
-              complete:  true,
-              duration:  (end - start)
-      ]))
+      catch(Exception e) {
+        error = e
+      }
+      finally {
+        if (!taskMaster.shouldAbort()) {
+          appendResults(this.results, new TaskResult([
+                  id:        UUID.randomUUID().toString(),
+                  family:    testCase.file.name,
+                  name:      testCase.name,
+                  type:      TestCaseTask.class.name,
+                  success:   success,
+                  error:     error?.message,
+                  startTime: start,
+                  stopTime:  end,
+                  complete:  true,
+                  duration:  (end - start)
+          ]))
 
-      getLog(props).info("Finished test case; test=${testCase.name}; file=${testCase.file.name}; success=${success}")
+          getLog(props).info("Finished test case; test=${testCase.name}; file=${testCase.file.name}; success=${success}")
+        } else {
+          getLog(props).info("Aborting test case; test=${testCase.name}; file=${testCase.file.name}")
+        }
+      }
     }
 
     return this
   }
 
   void executeStep(Step step) {
+    if (taskMaster.shouldAbort()) return
+
     preStepExecution(step)
 
     Function fn = props.functions[step.function]
@@ -197,6 +205,8 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   }
 
   void executeAssertions() {
+    if (taskMaster.shouldAbort()) return
+
     getLog(props).info("Executing assertions; test=${props.testCase.name}")
     def resolver = { contents ->
       def interpolatedContents = ''<<''
