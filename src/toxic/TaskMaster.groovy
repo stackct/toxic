@@ -43,7 +43,9 @@ public class TaskMaster implements Callable {
   }
 
   public boolean shouldAbort() {
-    return TaskResult.shouldAbort(props, results)
+    synchronized (results) {
+      return TaskResult.shouldAbort(props, results)
+    }
   }
 
   /**
