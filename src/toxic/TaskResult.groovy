@@ -20,8 +20,10 @@ public class TaskResult implements Serializable {
   }
 
   public static shouldAbort(def props, List<TaskResult> results) {
-    (props.tmHaltOnError == 'true' && !areAllSuccessful(results)) ||
-    (props.containsKey('tmHaltOnErrorThreshold') && (props.tmHaltOnErrorThreshold.toInteger() <= countFailures(results)))
+    if (props) {
+      (props.tmHaltOnError == 'true' && !areAllSuccessful(results)) ||
+      (props.containsKey('tmHaltOnErrorThreshold') && (props.tmHaltOnErrorThreshold.toInteger() <= countFailures(results)))
+    }
   }
 
   public def id
