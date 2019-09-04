@@ -56,7 +56,7 @@ class Assertion implements Serializable {
   }
 
   private Assertion assertOperation(Object ying, Object yang, String operator) {
-    String failureMessage = failureMessage("\"${ying} ${operator} ${yang}\"")
+    String failureMessage = failureMessage("\"${ying ?: "''"} ${operator} ${yang ?: "''"}\"")
     if (ying instanceof String && ying?.isNumber() && yang instanceof String && yang?.isNumber()) {
       if (ying.isLong()) ying = ying as long
       else if (ying.isDouble()) ying = ying as double
