@@ -88,14 +88,14 @@ class SlackNotificationTest {
     def sn = new SlackNotification() {
       def linkJob(def job) { "" }
     }
-    def job = new Job(id: 'test', commits: [[user:'me'], [user: 'you']], failed: 1)
+    def job = new Job(id: 'test', commits: [[user:'me', changesetUrl: 'http://some.here', summary: 'foo'], [user: 'you', changesetUrl: 'http://some.where', summary: 'bar']], failed: 1)
     sn.job = job
     sn.jobSimple = [failed: 1]
     SlackBot.metaClass.'static'.getInstance = { -> return new Object() { def findUser(a,b,c) { return [id:a] }}}
 
     def blames = sn.blameList(job)
-    assert blames.contains("Commit by <@me>")
-    assert blames.contains("Commit by <@you>")
+    assert blames.contains("<@me>: foo (<http://some.here|View>)")
+    assert blames.contains("<@you>: bar (<http://some.where|View>)")
   }
 
   @Test
