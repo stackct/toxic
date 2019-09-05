@@ -94,8 +94,8 @@ class SlackNotificationTest {
     SlackBot.metaClass.'static'.getInstance = { -> return new Object() { def findUser(a,b,c) { return [id:a] }}}
 
     def blames = sn.blameList(job)
-    assert blames.contains("<@me>: foo (<http://some.here|View>)")
-    assert blames.contains("<@you>: bar (<http://some.where|View>)")
+    assert blames.contains("<@me>: foo")
+    assert blames.contains("<@you>: bar")
   }
 
   @Test
