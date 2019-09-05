@@ -45,7 +45,7 @@ public class SlackNotification implements JobNotification {
     def out = ""
     job.commits?.each {
       def userId = SlackBot.instance.findUser(it.user, it.name, it.email)?.id
-      out += "\n> " + (userId ? "<@${userId}>" : it.name) + ": ${it.summary} (<${it.changesetUrl}|View>)"
+      out += "\n> " + (userId && job.failed ? "<@${userId}>" : it.name) + ": ${it.summary} (<${it.changesetUrl}|View>)"
     }
     out
   }
