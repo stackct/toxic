@@ -10,7 +10,7 @@ class SlackNotificationTest {
   void after() {
     SlackBot.metaClass = null
   }
-  
+
   @Test
   void should_notify() {
     def sn = new SlackNotification()
@@ -26,7 +26,7 @@ class SlackNotificationTest {
 
     sn.job.properties["job.slack.channels"] = "general"
     assert sn.shouldNotify()
-  
+
     sn.job.properties["job.slack.users"] = "user1"
     assert sn.shouldNotify()
 
@@ -94,8 +94,8 @@ class SlackNotificationTest {
     SlackBot.metaClass.'static'.getInstance = { -> return new Object() { def findUser(a,b,c) { return [id:a] }}}
 
     def blames = sn.blameList(job)
-    assert blames.contains("Blame <@me>")
-    assert blames.contains("Blame <@you>")
+    assert blames.contains("Commit by <@me>")
+    assert blames.contains("Commit by <@you>")
   }
 
   @Test
