@@ -2,12 +2,12 @@ FROM alpine:latest
 LABEL Description="Task Execution Engine"
 
 # Set the locale
-ENV LANGUAGE en_US:en  
-ENV LANG     en_US.UTF-8  
+ENV LANGUAGE en_US:en
+ENV LANG     en_US.UTF-8
 ENV LC_ALL   en_US.UTF-8
 
 ARG DIST_DIR_NAME
-ARG K8S_VERSION=v1.10.5
+ARG K8S_VERSION=v1.14.6
 ARG YQ_VERSION=2.4.0
 
 COPY ${DIST_DIR_NAME} /opt/toxic
