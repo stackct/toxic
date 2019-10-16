@@ -6,7 +6,7 @@ def env = System.getenv()
 def execTimeout = new Integer(memory['execTimeout'] ?: 1200)
 
 memory.parseEnvironment =  { String file ->
-  new JsonSlurper().parseText(new File(file).text)  
+  new JsonSlurper().parseText(new File(file).text)
 }
 
 memory.createNamespace = { ->
@@ -18,7 +18,7 @@ memory.createNamespace = { ->
     out = out.toString()
     err = err.toString()
   }
-  
+
   if (exitCode != 0) {
     log.warn("Namespace not created; reason='${err}'")
   }
@@ -46,7 +46,7 @@ memory.kubePortForward = { ->
     }
 
     // Grab a copy of the Process object for use in the shutdown hook
-    // Note that this could be clobbered by another thread if multiple threads are trying to 
+    // Note that this could be clobbered by another thread if multiple threads are trying to
     // exec multiple process concurrently. Since this function is expected to be performed
     // during the test setup phase, there is not an expectation of parallel activity during
     // port forward construction.
@@ -63,11 +63,29 @@ memory.kubePortForward = { ->
   return running
 }
 
-memory.kubeSecret = { String namespace, String name, String file -> 
+memory.kubeSecret = { String namespace, String name, String file ->
   execWithEnv([kubectl, '--namespace', namespace, 'create', 'secret', 'generic', name, '--from-file', file])
 }
 
-memory.kubeApply = { String namespace, String file -> 
+memory.kubeExportSecret = { String namespace, String name, String file ->
+  int exitCode = execWithEnvNoLogging([kubectl, '--namespace', namespace, 'get', 'secret', name, '-o', 'yaml'])
+
+  if (exitCode != 0) {
+    log.warn("Secret not exported; reason='${err}'")
+  } else {
+    def str = out.toString()
+    str = str.replaceAll(/creationTimestamp:.*/, "")
+    str = str.replaceAll(/namespace:.*/, "")
+    str = str.replaceAll(/resourceVersion:.*/, "")
+    str = str.replaceAll(/selfLink:.*/, "")
+    str = str.replaceAll(/uid:.*/, "")
+    new File(file).text = str
+  }
+
+  return exitCode
+}
+
+memory.kubeApply = { String namespace, String file ->
   execWithEnv([kubectl, '--namespace', namespace, 'apply', '-f', file])
 }
 
@@ -116,7 +134,7 @@ memory.helmInstall = { String name, String chart, def values, def overrides = nu
 
 memory.helmUpgrade = { String name, String chart, def values, def overrides ->
   int exitCode = 0
-  
+
   def namespace = memory['namespace']
   def release = namespace + '-' + name
 
@@ -135,7 +153,7 @@ memory.helmUpgrade = { String name, String chart, def values, def overrides ->
   return exitCode
 }
 
-memory.execWithValues = { cmds, values, overrides -> 
+memory.execWithValues = { cmds, values, overrides ->
   int exitCode = 0
   File f
   try {
@@ -147,7 +165,7 @@ memory.execWithValues = { cmds, values, overrides ->
     if (overrides) {
       cmds << '--set'; cmds << overrides
     }
-    exitCode = execWithEnv(cmds,[:],execTimeout)  
+    exitCode = execWithEnv(cmds,[:],execTimeout)
   }
   finally {
     f?.delete()
@@ -208,7 +226,7 @@ memory.helmDelete = { String name ->
   return exitCode
 }
 
-memory.addHelmAuth = { List cmds -> 
+memory.addHelmAuth = { List cmds ->
   if (memory['secure.helm.username']) {
     cmds << '--username'; cmds << memory['secure.helm.username']
   }
@@ -251,7 +269,7 @@ memory.getLogs = { String pod, String container, String namespace = memory['name
 memory.namespaceExists = { String namespace = memory['namespace'] ->
   execWithEnvNoLogging([kubectl, 'get', 'ns', '--include-uninitialized=true', '-o=json'])
   def ns = outputBuffer.toString()
-  
+
   new JsonSlurper().parseText(ns).items.any { item ->
     item.metadata.name == namespace
   }
