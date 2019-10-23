@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as cp from 'child_process';
+import { isFunction } from 'util';
 
 export class Runtime {
     public static baseDir: string = path.join(vscode.workspace.rootPath, 'toxic', 'tests');
@@ -48,24 +49,29 @@ export class Runtime {
         Runtime.outputChannel.show(true);
 
         let configArgs = vscode.workspace.getConfiguration().get('pickle.runtimeArgs') as string[];
+        let allArgs = [`-doDir=${path}`].concat(args).concat(configArgs);
 
-        let proc = cp.spawn(this.command, ['-doDir=' + path].concat(...args).concat(...configArgs));
-
+        let proc = cp.spawn(this.command, allArgs.map(this.cliEncode));
+        
         proc.stdout.addListener("data", (chunk) => {
             let s = chunk.toString()
             Runtime.outputChannel.append(s)
             
-            if (data) data(s);
+            if (isFunction(data)) data(s);
         });
 
         proc.on("error", (e) => {
             this.notifyError('Execution failed. Make sure ' + this.command + ' is installed in and your PATH');
-            if (error) error(e.message)
+            if (isFunction(error)) error(e.message)
         });
 
         proc.on("close", (code, signal) => {
-            if (close) close(code, signal);
+            if (isFunction(close)) close(code, signal);
         });
+    }
+
+    private static cliEncode(s: string): string {
+        return `"${s}"`;
     }
 
     private static notifySuccess(message: string, options: string[] = []): Thenable<string> {

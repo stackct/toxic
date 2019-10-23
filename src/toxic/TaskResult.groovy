@@ -20,8 +20,10 @@ public class TaskResult implements Serializable {
   }
 
   public static shouldAbort(def props, List<TaskResult> results) {
-    (props.tmHaltOnError == 'true' && !areAllSuccessful(results)) ||
-    (props.containsKey('tmHaltOnErrorThreshold') && (props.tmHaltOnErrorThreshold.toInteger() <= countFailures(results)))
+    if (props) {
+      (props.tmHaltOnError == 'true' && !areAllSuccessful(results)) ||
+      (props.containsKey('tmHaltOnErrorThreshold') && (props.tmHaltOnErrorThreshold.toInteger() <= countFailures(results)))
+    }
   }
 
   public def id
@@ -41,7 +43,7 @@ public class TaskResult implements Serializable {
     this.name = name
     this.type = type
   }
-  
+
   public TaskResult(Map map) {
     fromSimple(map)
   }
@@ -83,7 +85,7 @@ public class TaskResult implements Serializable {
   public long getElapsedTimeMillis() {
     return startTime ? (stopTime ? stopTime - startTime : System.currentTimeMillis() - startTime) : 0
   }
-  
+
   @Override
   public String toString() {
     "TaskResult(id=${id}, family=${family}, name=${name}, type=${type}, error=${error}, success=${success}, startTime=${startTime}, stopTime=${stopTime})"
@@ -104,7 +106,7 @@ public class TaskResult implements Serializable {
     map.duration   = this.elapsedTimeMillis
     map
   }
-  
+
   public def fromSimple(def map) {
     this.id = map.id
     this.family = map.family

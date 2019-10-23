@@ -1,0 +1,26 @@
+function "Redirect" {
+  description "Follow the location of the previous response"
+  path "{{ libPath }}/http/redirect"
+
+  input "redirectHttpUri"
+  input "redirectHttpMethod"
+  input "authCookie", false
+  input "cookies", false
+
+  output "redirectUrl"
+  output "redirectHttpUri"
+  output "redirectHttpMethod"
+}
+
+function "ParseUri" {
+  description "Deconstructs a uri"
+  path "{{ libPath }}/http/parse_uri"
+
+  input "uri"
+
+  output "path"
+  output "scheme"
+  output "host"
+  output "port"
+  output "queryParams"
+}

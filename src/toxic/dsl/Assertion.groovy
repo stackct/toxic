@@ -5,6 +5,22 @@ class Assertion implements Serializable {
 
   List<String> assertions = []
 
+  Assertion gt(Object ying, Object yang) {
+    assertOperation(ying, yang, '>')
+  }
+
+  Assertion gte(Object ying, Object yang) {
+    assertOperation(ying, yang, '>=')
+  }
+
+  Assertion lt(Object ying, Object yang) {
+    assertOperation(ying, yang, '<')
+  }
+
+  Assertion lte(Object ying, Object yang) {
+    assertOperation(ying, yang, '<=')
+  }
+
   Assertion eq(Object ying, Object yang) {
     assertOperation(ying, yang, '==')
   }
@@ -40,21 +56,27 @@ class Assertion implements Serializable {
   }
 
   private Assertion assertOperation(Object ying, Object yang, String operator) {
-    String failureMessage = failureMessage("\"${ying} ${operator} ${yang}\"")
+    String failureMessage = failureMessage("\"${ying ?: "''"} ${operator} ${yang ?: "''"}\"")
+    if (ying instanceof String && ying?.isNumber() && yang instanceof String && yang?.isNumber()) {
+      if (ying.isLong()) ying = ying as long
+      else if (ying.isDouble()) ying = ying as double
+      if (yang.isLong()) yang = yang as long
+      else if (yang.isDouble()) yang = yang as double
+    }
     assertions << "assert ${format(ying)} ${operator} ${format(yang)} : ${failureMessage}"
     this
   }
 
-  private String format(Object value) { 
-    return value 
+  private String format(Object value) {
+    return value
   }
-  
+
   private String format(String value) {
-    return "'''${value}'''" 
+    return "'''${value}'''"
   }
-  
-  private String format(Map value) { 
-    return "[" + value.collect {k,v-> "${k}:${format(v)}" }.join('') + "]" 
+
+  private String format(Map value) {
+    return "[" + value.collect {k,v-> "${k}:${format(v)}" }.join('') + "]"
   }
 
   private String format(List value) {
