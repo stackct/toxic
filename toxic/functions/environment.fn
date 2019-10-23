@@ -1,5 +1,5 @@
 function "DeployEnvironment" {
-  description "Deploys an environment" 
+  description "Deploys an environment"
   path "{{ libPath }}/environment/deploy"
 
   arg "spec"
@@ -21,7 +21,7 @@ function "UpgradeEnvironment" {
 }
 
 function "DeleteEnvironment" {
-  description "Deletes an environment" 
+  description "Deletes an environment"
   path "{{ libPath }}/environment/delete"
 
   arg "spec"
@@ -30,7 +30,7 @@ function "DeleteEnvironment" {
 }
 
 function "CollectLogs" {
-  description "Collects an environment's logs" 
+  description "Collects an environment's logs"
   path "{{ libPath }}/environment/logs"
 
   arg "spec"
@@ -53,6 +53,15 @@ function "KubePortForward" {
   arg "name"
   arg "port"
   arg "enabled"
+}
+
+function "KubeExportSecret" {
+    description "Export a Kubernetes secret to a file"
+    path "{{ libPath }}/environment/kube_secret/export"
+
+    arg "namespace"
+    arg "name"
+    arg "file"
 }
 
 function "KubeCreateSecret" {

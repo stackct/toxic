@@ -42,6 +42,12 @@ public class TaskMaster implements Callable {
     }
   }
 
+  public boolean shouldAbort() {
+    synchronized (results) {
+      return TaskResult.shouldAbort(props, results)
+    }
+  }
+
   /**
    * Begins the task mastering process.
    */
@@ -58,7 +64,7 @@ public class TaskMaster implements Callable {
 
         doRep(count++)
 
-        if (TaskResult.shouldAbort(props, results)) {
+        if (shouldAbort()) {
           break
         }
 
@@ -85,7 +91,7 @@ public class TaskMaster implements Callable {
       def result = new TaskResult("failIfNoResults", "TaskMaster", "Missing task results", this.class.name)
       result.success = false
       results << result
-    }        
+    }
   }
 
   /**
@@ -107,7 +113,7 @@ public class TaskMaster implements Callable {
       synchronized(results) {
         results.addAll(taskResults)
       }
-      if (TaskResult.shouldAbort(props, results)) {
+      if (shouldAbort()) {
         log.info("Aborting task master due to task failure")
         break
       }
@@ -117,7 +123,7 @@ public class TaskMaster implements Callable {
     int runs = memory['pickle.testCaseRuns'] ? new Integer(memory['pickle.testCaseRuns']) : 1
     for (memory.pickleRun = 0; memory.pickleRun < runs && !shutdown; memory.pickleRun++) {
       TestCaseRunner.run(this, memory.clone(), results)
-      if (TaskResult.shouldAbort(props, results)) {
+      if (shouldAbort()) {
         log.info("Aborting TestCaseRunner due to task failure")
         break
       }

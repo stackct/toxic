@@ -81,9 +81,13 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       return
     }
 
+    int maxAttempts = Integer.parseInt(props['pickle.testCaseAttempts'])
+    def testAttempts = [:]
+
     def futures = []
     def pool = Executors.newFixedThreadPool(Integer.parseInt(props['pickle.testCaseThreads']))
     testCases.each {
+      testAttempts[it] = 1
       futures << pool.submit(new TestCaseRunner(tm, it, props.clone()))
     }
 
@@ -94,7 +98,13 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         if (!finishedFutures.contains(it)) {
           try {
             runner = it.get(20, TimeUnit.MILLISECONDS)
-            appendResults(results, runner.results)
+            if (!TaskResult.areAllSuccessful(runner.results) && testAttempts[runner.testCase] < maxAttempts) {
+              testAttempts[runner.testCase]++
+              getLog(props).warn("Test case failed, will retry; attempt=" + testAttempts[runner.testCase] + "; maxAttempts=" + maxAttempts)
+              futures << pool.submit(new TestCaseRunner(tm, runner.testCase, props.clone()))
+            } else {
+              appendResults(results, runner.results)
+            }
             finishedFutures << it
           }
           catch(TimeoutException to) { }
@@ -130,47 +140,55 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
   @Override
   TestCaseRunner call() {
-    getLog(props).info("Starting test case; test=${props.testCase.name}")
+    if (!taskMaster.shouldAbort()) {
+      getLog(props).info("Starting test case; test=${props.testCase.name}")
 
-    def success = false
-    long start = 0
-    long end = 0
+      def success = false
+      long start = 0
+      long end = 0
 
-    try {
-      start = System.currentTimeMillis()
-      testCase.stepSequence.eachWithIndex { seq, stepIndex ->
-        props.stepIndex = stepIndex
-        step = seq.step
-        executeStep(step)
+      try {
+        start = System.currentTimeMillis()
+        testCase.stepSequence.eachWithIndex { seq, stepIndex ->
+            props.stepIndex = stepIndex
+            step = seq.step
+            executeStep(step)
+        }
+        executeAssertions()
+        end = System.currentTimeMillis()
+        success = TaskResult.areAllSuccessful(this.results)
       }
-      executeAssertions()
-      end = System.currentTimeMillis()
-      success = TaskResult.areAllSuccessful(this.results)
-    }
-    catch(Exception e) {
-      error = e
-    }
-    finally {
-      appendResults(this.results, new TaskResult([
-              id:        UUID.randomUUID().toString(),
-              family:    testCase.file.name,
-              name:      testCase.name,
-              type:      TestCaseTask.class.name,
-              success:   success,
-              error:     error?.message,
-              startTime: start,
-              stopTime:  end,
-              complete:  true,
-              duration:  (end - start)
-      ]))
+      catch(Exception e) {
+        error = e
+      }
+      finally {
+        if (!taskMaster.shouldAbort()) {
+          appendResults(this.results, new TaskResult([
+                  id:        UUID.randomUUID().toString(),
+                  family:    testCase.file.name,
+                  name:      testCase.name,
+                  type:      TestCaseTask.class.name,
+                  success:   success,
+                  error:     error?.message,
+                  startTime: start,
+                  stopTime:  end,
+                  complete:  true,
+                  duration:  (end - start)
+          ]))
 
-      getLog(props).info("Finished test case; test=${testCase.name}; file=${testCase.file.name}; success=${success}")
+          getLog(props).info("Finished test case; test=${testCase.name}; file=${testCase.file.name}; success=${success}")
+        } else {
+          getLog(props).info("Aborting test case; test=${testCase.name}; file=${testCase.file.name}")
+        }
+      }
     }
 
     return this
   }
 
   void executeStep(Step step) {
+    if (taskMaster.shouldAbort()) return
+
     preStepExecution(step)
 
     Function fn = props.functions[step.function]
@@ -187,6 +205,8 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   }
 
   void executeAssertions() {
+    if (taskMaster.shouldAbort()) return
+
     getLog(props).info("Executing assertions; test=${props.testCase.name}")
     def resolver = { contents ->
       def interpolatedContents = ''<<''
@@ -206,7 +226,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   void executeDirItem(DirItem dirItem) {
     DirOrganizer organizer = new DirOrganizer(props: props, dirItem: dirItem)
 
-    while (organizer.hasNext() && !taskMaster.isShutdown()) {
+    while (organizer.hasNext() && !taskMaster.isShutdown() && !taskMaster.shouldAbort()) {
       Task task = organizer.next()
       def taskResults = task.execute(props)
 

@@ -668,6 +668,15 @@ public class HttpTaskTest {
     task.doTask(memory)
   }
 
+  @Test
+  void should_parse_uri() {
+    def uri = new URI('https://toxic.com:1234/foobar?param1=value1&param2=value2')
+    def queryParams = HttpTask.getQueryParams(uri)
+    assert 2 == queryParams.size()
+    assert 'value1' == queryParams['param1']
+    assert 'value2' == queryParams['param2']
+  }
+
   private String makeResponse(int code, String reason, String body=null, List headers=[], List cookies=[]) {
     def sb = new StringBuffer('HTTP/1.1 ' + code + ' ' + reason + '' + HttpTask.HTTP_CR)
 

@@ -13,11 +13,11 @@ public class SlackNotification implements JobNotification {
   protected Map jobSimple
 
   public SlackNotification() {}
-    
+
   public boolean execute(Job job) {
     this.job = job
     this.jobSimple = job.toSimple()
-    
+
     if (shouldNotify()) {
       def channels = job.properties["job.slack.channels"]
       if (channels) {
@@ -34,8 +34,8 @@ public class SlackNotification implements JobNotification {
     def outcome = jobSimple.failed ? localize("FAILED") : localize("SUCCESS")
     def count = jobSimple.failed ? this.jobSimple.failed : this.jobSimple.suites
     def out = "${job.id}: *${outcome} [${count}]* ${linkJob(job.id)}"
+    out += blameList(job)
     if (job.failed) {
-      out += blameList(job)
       out += failureList(job, 5)
     }
     return out
@@ -43,15 +43,9 @@ public class SlackNotification implements JobNotification {
 
   def blameList(job) {
     def out = ""
-    if(job.failed) {
-      def blameList = []
-      job.commits?.each {
-        def userId = SlackBot.instance.findUser(it.user, it.name, it.email)?.id
-        if (!(userId in blameList)) {
-          out += "\n> Blame " + (userId ? "<@${userId}>" : it.name)
-          blameList << userId
-        }
-      }
+    job.commits?.each {
+      def userId = SlackBot.instance.findUser(it.user, it.name, it.email)?.id
+      out += "\n> " + (userId && job.failed ? "<@${userId}>" : it.name) + ": ${it.summary}"
     }
     out
   }
@@ -64,26 +58,26 @@ public class SlackNotification implements JobNotification {
     }
     out
   }
-  
+
   def linkJob(def job) {
     if (SlackBot.instance.handler) return "(${SlackBot.instance.handler.linkJob(job)})"
     return ""
   }
-  
+
   boolean shouldNotify() {
     if (!job?.properties) return false
-    
+
     def postOnSuccess = !"false".equalsIgnoreCase(job.properties["job.slack.onsuccess"].toString())
     def postOnFailure = !"false".equalsIgnoreCase(job.properties["job.slack.onfailure"].toString())
     def postOnFirstSuccess = !"false".equalsIgnoreCase(job.properties["job.slack.onfirstsuccess"].toString())
-    
+
     return (!SlackBot.instance.isSilenced() &&
             (job.properties["job.slack.channels"] || job.properties["job.slack.users"]) &&
            ((postOnSuccess && !this.jobSimple?.failed) ||
             (postOnFailure && this.jobSimple?.failed) ||
             (postOnFirstSuccess && !this.jobSimple?.failed && this.jobSimple?.prevFailed)))
   }
-  
+
   String localize(String key) {
     return key
   }
