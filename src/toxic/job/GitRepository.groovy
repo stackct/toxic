@@ -63,7 +63,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
   }
 
   public def checkoutTargetBranch(){
-    exec("git checkout --track -B ${this.branch} ${remoteBranch()}", false)
+    exec("git checkout --track -B ${this.branch} ${remoteBranch()}", true)
     if (!isOnExpectedBranch()) {
       throw new GitCommandException(getCurrentBranch())
     }
