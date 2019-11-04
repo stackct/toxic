@@ -1,14 +1,14 @@
-var app = angular.module('Toxic', 
+var app = angular.module('Toxic',
   [
-    'ngRoute', 
+    'ngRoute',
     'ngCookies',
     'ui.router',
-    'ui.bootstrap', 
-    'angular.filter', 
+    'ui.bootstrap',
+    'angular.filter',
     'angular-duration-format',
-    'cgBusy', 
-    'd3', 
-    'yaru22.md', 
+    'cgBusy',
+    'd3',
+    'yaru22.md',
     'toxic.directives.d3'
 ]);
 
@@ -45,7 +45,7 @@ app.refreshNow = function(scope, interval, func, delay) {
 app.refresh = function(scope, interval, func) {
   app.refreshing = (func == app.oldFunc);
   app.oldFunc = func;
-  
+
   app.cancelRefresh(scope, interval);
   if (scope.shouldRefresh()) {
     app.refreshNow(scope, interval, func, app.refreshDelaySeconds * 1000);
@@ -66,7 +66,7 @@ app.isVisible = function() {
   } else {
     var prefixes = ['webkit','moz','ms','o'];
     for (var i = 0; i < prefixes.length; i++){
-      if ((prefixes[i] + 'Hidden') in document) 
+      if ((prefixes[i] + 'Hidden') in document)
         prop = prefixes[i] + 'Hidden';
     }
   }
@@ -78,14 +78,14 @@ app.isVisible = function() {
   return visible;
 };
 
-app.service('visibilityApiService', function visibilityApiService($rootScope) { 
-  document.addEventListener("visibilitychange",visibilitychanged); 
-  document.addEventListener("webkitvisibilitychange", visibilitychanged); 
-  document.addEventListener("msvisibilitychange", visibilitychanged); 
+app.service('visibilityApiService', function visibilityApiService($rootScope) {
+  document.addEventListener("visibilitychange",visibilitychanged);
+  document.addEventListener("webkitvisibilitychange", visibilitychanged);
+  document.addEventListener("msvisibilitychange", visibilitychanged);
 
-  function visibilitychanged() { 
-    $rootScope.$broadcast('visibilityChanged', document.hidden || document.webkitHidden || document.mozHidden || document.msHidden) 
-  } 
+  function visibilitychanged() {
+    $rootScope.$broadcast('visibilityChanged', document.hidden || document.webkitHidden || document.mozHidden || document.msHidden)
+  }
 });
 
 ///////////// CHARTS //////////////////
@@ -132,7 +132,7 @@ app.lookupTimechart = function(force) {
               ticks: {
                 min: 0
               }
-            }],            
+            }],
           },
         }
       });
@@ -239,13 +239,6 @@ app.lookupTopCommitters = function(force) {
         data: {
           labels: [],
           datasets: [{
-            label: "Blamed Commits",
-            backgroundColor:  Chart.helpers.color('#d33724').alpha(0.5).rgbString(),
-            borderColor: '#d33724',
-            borderWidth: 1,
-            data: []
-          },
-          {
             label: "Successful Commits",
             backgroundColor:  Chart.helpers.color('#00a65a').alpha(0.5).rgbString(),
             borderColor: '#00a65a',
@@ -254,6 +247,9 @@ app.lookupTopCommitters = function(force) {
           }]
         },
         options: {
+          legend: {
+            display: false
+          },
           scales: {
             xAxes: [{
               stacked: true,
@@ -272,10 +268,9 @@ app.lookupTopCommitters = function(force) {
   return app.topCommitters;
 }
 
-app.topCommittersLimit = '10';
+app.topCommittersLimit = '20';
 app.updateTopCommitters = function(data, force) {
   var totalData = [];
-  var failureData = [];
   var nameData = [];
 
   if (data != null && data.commitMetrics != null) {
@@ -291,8 +286,7 @@ app.updateTopCommitters = function(data, force) {
     flat.forEach( function(record) {
       if (count < parseInt(app.topCommittersLimit)) {
         nameData.push(record[0]);
-        totalData.push(record[1].totalCommits-record[1].failedJobs);
-        failureData.push(record[1].failedJobs);
+        totalData.push(record[1].totalCommits);
       }
       count++;
     });
@@ -300,12 +294,92 @@ app.updateTopCommitters = function(data, force) {
 
   var chart = app.lookupTopCommitters(force);
   if (chart != null) {
-    chart.data.datasets[0].data = failureData;
-    chart.data.datasets[1].data = totalData;
+    chart.data.datasets[0].data = totalData;
     chart.data.labels = nameData;
     chart.update();
   }
 }
+
+
+
+
+
+app.lookupWallOfShame = function(force) {
+  if (app.wallOfShame == null || force) {
+    var canvas = document.getElementById("wallOfShame")
+    if (canvas != null) {
+      var ctx = canvas.getContext('2d');
+      app.wallOfShame = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: "Blamed Commits",
+            backgroundColor:  Chart.helpers.color('#d33724').alpha(0.5).rgbString(),
+            borderColor: '#d33724',
+            borderWidth: 1,
+            data: []
+          }]
+        },
+        options: {
+          legend: {
+            display: false
+          },
+          scales: {
+            xAxes: [{
+              stacked: true,
+              ticks: {
+                min: 0
+              }
+            }],
+            yAxes: [{
+              stacked: true
+            }]
+          }
+        }
+      });
+    }
+  }
+  return app.wallOfShame;
+}
+
+app.wallOfShameLimit = '20';
+app.updateWallOfShame = function(data, force) {
+  var failureData = [];
+  var nameData = [];
+
+  if (data != null && data.commitMetrics != null) {
+    var count = 0;
+    var flat = []
+    for (var key in data.commitMetrics) {
+      flat.push([key, data.commitMetrics[key]]);
+    };
+
+    flat.sort(function(a, b) {
+      return a[1].failedJobs > b[1].failedJobs ? -1 : a[1].failedJobs < b[1].failedJobs ? 1 : 0;
+    });
+    flat.forEach( function(record) {
+      if (count < parseInt(app.wallOfShameLimit)) {
+        nameData.push(record[0]);
+        failureData.push(record[1].failedJobs);
+      }
+      count++;
+    });
+  }
+
+  var chart = app.lookupWallOfShame(force);
+  if (chart != null) {
+    chart.data.datasets[0].data = failureData;
+    chart.data.labels = nameData;
+    chart.update();
+  }
+}
+
+
+
+
+
+
 
 app.lookupTopProjects = function(force) {
   if (app.topProjects == null || force) {
@@ -337,7 +411,7 @@ app.lookupTopProjects = function(force) {
               stacked: true,
               ticks: {
                 min: 0
-              }              
+              }
             }],
             yAxes: [{
               stacked: true
@@ -392,6 +466,7 @@ app.updateCharts = function(data, force) {
   app.updateTimechart(data, force);
   app.updateTopDuration(data, force);
   app.updateTopCommitters(data, force);
+  app.updateWallOfShame(data, force);
   app.updateTopProjects(data, force);
   app.cachedChartData = data;
 }
