@@ -3,11 +3,12 @@
       <div class="col-md-6">
         <div class="box box-primary">
           <div class="box-header with-border">
-            <h3 class="box-title">Job Trends</h3>
-            <div class="chart-tip">Shows daily job metrics, providing job trends at a quick glance.</div>
+            <h3 class="box-title">Wall of Shame (-7d)</h3>
+            <span class="chart-option">Limit: <select ng-model="wallOfShameLimit" ng-change="onChangeWallOfShameLimit(wallOfShameLimit)" ng-options="x for x in chartLimits"></select></span>
+            <div class="chart-tip">Habitual build breakers.</div>
           </div>
           <div class="box-body">
-            <canvas id="timechart"></canvas>
+            <canvas id="wallOfShame"></canvas>
           </div>
         </div>
       </div>
@@ -28,12 +29,11 @@
       <div class="col-md-6">
         <div class="box box-primary">
           <div class="box-header with-border">
-            <h3 class="box-title">Top Committers (-7d)</h3>
-            <span class="chart-option">Limit: <select ng-model="topCommittersLimit" ng-change="onChangeTopCommittersLimit(topCommittersLimit)" ng-options="x for x in chartLimits"></select></span>
-            <div class="chart-tip">Most frequent repository committers.</div>
+            <h3 class="box-title">Job Trends</h3>
+            <div class="chart-tip">Shows daily job metrics, providing job trends at a quick glance.</div>
           </div>
           <div class="box-body">
-            <canvas id="topCommitters"></canvas>
+            <canvas id="timechart"></canvas>
           </div>
         </div>
       </div>
@@ -142,5 +142,5 @@
           </div>
           <!-- /.info-box -->
         </div>
-    </div>    
+    </div>
 </div>
