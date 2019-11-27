@@ -324,8 +324,18 @@ public class Job implements Callable, Comparable, Publisher {
     return args
   }
 
-  protected saveDetails() {
-    new File(this.jobDir, this.projectWorkDir.name).text = this.details
+  protected updateDetails() {
+    def cleanProps = this.properties.clone()
+    cleanProps.remove("log")
+    cleanProps.remove("jobManager")
+    cleanProps.remove("eventManager")
+    cleanProps.remove("job")
+    this.details = cleanProps.toStringProperties()
+
+    def jobFile = new File(this.jobDir, this.projectWorkDir.name)
+    if (jobFile.isFile()) {
+      jobFile.text = this.details
+    }
   }
 
   protected initialize() {
@@ -349,9 +359,8 @@ public class Job implements Callable, Comparable, Publisher {
     newProps = Main.loadProperties(args)
     this.properties.putAll(newProps)
 
-    // Save final version of properties into job file
-    this.details = this.properties.toStringProperties()
-    saveDetails()
+    // Update final version of properties into job file
+    updateDetails()
 
     if (properties.jobManager) {
       previousJob = properties.jobManager.findLatestJob(project, JobStatus.COMPLETED)

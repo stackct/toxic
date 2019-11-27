@@ -87,7 +87,7 @@ public class JobTest {
     // Prime the simple results map with our faked injected results
     job.getSimpleResults()
     job.metaClass.fetchArtifacts = { -> artifacts }
-    job.metaClass.saveDetails = { -> detailsSaved = true }
+    job.metaClass.updateDetails = { -> detailsSaved = true }
 
     return job
   }
@@ -154,7 +154,6 @@ public class JobTest {
     def dtCompleted = new Date() - 1
 
     def job = mockJob(dtSubmitted, dtStarted, dtCompleted)
-    job.properties.foo="bar"
     job.initialize()
 
     assert job.properties['job.maxCommits'] == "10"
@@ -178,7 +177,7 @@ public class JobTest {
     job.toSimple().with { s ->
       assert s.id            == 'foo-bar-0'
       assert s.project       == 'foo-bar'
-      assert s.details.contains('foo=bar')
+      assert s.details       == 'details'
       assert s.status        == 'COMPLETED'
       assert s.satisfiedTriggers == 'trigger1,trigger2'
       assert s.startedDate   == dtStarted
