@@ -47,10 +47,22 @@ public class ToxicProperties extends ConfigObject {
     def props = new LinkedHashMap(MOST_RECENT_COUNT)
     def keys = lastModifiedKeys
     Lists.reverse(keys.asList()).each {
-      props[it] = it.startsWith(SECURE_PREFIX) ? "***" : getRaw(it)
+      props[it] = getMaskedValue(it)
     }
     def id = getClass().getName() + "@" + Integer.toHexString(hashCode())
     return "${id} - Last ${lastModifiedKeys.size()} modified properties: ${props.toString()}"
+  }
+
+  public String getMaskedValue(String key) {
+    return key.startsWith(SECURE_PREFIX) ? "***" : getRaw(key).toString()
+  }
+
+  public String toStringProperties() {
+    def newProps = ""
+    entrySet().each {
+      newProps += "${it.key}=${getMaskedValue(it.key)}\n"
+    }
+    return newProps
   }
 
   public void putAll(ToxicProperties props) {
@@ -175,13 +187,13 @@ public class ToxicProperties extends ConfigObject {
     synchronized(this) {
       keys.addAll(keySet())
     }
-    keys?.findAll { 
-      it.toString().startsWith(propPrefix) 
+    keys?.findAll {
+      it.toString().startsWith(propPrefix)
     }.sort()?.each { key ->
       c(key, get(key))
     }
   }
-  
+
   public void load(InputStream is) {
     load(new StringReader(is.text))
   }
@@ -224,7 +236,7 @@ public class ToxicProperties extends ConfigObject {
   public static boolean isString(def s) {
     return (s instanceof String) || (s instanceof GString)
   }
-  
+
   public boolean isTrue(def key) {
     return "true".equalsIgnoreCase(get(key).toString())
   }
@@ -232,19 +244,19 @@ public class ToxicProperties extends ConfigObject {
   public boolean isNothing(def key) {
     return get(key) == null || get(key) == [:]
   }
-  
+
   public void push() {
     backupStack.push(clone())
   }
-  
+
   public void pop() {
     if (backupStack.size() > 0) {
       clear()
       putAll(backupStack.pop())
     }
   }
-  
-  public int stackSize() { 
+
+  public int stackSize() {
     return backupStack.size()
   }
 
