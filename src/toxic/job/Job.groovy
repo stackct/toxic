@@ -330,6 +330,11 @@ public class Job implements Callable, Comparable, Publisher {
     cleanProps.remove("jobManager")
     cleanProps.remove("eventManager")
     cleanProps.remove("job")
+    cleanProps.remove("job.artifactsDir")
+    cleanProps.remove("job.logFile")
+    cleanProps.remove("job.workDir")
+    cleanProps.remove("project.workDir")
+    cleanProps.remove("junitFile")
     this.details = cleanProps.toStringProperties()
 
     def jobFile = new File(this.jobDir, this.projectWorkDir.name)
