@@ -65,7 +65,7 @@
         Details</br></br>
       </th>
       <td>
-        <pre>{{ job.details }}</pre>
+        <pre class="job-details">{{ job.details }}</pre>
       </td>
     </tr>
   </table>
