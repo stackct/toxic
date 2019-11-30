@@ -51,7 +51,7 @@ export class Runtime {
         let configArgs = vscode.workspace.getConfiguration().get('pickle.runtimeArgs') as string[];
         let allArgs = [`-doDir=${path}`].concat(args).concat(configArgs);
 
-        let proc = cp.spawn(this.command, allArgs.map(this.cliEncode));
+        let proc = cp.spawn(this.command, allArgs);
         
         proc.stdout.addListener("data", (chunk) => {
             let s = chunk.toString()
@@ -68,10 +68,6 @@ export class Runtime {
         proc.on("close", (code, signal) => {
             if (isFunction(close)) close(code, signal);
         });
-    }
-
-    private static cliEncode(s: string): string {
-        return `"${s}"`;
     }
 
     private static notifySuccess(message: string, options: string[] = []): Thenable<string> {
