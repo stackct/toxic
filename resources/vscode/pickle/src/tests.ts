@@ -37,7 +37,7 @@ export class TestNodeProvider extends BaseNodeProvider {
 
 export class TestNode extends BaseNode {
     get args(): string[] { 
-        return [`-test='${this.label}'`];
+        return ['-test="' + this.label.split(' ').join('\\ ') + '"'];
     };
 
     contextValue = 'pickle-runnable'
