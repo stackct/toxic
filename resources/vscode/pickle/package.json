@@ -5,6 +5,7 @@
     "description": "Code snippets, content navigation, and test execution support for Pickle.",
     "repository": {},
     "version": "0.0.1",
+    "icon": "resources/pickle-icon-128x128.png",
     "engines": {
         "vscode": "^1.29.0"
     },
