@@ -34,7 +34,9 @@ Toxic contains a DSL (domain-specific language) that enables expressive tests to
 
 Requires VSCode 1.29.0 or newer
 
-Run the following from within the toxic directory:
+1. Make sure 'code' is available in your path and that it opens vscode
+
+1. Run the following from within the toxic directory:
 
 ```
 make vscode
