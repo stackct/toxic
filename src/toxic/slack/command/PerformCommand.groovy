@@ -14,15 +14,19 @@ class PerformCommand extends BaseCommand {
 
   public String handle(args, bot, msg) {
     if (!args || args.size() != 2) return "perform <job-id> <action>"
-    def requested=args[0]
+    def jobId=args[0]
     def action = args[1]
 
     def user = UserManager.instance.getById(msg.user)
-    def job = jobManager.findJobByFuzzyId(requested)
+    def job = jobManager.findJobByFuzzyId(jobId)
     if (!job)
-      return "invalid job id: ${requested}"
+      return "invalid job '${jobId}'"
 
-    def result = job?.performAction(action, user.name)
+    def actionEntry = job.collectValidActions().find { k, v -> action.equalsIgnoreCase(v.name) }
+    if (!actionEntry)
+      return "invalid action '${action}' for job '${job.id}'"
+
+    def result = job?.performAction(actionEntry.key, user.name)
     log.info("Slack Action completed; job='${job.id}'; action='${action}'; auth='${user.name}'; result='${result}'")
     return result
   }
