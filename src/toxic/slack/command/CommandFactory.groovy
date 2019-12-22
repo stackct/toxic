@@ -11,7 +11,7 @@ class CommandFactory {
   public static Command make(String cmd, SlackHandler handler) {
     try {
       Class.forName("toxic.slack.command.${cmd.capitalize()}Command").newInstance(handler)
-    } catch (ClassNotFoundException cnf) { 
+    } catch (ClassNotFoundException cnf) {
       throw new InvalidCommand("Command is not valid: ${cmd}")
     }
   }
@@ -30,21 +30,22 @@ class CommandFactory {
       */
 
       commands = [
-       "about", 
-       "ack", 
+       "about",
+       "ack",
        "assign",
-       "bounce", 
-       "describe", 
-       "halt", 
-       "latest", 
-       "list", 
-       "log", 
-       "oncall", 
-       "pause", 
-       "resolve", 
-       "run", 
-       "silence", 
-       "unpause" 
+       "bounce",
+       "describe",
+       "halt",
+       "latest",
+       "list",
+       "log",
+       "oncall",
+       "pause",
+       "perform",
+       "resolve",
+       "run",
+       "silence",
+       "unpause"
       ]
     }
 
@@ -55,8 +56,8 @@ class CommandFactory {
     def clazz = c.load()
     def exclude = [ CommandFactory.class, BaseCommand.class, InvalidCommand.class ]
 
-    !(clazz.isInterface()) && 
-    !(clazz in exclude) && 
+    !(clazz.isInterface()) &&
+    !(clazz in exclude) &&
     !(c.simpleName.endsWith("Test"))
   }
 }
