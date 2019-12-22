@@ -6,7 +6,7 @@ import toxic.user.*
 import toxic.job.*
 
 @Mixin(UserManagerTestMixin)
-public class AckCommandTest extends CommandTest { 
+public class AckCommandTest extends CommandTest {
   @Before
   public void before() {
     super.before()
@@ -46,11 +46,11 @@ public class AckCommandTest extends CommandTest {
   public void should_ack_failed_job_to_provided_user() {
     def acked = [:]
 
-    AckManager.instance.metaClass.ack = { JobManager mgr, String jobId, String user -> 
+    AckManager.instance.metaClass.ack = { JobManager mgr, String jobId, String user ->
       assert jobId == 'some.job-1234'
       assert user == 'U1234567'
       acked[jobId] = user
-      return true 
+      return true
     }
 
     assert sh.handleCommand(bot, [text: "ack some.job-1234 <@bot1>", user:user('fred')]) == "<@fred> has acked 'some.job-1234'"

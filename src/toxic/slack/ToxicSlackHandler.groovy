@@ -18,14 +18,14 @@ public class ToxicSlackHandler implements SlackHandler {
   private jobManager
   private webServer
   private recentMessagesByPoster = [:]
-  
+
   public ToxicSlackHandler(JobManager jobManager, WebServer webServer) {
     if (!jobManager) throw new IllegalArgumentException("jobManager must not be null")
 
     this.jobManager = jobManager
     this.webServer = webServer
   }
-  
+
   public Object config(Object key) {
     def props = jobManager.jobProperties()
     if (props) {
@@ -37,7 +37,7 @@ public class ToxicSlackHandler implements SlackHandler {
   public String getCommandPrefix() {
     config("job.slack.commandPrefix") ?: "."
   }
-  
+
   public String checkForProhibitedMessage(bot, msg) {
     def sensitive = msg.text ==~ /[^0-9]*[1-9][0-9]{5}[0-9]{4,9}[0-9]{4}[^0-9]*/
     if (sensitive) {
@@ -208,7 +208,7 @@ public class ToxicSlackHandler implements SlackHandler {
       if (cmd && ((cmd in ["help", "commands"]) || (cmd[0] in ['?', '-', '/']))) {
         result = "available commands: " + commands.sort().join(", ")
       } else if (commands.contains(cmd)) {
-        result = CommandFactory.make(cmd, this).handle(args, bot, msg) 
+        result = CommandFactory.make(cmd, this).handle(args, bot, msg)
       } else {
         result = fetchExternalUrl(msg)?.text
       }
@@ -216,7 +216,7 @@ public class ToxicSlackHandler implements SlackHandler {
     archiveToSplunk(bot, msg)
     return result
   }
-  
+
   def archiveToSplunk(bot, msg) {
     def wsUrl = config("web.serverUrl")
     def host = wsUrl ? new URL(wsUrl).host : "toxic"
@@ -227,7 +227,7 @@ public class ToxicSlackHandler implements SlackHandler {
     def event = msg.sort().collect { k, v -> "${k}=\"${v}\"" }.join("; ")
     return splunkRequest("/services/receivers/simple?host=${host}&source=slack&sourcetype=chat", event) != null
   }
-  
+
   def splunkRequest(qs, event) {
     def url
     try {
@@ -247,7 +247,7 @@ public class ToxicSlackHandler implements SlackHandler {
         }
         def result = c.inputStream?.text
         if (!(c.responseCode in [ HttpServletResponse.SC_OK,
-                                  HttpServletResponse.SC_CREATED, 
+                                  HttpServletResponse.SC_CREATED,
                                   HttpServletResponse.SC_ACCEPTED])) {
           log.error("Failed to post event; url=${url}; responseCode=${c.responseCode}; reason=${result}")
         } else {
@@ -272,8 +272,8 @@ public class ToxicSlackHandler implements SlackHandler {
     int val = d
     String raw = parseArgValue(args, key)
     if (raw) {
-      try { 
-        val = Integer.parseInt(raw) 
+      try {
+        val = Integer.parseInt(raw)
       } catch (Exception e) {
         log.error("Invalid argument; key=${key}; value=${raw}")
       }
@@ -298,11 +298,11 @@ public class ToxicSlackHandler implements SlackHandler {
     }
     return null
   }
-  
+
   def linkJob(def job) {
     return "${webServer.serverUrl}/ui/index#/job/${job}"
   }
-  
+
   def removeUserAlert(str) {
     return str.toString().replaceAll("@([a-z])([a-z0-9_]+[^a-z0-9_]?)") { all, firstChar, remainder ->
         "${firstChar}.${remainder}"
