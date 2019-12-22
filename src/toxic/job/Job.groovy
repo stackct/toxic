@@ -627,7 +627,8 @@ public class Job implements Callable, Comparable, Publisher {
   }
 
   private lookupPropertyKey(incorrectlyCasedKey) {
-    return this.properties.find { k, v -> k?.toString().equalsIgnoreCase(incorrectlyCasedKey) }?.key
+    def entry = this.properties.find { k, v -> k?.toString()?.equalsIgnoreCase(incorrectlyCasedKey) }
+    return entry ? entry.key : null
   }
 
   def collectActionAuths(action) {

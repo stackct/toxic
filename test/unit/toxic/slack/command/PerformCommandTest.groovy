@@ -49,11 +49,19 @@ public class PerformCommandTest extends CommandTest {
   }
 
   @Test
+  public void should_respond_with_invalid_action() {
+    CommandFactory.metaClass.static.make = { String cmd, SlackHandler handler ->
+      cmdWithJobs([ job(100), job(5678), job(200), job(300)])
+    }
+    assert sh.handleCommand(bot, [text: ".perform some.job-300 foo", user:user('fred')]) == "invalid action 'foo' for job 'some.job-300'"
+  }
+
+  @Test
   public void should_respond_with_invalid_job() {
     CommandFactory.metaClass.static.make = { String cmd, SlackHandler handler ->
       cmdWithJobs([ job(100), job(5678), job(200), job(300)])
     }
-    assert sh.handleCommand(bot, [text: ".perform some.job-500 release", user:user('fred')]) == "invalid job id: some.job-500"
+    assert sh.handleCommand(bot, [text: ".perform some.job-500 release", user:user('fred')]) == "invalid job 'some.job-500'"
   }
 
   @Test
@@ -66,6 +74,7 @@ public class PerformCommandTest extends CommandTest {
 
   private Job job(completedDate, id=null) {
     def job = new Job(completedDate: new Date(completedDate), id: id == null ? "some.job-"+completedDate : id )
+    job.properties["job.action.Release"]="someScript"
     job.metaClass.performAction = { String action, String auth ->
       return "Action completed for " + completedDate
     }
