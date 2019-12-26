@@ -49,9 +49,6 @@ RUN curl -L https://aka.ms/downloadazcopy-v10-linux -o /tmp/azcopy.tgz \
 
 RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml
 
-RUN git config --global user.email dl_engineering@stackct.com
-RUN git config --global user.name Toxic
-
 VOLUME ["/data"]
 EXPOSE 8001
 USER toxic
