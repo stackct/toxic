@@ -1,48 +1,39 @@
 # Setup with Intellij™
 
-### Prerequisites
+### Dependencies
 
----
 
-#### 1) [Get the Groovy SDK](http://groovy-lang.org/)
+##### 1) Install a JDK (we recommend [AdoptOpenJDK](https://adoptopenjdk.net/))
 
-#### 2) [Get Ant and add it to your terminal path](https://ant.apache.org/)
+##### 2) [Get the Groovy SDK](http://groovy-lang.org/)
 
-#### 3) Go to `File > Project Structure` and add Groovy to your Intellij Global Libraries
+##### 3) [Get Ant](https://ant.apache.org/)
 
-<img src="readmeimages/libraries.png" width="500px"/>
+##### 4) Open Intellij Settings and make sure you also have the Groovy plugin for Intellij
+<img src="readmeimages/groovy.png" width="400px"/>
 
-#### 4) Make sure you also have the Groovy plugin for Intellij
-
-<img src="readmeimages/plugins.png" width="400px"/>
-
-#### 5) Clone the project
+##### 5) Clone the project
 
 `$ git clone https://github.com/stackct/toxic.git`
 
-### Setup for development
+##### 6) Open the project and go to `File > Project Structure`
 
----
+##### 7) Under 'Platform Settings > SDKs' and add your JDK installation
+<img src="readmeimages/sdks.png" width="400px"/>
 
-Open the project and go to `File > Project Structure`
+##### 8) Under 'Platform Settings > Global Libraries' add your groovy installation
+<img src="readmeimages/libraries.png" width="400px"/>
 
-#### 1) Set your Java SDK
-
+##### 9) Under 'Project Settings > Project' set your JDK version
 <img src="readmeimages/sdk.png" width="400px"/>
 
-#### 2) Go to `Modules > Sources` and right click to mark folders:
+##### 10) Under 'Project Settings > Modules > Dependencies' make sure the correct JDK is selected for the TOXIC module
+<img src="readmeimages/modules.png" width="400px"/>
+
+##### 11) Go to `Modules > Sources` and right click to mark folders:
 
 - Mark `src` as "Sources"
 - Mark `test` as "Tests"
 - Mark `resources` as "Resources"
 
-<img src="readmeimages/set_sources.png" width="500px"/>
-
-#### 3) VERY IMPORTANT! Be sure to click `Apply`
-
-#### 4) Go to the `Paths` tab and set the output path and output directories
-
-<img src="readmeimages/paths.png" width="500px"/>
-
-
-#### 5) Last step, run `ant` in terminal to build TOXIC!
+##### 11) Go to the `Paths` tab and set the output path and output directories
