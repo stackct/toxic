@@ -34,12 +34,12 @@
 - Mark `test` as "Tests"
 - Mark `resources` as "Resources"
 
-<img src="readmeimages/folders.png" width="500px"/>
+<img src="readmeimages/modules_sources.png" width="500px"/>
 
 ##### 11) Under `Project Settings > Modules > Paths` set your output directories as `/gen`
-<img src="readmeimages/output.png" width="500px"/>
+<img src="readmeimages/modules_paths.png" width="500px"/>
 
 ##### 12) Under `Project Settings > Modules > Dependencies` make sure the correct JDK is selected for the TOXIC module
-<img src="readmeimages/modules.png" width="500px"/>
+<img src="readmeimages/modules_dependencies.png" width="500px"/>
 
 ##### 13) Go to the `Paths` tab and set the output path and output directories
