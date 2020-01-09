@@ -16,7 +16,7 @@
 
 ##### 5) Clone the project
 
-`$ git clone https://github.com/stackct/toxic.git`
+    $ git clone https://github.com/stackct/toxic.git
 
 ##### 6) Open the project and go to `File > Project Structure`
 
@@ -33,7 +33,7 @@
 - Mark `test` as "Tests"
 - Mark `resources` as "Resources"
 
-##### 11) Under `Project Settings > Modules > Paths` set your output directories.
+##### 11) Go to `Project Settings > Modules > Paths` set your output directories.
 
 Select "Use Module Compile Output Path"
 
@@ -41,24 +41,29 @@ Set Output Path to `/gen`
 
 Set Test Output Path to `/gen`
 
-##### 12) Under `Project Settings > Modules > Dependencies`.
+##### 12) Go to `Project Settings > Modules > Dependencies`
 Make sure the correct JDK is selected for the TOXIC module.
 
-Click the + button and add your Groovy install
+Click the `+` button and add your Groovy install
 
-Click the + again to add the `toxic/lib` folder
+Click the `+` again to add the `toxic/lib` folder
 
 ##### 13) Exit the Project Structure window. In the main Intellij window, go to `View > Tool Windows > Ant`
 
-Press the + button and add the build.xml file.
+Press the `+` button and add the build.xml file.
 
 Execute the `test` task
 
 Open the `Messages` tab and view the logs as tests run.
 
-##### 14) Finally...
+##### 14) Verify Classes are recognized
     
 Open up any unit test file and verify that Intellij is able to recognize everything.
 
 If Intellij is not recognizing class names, it could be that it does not have dependencies setup correctly. Review step 12.
 
+##### 15) Tell TOXIC to run a folder.
+
+Pick a sample from the `test/samples` folder and run it!
+
+    ./bin/toxic -doDir=test/samples/90_fileComparison_example
