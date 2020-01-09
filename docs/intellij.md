@@ -3,8 +3,7 @@
 ##### 1) Install a JDK (we recommend [AdoptOpenJDK](https://adoptopenjdk.net/))
     At the time of writing, JDK 8 is the only version supported by TOXIC
 
-
-    <!> Linux: Make sure to add Java to your $PATH in `~/.profile` <!>
+    <!> Linux users: Make sure to add Java to your $PATH in `~/.profile` <!>
 
     It must be listed in the `~/.profile` in order for Ant to successfully run integration tests.
 
@@ -20,11 +19,11 @@
 
 ##### 6) Open the project and go to `File > Project Structure`
 
-##### 7) Under `Platform Settings > SDKs` and add your JDK installation
+##### 7) Go to `Platform Settings > SDKs` and add your JDK installation
 
-##### 8) Under `Platform Settings > Global Libraries` add your groovy installation
+##### 8) Go to `Platform Settings > Global Libraries` add your groovy installation
 
-##### 9) Under `Project Settings > Project` set your JDK version
+##### 9) Go to `Project Settings > Project` set your JDK version
 <!> remember to also set the project language level <!>
 
 ##### 10) Go to `Project Settings > Modules > Sources` and right click to mark folders:
