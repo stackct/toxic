@@ -1,48 +1,68 @@
 # Setup with Intellij™
 
-### Prerequisites
+##### 1) Install a JDK (we recommend [AdoptOpenJDK](https://adoptopenjdk.net/))
+    At the time of writing, JDK 8 is the only version supported by TOXIC
 
----
+    <!> Linux users: Make sure to add Java to your $PATH in `~/.profile` <!>
 
-#### 1) [Get the Groovy SDK](http://groovy-lang.org/)
+    It must be listed in the `~/.profile` in order for Ant to successfully run integration tests.
 
-#### 2) [Get Ant and add it to your terminal path](https://ant.apache.org/)
+##### 2) [Get the Groovy SDK](http://groovy-lang.org/)
 
-#### 3) Go to `File > Project Structure` and add Groovy to your Intellij Global Libraries
+##### 3) [Get Ant](https://ant.apache.org/)
 
-<img src="readmeimages/libraries.png" width="500px"/>
+##### 4) Open Intellij Settings and make sure you also have the Groovy plugin for Intellij
 
-#### 4) Make sure you also have the Groovy plugin for Intellij
+##### 5) Clone the project
 
-<img src="readmeimages/plugins.png" width="400px"/>
+    $ git clone https://github.com/stackct/toxic.git
 
-#### 5) Clone the project
+##### 6) Open the project and go to `File > Project Structure`
 
-`$ git clone https://github.com/stackct/toxic.git`
+##### 7) Go to `Platform Settings > SDKs` and add your JDK installation
 
-### Setup for development
+##### 8) Go to `Platform Settings > Global Libraries` add your groovy installation
 
----
+##### 9) Go to `Project Settings > Project` set your JDK version
+<!> remember to also set the project language level <!>
 
-Open the project and go to `File > Project Structure`
-
-#### 1) Set your Java SDK
-
-<img src="readmeimages/sdk.png" width="400px"/>
-
-#### 2) Go to `Modules > Sources` and right click to mark folders:
+##### 10) Go to `Project Settings > Modules > Sources` and right click to mark folders:
 
 - Mark `src` as "Sources"
 - Mark `test` as "Tests"
 - Mark `resources` as "Resources"
 
-<img src="readmeimages/set_sources.png" width="500px"/>
+##### 11) Go to `Project Settings > Modules > Paths` set your output directories.
 
-#### 3) VERY IMPORTANT! Be sure to click `Apply`
+Select "Use Module Compile Output Path"
 
-#### 4) Go to the `Paths` tab and set the output path and output directories
+Set Output Path to `/gen`
 
-<img src="readmeimages/paths.png" width="500px"/>
+Set Test Output Path to `/gen`
 
+##### 12) Go to `Project Settings > Modules > Dependencies`
+Make sure the correct JDK is selected for the TOXIC module.
 
-#### 5) Last step, run `ant` in terminal to build TOXIC!
+Click the `+` button and add your Groovy install
+
+Click the `+` again to add the `toxic/lib` folder
+
+##### 13) Exit the Project Structure window. In the main Intellij window, go to `View > Tool Windows > Ant`
+
+Press the `+` button and add the build.xml file.
+
+Execute the `test` task
+
+Open the `Messages` tab and view the logs as tests run.
+
+##### 14) Verify Classes are recognized
+    
+Open up any unit test file and verify that Intellij is able to recognize everything.
+
+If Intellij is not recognizing class names, it could be that it does not have dependencies setup correctly. Review step 12.
+
+##### 15) Tell TOXIC to run a folder.
+
+Pick a sample from the `test/samples` folder and run it!
+
+    ./bin/toxic -doDir=test/samples/90_fileComparison_example
