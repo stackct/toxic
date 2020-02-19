@@ -1194,7 +1194,7 @@ line4"""
 
   @Test
   void should_parse_junit_xmls_in_dir() {
-    def parserMock = new MockFor(JUnitParser)
+    def parserMock = new MockFor(XUnitJUnitParser)
     parserMock.demand.parseDir() { File file, List results -> results << new TaskResult([:]); return [suites:23,failures:12] }
 
     parserMock.use {
