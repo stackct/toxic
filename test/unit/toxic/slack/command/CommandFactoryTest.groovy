@@ -37,6 +37,7 @@ public class CommandFactoryTest {
       'log',
       'oncall',
       'pause',
+      'perform',
       'resolve',
       'run',
       'silence',

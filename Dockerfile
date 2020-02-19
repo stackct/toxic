@@ -7,7 +7,7 @@ ENV LANG     en_US.UTF-8
 ENV LC_ALL   en_US.UTF-8
 
 ARG DIST_DIR_NAME
-ARG K8S_VERSION=v1.14.6
+ARG K8S_VERSION=v1.15.2
 ARG YQ_VERSION=2.4.0
 
 COPY ${DIST_DIR_NAME} /opt/toxic
@@ -41,6 +41,11 @@ RUN curl -LO https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_
     && mv ./yq_linux_amd64 /usr/local/bin/yq
 
 RUN npm i -g redoc-cli
+
+RUN curl -L https://aka.ms/downloadazcopy-v10-linux -o /tmp/azcopy.tgz \
+    && tar -x --strip=1 -f /tmp/azcopy.tgz -C /usr/local/bin \
+    && chown root:root /usr/local/bin/azcopy \
+    && apk add libc6-compat
 
 RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml
 

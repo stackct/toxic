@@ -5,6 +5,7 @@
     "description": "Code snippets, content navigation, and test execution support for Pickle.",
     "repository": {},
     "version": "0.0.1",
+    "icon": "resources/pickle-icon-128x128.png",
     "engines": {
         "vscode": "^1.29.0"
     },
@@ -126,7 +127,7 @@
         }
     },
     "scripts": {
-        "vscode:prepublish": "npm run compile",
+        "vscode:prepublish": "npm i && npm run compile",
         "clean": "rm -fr ./node_modules && rm -fr ./out",
         "compile": "tsc -p ./",
         "watch": "tsc -watch -p ./",
@@ -141,6 +142,6 @@
         "vscode": "^1.1.22"
     },
     "dependencies": {
-        "vsce": "^1.63.0"
+        "vsce": "^1.69.0"
     }
 }

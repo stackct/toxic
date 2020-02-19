@@ -1,4 +1,7 @@
 #!/bin/bash
 . $(dirname $0)/toxic-common.sh
+if [[ -f ~/git-config/.gitconfig ]]; then
+  cp ~/git-config/.gitconfig ~/
+fi
 cmd="${baseToxicCmd} toxic.ToxicServer $otherArgs"
 eval $cmd

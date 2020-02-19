@@ -28,6 +28,21 @@ public class GroovyEvaluatorTest {
   }
 
   @Test
+  public void testSanitizeMap() {
+    def map = new Properties()
+    GroovyEvaluator.sanitizeMap(map, "test")
+    assert map.test == null
+
+    map.test = "hello"
+    GroovyEvaluator.sanitizeMap(map, "test")
+    assert map.test == null
+
+    map.test = new HashMap()
+    GroovyEvaluator.sanitizeMap(map, "test")
+    assert map.test != null
+  }
+
+  @Test
   public void testEvalNotRecompileScripts() {
     def test = "1+1"
     def mem = new Properties()
@@ -84,7 +99,7 @@ public class GroovyEvaluatorTest {
     props.groovyScriptBase="toxic.groovy.GroovyScriptBase"
     assertEquals Toxic.genProductVersionString("Toxic"), GroovyEvaluator.eval("version()", props)
   }
-  
+
   @Test
   void should_clear_classloader_cache() {
     def reset
@@ -94,7 +109,7 @@ public class GroovyEvaluatorTest {
       def getClassLoader() { return new Object() { def clearCache() { cleared = true }}}
     }
     def memory = new Properties()
-        
+
     reset = cleared = false
     assert GroovyEvaluator.clearClassLoader(shell, memory)
     assert memory["groovyshellExecutionsSinceLastFlush"] == 0

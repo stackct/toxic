@@ -21,6 +21,7 @@ public class JobTest {
   def date
   def subscriber
   def notifications
+  def detailsSaved
 
   @Before
   void before() {
@@ -34,6 +35,7 @@ public class JobTest {
     events.each { e -> notifications[e] = [] }
     subscriber = [handle: { n -> notifications[n.type] << n }] as Subscriber
     NotificationCenter.instance.subscribe(subscriber, events)
+    detailsSaved = false
   }
 
   @After
@@ -81,10 +83,11 @@ public class JobTest {
       new TaskResult([id:'8', family:'wee', name:'h', type:'type', success:true,  startTime:22, stopTime:24]),
       new TaskResult([id:'9', family:'bee', name:'i', type:'type', success:true,  startTime:0, stopTime:0])
     ]
-    
+
     // Prime the simple results map with our faked injected results
     job.getSimpleResults()
     job.metaClass.fetchArtifacts = { -> artifacts }
+    job.metaClass.updateDetails = { -> detailsSaved = true }
 
     return job
   }
@@ -118,7 +121,7 @@ public class JobTest {
   }
 
   private checkReadmeExits(expectedFilename, existsValues) {
-    def exists = existsValues.reverse() 
+    def exists = existsValues.reverse()
 
     def mockFile = new MockFor(File)
     mockFile.demand.exists() { exists.pop() }
@@ -136,7 +139,7 @@ public class JobTest {
   @Test
   public void should_get_project_name_from_id() {
     def job = mockJob()
-    
+
     job.id = "foo-bar-0"; assert job.project == 'foo-bar'
     job.id = "foo-bar-1"; assert job.project == 'foo-bar'
     job.id = "foo-bar"; assert job.project == 'foo-bar'
@@ -152,13 +155,13 @@ public class JobTest {
 
     def job = mockJob(dtSubmitted, dtStarted, dtCompleted)
     job.initialize()
-    
+
     assert job.properties['job.maxCommits'] == "10"
     job.properties['job.maxCommits'] = 2
     job.properties['job.group'] = 'MyGroup'
     job.properties['job.icon'] = '/me.jpg'
-    
-    // A Job with results must be completed. 
+
+    // A Job with results must be completed.
     // Also, a completed job must already have had its stats updated.
     // See run() for proof.
     job.currentStatus = JobStatus.COMPLETED
@@ -332,6 +335,7 @@ public class JobTest {
                      job.end.script.1=end1
                      job.end.script.2=end2.toString()"""
     job.initialize()
+    assert detailsSaved == true
     assert job.artifactsDir.canonicalPath.endsWith("/artifacts")
     assert createdDir == 2
     assert job.properties['job.workDir'].endsWith("/jobDir")
@@ -349,7 +353,7 @@ public class JobTest {
     assert job.properties['job.end.script.2.result'] == "ok"
 
     stopNotifications()
-    
+
     assert notifications[EventType.JOB_CHANGED].size() == 1
   }
 
@@ -358,14 +362,14 @@ public class JobTest {
 
     def scenarios = [
       [
-          repoType: 'toxic.job.HgRepository', 
-          repoUrl: 'http://foo.repo', 
+          repoType: 'toxic.job.HgRepository',
+          repoUrl: 'http://foo.repo',
           repoBranch: 'default',
           repoChangesetUrlTemplate: 'http://go/@@changeset@@'
       ],
       [
-          repoType: 'toxic.job.GitRepository', 
-          repoUrl: 'http://foo.repo', 
+          repoType: 'toxic.job.GitRepository',
+          repoUrl: 'http://foo.repo',
           repoBranch: 'master',
           repoChangesetUrlTemplate: 'http://go/@@changeset@@'
       ]
@@ -378,7 +382,7 @@ public class JobTest {
       job.properties['job.repoBranch'] = sc.repoBranch
       job.properties['job.repoChangesetUrlTemplate'] = sc.repoChangesetUrlTemplate
       job.projectWorkDir = new File("fake")
-      
+
       def madeDir
 
       FileUtils.metaClass.'static'.forceMkdir = { File f -> madeDir=true}
@@ -400,7 +404,7 @@ public class JobTest {
     boolean repoInitialized = false
     boolean repoUpdated = false
 
-    SourceRepositoryFactory.metaClass.'static'.make = { String t, String l, String r, String u, String b -> 
+    SourceRepositoryFactory.metaClass.'static'.make = { String t, String l, String r, String u, String b ->
       [update:{ -> repoUpdated = true; return [] }] as SourceRepository
     }
 
@@ -453,7 +457,7 @@ public class JobTest {
     job.discard()
     assert job.shouldDiscard()
   }
-  
+
   @Test
   void should_fetch_artifacts() {
     def job = mockJob()
@@ -463,7 +467,7 @@ public class JobTest {
     job.artifactsDir.metaClass.eachFile = { Closure c -> c(new Object() { def getName() { "f1"}; def size() { 123 }; def isDirectory() { isDir } })}
     def a = job.fetchArtifacts()
     assert a == [[name: 'f1', size: 123]]
-    
+
     isDir = true
     a = job.fetchArtifacts()
     assert !a
@@ -481,14 +485,14 @@ public class JobTest {
   void should_fetch_tags() {
     def job = new Job()
 
-    job.metaClass.fetchArtifacts = { -> 
-      [ 
+    job.metaClass.fetchArtifacts = { ->
+      [
         [name:'not_a_tag', size:1],
-        [name:'foo.tag', size:1], 
-        [name:'tag', size:1], 
-        [name:'.tag', size:1], 
-        [name:'just_a_file.txt', size:1], 
-        [name:'bar.tag', size:1] ] 
+        [name:'foo.tag', size:1],
+        [name:'tag', size:1],
+        [name:'.tag', size:1],
+        [name:'just_a_file.txt', size:1],
+        [name:'bar.tag', size:1] ]
     }
 
     assert job.fetchTags() == ['foo', 'bar']
@@ -504,7 +508,7 @@ public class JobTest {
     assert job.hasTag('bar')
     assert !job.hasTag('no_tag')
   }
-  
+
   @Test
   void should_fetch_log() {
     def contents = """line1
@@ -604,7 +608,7 @@ line4"""
     assert "oopsie" == lastTaskResult.family
     assert "Aborted" == lastTaskResult.name
   }
-  
+
   @Test
   void should_not_overwrite_status() {
     def job = mockJob()
@@ -627,7 +631,7 @@ line4"""
     job.updateStatus(JobStatus.ENDING)
     assert job.currentStatus == JobStatus.ABANDONED
   }
-  
+
   @Test
   void should_get_run_number() {
     def job = mockJob()
@@ -640,7 +644,7 @@ line4"""
     assert job.project == "hello-there"
     assert job.sequence == 0
   }
-  
+
   @Test
   void should_call_notifications() {
     def job = mockJob()
@@ -667,7 +671,7 @@ line4"""
     //   (1) finally block
     assert notifications[EventType.JOB_CHANGED].size() == 3
   }
-  
+
   @Test
   void should_pause_if_failed() {
     def job = mockJob()
@@ -678,7 +682,7 @@ line4"""
     job.call()
     assert PauseManager.instance.isProjectPaused("foo-bar")
   }
-  
+
   @Test
   void should_not_pause_if_success() {
     def job
@@ -698,11 +702,11 @@ line4"""
   void should_be_stale() {
     def job = mockJob(new Date() - 5, new Date() - 4, new Date() - 3)
     assert !job.isStale()
-    
+
     job.properties['job.maxAgeInDays'] = "1"
-    
+
     assert !job.isStale()
-  
+
     job.currentStatus = JobStatus.COMPLETED
     assert job.isStale()
 
@@ -725,10 +729,10 @@ line4"""
     job.properties['num'] = 4
     job.properties['job.maxAgeInDays'] = "`return memory.num + 1`"
     assert !job.isStale()
-    
+
     job.properties['job.maxAgeInDays'] = "1"
     assert job.isStale()
-    
+
     job.metaClass.fetchArtifacts = { return [new File("something.tag")]}
     assert job.isStale()
 
@@ -773,7 +777,7 @@ line4"""
       assert !saved
     }
   }
-  
+
   @Test
   void collect_actions() {
     def job = mockJob(new Date() - 5, new Date() - 4, new Date() - 3)
@@ -825,7 +829,7 @@ line4"""
       "job.actionIfFailure.a9":[name:"a9"]
       ]
   }
-  
+
   @Test
   void collect_action_auths() {
     def job = mockJob(new Date() - 5, new Date() - 4, new Date() - 3)
@@ -880,7 +884,7 @@ line4"""
     def job = new Job()
     job.properties = new ToxicProperties()
     job.properties.doDir = "/"
-    
+
     assert job.requirementsSatisfied()
 
     job.properties['job.trigger.startTime'] = 'a'
@@ -969,7 +973,7 @@ line4"""
     job.lastStartTimeTriggered = null
     job.properties['job.trigger.startTime'] = '12'
     assert !job.requirementsSatisfied(true)
-    
+
     job.lastStartTimeTriggered = null
     job.properties['job.trigger.startTime'] = '12'
     assert job.requirementsSatisfied(false)
@@ -992,7 +996,7 @@ line4"""
     def job = new Job()
     job.properties = new ToxicProperties()
     job.properties.doDir = "/"
-    
+
     job.runningRelatedJobs = 0
     assert !job.concurrencyLimitReached()
 
@@ -1022,7 +1026,7 @@ line4"""
     job.properties = new ToxicProperties()
 
     job.properties.doDir = "/"
-    
+
     assert job.requirementsSatisfied()
 
     job.properties = new ToxicProperties()
@@ -1053,7 +1057,7 @@ line4"""
 
   @Test
   void should_not_trigger_repoCommit_if_repo_does_not_have_changes() {
-    SourceRepositoryFactory.metaClass.'static'.make = { String t, String l, String r, String u, String b -> 
+    SourceRepositoryFactory.metaClass.'static'.make = { String t, String l, String r, String u, String b ->
       [hasChanges:{ -> false }] as SourceRepository
     }
 
@@ -1069,7 +1073,7 @@ line4"""
 
   @Test
   void should_trigger_repoCommit_if_repo_has_changes() {
-    SourceRepositoryFactory.metaClass.'static'.make = { String t, String l, String r, String u, String b -> 
+    SourceRepositoryFactory.metaClass.'static'.make = { String t, String l, String r, String u, String b ->
       [hasChanges:{ -> true }] as SourceRepository
     }
 
@@ -1088,7 +1092,7 @@ line4"""
       job.projectWorkDir.delete()
     }
   }
-  
+
   @Test
   void should_trigger_if_depends_on_other_job() {
     def jobManager = new JobManager("htto://fake")
@@ -1107,7 +1111,7 @@ line4"""
     job1.failed = 0
     job1.id = "other.job-0"
     jobManager.jobs << job1
-    
+
     def job = mockJob(null, null, null)
     job.id = "test.job-1"
     job.properties = new ToxicProperties()
@@ -1123,7 +1127,7 @@ line4"""
     job1.completedDate -= 1
     assert !job.requirementsSatisfied()
   }
-  
+
   @Test
   void should_trigger_if_event() {
     def jobManager = new JobManager("htto://fake")
@@ -1142,7 +1146,7 @@ line4"""
     job1.failed = 0
     job1.id = "other.job-0"
     jobManager.jobs << job1
-    
+
     def job = mockJob(null, null, null)
     job.id = "test.job-1"
     job.properties = new ToxicProperties()
@@ -1209,7 +1213,7 @@ line4"""
     def tm2 = new TaskMaster()
     def job = new Job()
     job.currentStatus = JobStatus.RUNNING
-    
+
     job.update()
     assert job.suites == 0
     assert job.failed == 0
@@ -1218,18 +1222,18 @@ line4"""
     job.update()
     assert job.suites == 0
     assert job.failed == 0
-    
+
     tm1.results << new TaskResult(family: 'f1', success: false)
     job.update()
     assert job.suites == 1
     assert job.failed == 1
-    
+
     tm1.results << new TaskResult(family: 'f1', success: true)
     tm2.results << new TaskResult(family: 'f2', success: true)
     job.update()
     assert job.suites == 2
     assert job.failed == 1
-    
+
     assert !job.lastCompleted
 
     tm1.results << new TaskResult(family: 'f1', success: true, stopTime: 4)
@@ -1298,13 +1302,13 @@ line4"""
     assert logger
     assert logger.allAppenders.collect { it.class } == [SplunkRawTCPAppender.class]
   }
-  
+
   @Test
   void should_return_mutex() {
     def job = new Job(id:'foo')
     assert !job.mutex
-    
-    job = new Job('foo', null, null, "mutex=hello") 
+
+    job = new Job('foo', null, null, "mutex=hello")
     assert job.mutex == "hello"
   }
 
@@ -1312,17 +1316,17 @@ line4"""
   void should_establish_artifacts_dir() {
     def job = new Job(id:'foo')
     assert !job.artifactsDir
-    
-    job = new Job('foo', new File("/tmp"), null, "artifacts.dir=hello") 
+
+    job = new Job('foo', new File("/tmp"), null, "artifacts.dir=hello")
     assert job.artifactsDir.name == "artifacts"
 
-    job = new Job('foo', null, null, "job.artifactsDir=hello") 
+    job = new Job('foo', null, null, "job.artifactsDir=hello")
     assert job.artifactsDir.name == "hello"
   }
 
   @Test
   void should_default_props() {
-    def job = new Job('foo', new File("/tmp"), null, "artifacts.dir=hello") 
+    def job = new Job('foo', new File("/tmp"), null, "artifacts.dir=hello")
     assert job.properties['job.maxAgeInDays'] == "7"
   }
 
@@ -1398,7 +1402,7 @@ line4"""
 public class TestNotification {
   public TestNotification() {
   }
-  
+
   public void execute(Job job) {
     job.properties.calledNotifications = true
   }

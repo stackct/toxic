@@ -100,7 +100,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
             runner = it.get(20, TimeUnit.MILLISECONDS)
             if (!TaskResult.areAllSuccessful(runner.results) && testAttempts[runner.testCase] < maxAttempts) {
               testAttempts[runner.testCase]++
-              getLog(props).warn("Test case failed, will retry; attempt=" + testAttempts[runner.testCase] + "; maxAttempts=" + maxAttempts)
+              getLog(props).warn("Test case failed, will retry; test=" + runner.testCase + "; attempt=" + testAttempts[runner.testCase] + "; maxAttempts=" + maxAttempts)
               futures << pool.submit(new TestCaseRunner(tm, runner.testCase, props.clone()))
             } else {
               appendResults(results, runner.results)

@@ -49,13 +49,13 @@ public class JobManager implements Runnable,Publisher {
     this.jobPool = new ThreadPoolExecutor(1, 1, 60000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue(), factory)
     this.defaultJobProps = ClassLoader.getSystemResourceAsStream('toxic.job')?.text
   }
-  
+
   def loadSecureProperties(String filename) {
     if (filename) {
       def props = new ToxicProperties()
       int count = 0
       def txt = new File(filename).text
-      txt.split("\n").each { 
+      txt.split("\n").each {
         count++
         it = it.trim()
         def idx = it.indexOf("=")
@@ -73,7 +73,7 @@ public class JobManager implements Runnable,Publisher {
       log.info("Loaded secure properties; filename=${filename}; count=${count}")
     }
   }
-  
+
   def addPropertyIfNotPresent(props, prop, value) {
     if (!props.containsKey(prop)) {
       props[prop] = value
@@ -82,7 +82,7 @@ public class JobManager implements Runnable,Publisher {
 
   public void refreshConfigRepo() {
     if (!configRepo) {
-      def type = mgrprops.configRepoType ?: secureProps.configRepoType 
+      def type = mgrprops.configRepoType ?: secureProps.configRepoType
       def url = mgrprops.configRepoUrl ?: secureProps.configRepoUrl
       if (type && url) {
         log.info("Attaching config repository; type='${type}'; url='${url}'")
@@ -94,7 +94,7 @@ public class JobManager implements Runnable,Publisher {
     }
     configRepo?.update()
   }
-  
+
   public void refreshProperties() {
     log.trace("Starting to refresh properties")
     def begin = System.currentTimeMillis()
@@ -114,7 +114,7 @@ public class JobManager implements Runnable,Publisher {
             log.error("Unable to refresh properties; url=${propertiesUrl}; reason=${findReason(e)}", e)
           }
         }
-        
+
         addPropertyIfNotPresent(newProps, 'jobManager.pollInterval', 10000)
         addPropertyIfNotPresent(newProps, 'jobManager.jobDirectory', this.jobDirectory)
         addPropertyIfNotPresent(newProps, 'jobManager.propertiesRefreshInterval', 60000)
@@ -123,19 +123,19 @@ public class JobManager implements Runnable,Publisher {
         addPropertyIfNotPresent(newProps, 'jobManager.purgeHistoricJobDetailsFromMemoryAfterMillis', 600000)
         addPropertyIfNotPresent(newProps, 'jobManager.urlCacheExpireMs', 60000)
         addPropertyIfNotPresent(newProps, 'project.minJobRetention', 5)
-    
+
         this.pollInterval = newProps['jobManager.pollInterval'].toLong()
-        this.jobDirectory = newProps['jobManager.jobDirectory'] 
+        this.jobDirectory = newProps['jobManager.jobDirectory']
         this.purgeInterval = newProps['jobManager.purgeHistoricJobDetailsFromMemoryAfterMillis'].toLong()
         this.propertiesRefreshInterval = newProps['jobManager.propertiesRefreshInterval'].toLong()
         this.urlCacheExpireMs = newProps['jobManager.urlCacheExpireMs'].toLong()
-        this.jobPool.corePoolSize = newProps['jobManager.maxConcurrentJobs'].toInteger()    
+        this.jobPool.corePoolSize = newProps['jobManager.maxConcurrentJobs'].toInteger()
         this.jobPool.maximumPoolSize = this.jobPool.corePoolSize
-        
+
         newProps.jobManager = this
         newProps.eventManager = EventManager.instance
         this.mgrprops = newProps
-        
+
         if (!EventManager.instance.isInitialized()) {
           EventManager.instance.init(eventDir)
         }
@@ -143,7 +143,7 @@ public class JobManager implements Runnable,Publisher {
         PauseManager.instance.load(this)
         AckManager.instance.load(this)
 
-        def dir = new File(pendingDir) 
+        def dir = new File(pendingDir)
         if (!dir.exists()) {
           log.info("Creating pending directory; pendingDir=${dir.canonicalPath}")
           dir.mkdirs()
@@ -193,8 +193,8 @@ public class JobManager implements Runnable,Publisher {
           log.debug("Looking for new jobs; jobDir=${jobDirectory}; interval=${pollInterval};")
           findNewJobs()
           lastPollTime = now
-        }        
-        
+        }
+
         if (shutdownSoon && !fetchProcessingJobs()) {
           running = false
         } else {
@@ -259,7 +259,7 @@ public class JobManager implements Runnable,Publisher {
     allJobs().each { job -> job.update(purgeInterval) }
     log.trace("Finished updating jobs; elapsedMs=${System.currentTimeMillis()-begin}")
   }
-  
+
   /**
    * Automated jobs can be specified in the initial properties, as follows:
    * jobManager.autoJobUrl.0=http://intranet.techco.com/jobs/DailyUpdate.job
@@ -328,7 +328,7 @@ public class JobManager implements Runnable,Publisher {
     log.trace("Finished fetching historic jobs; elapsedMs=${System.currentTimeMillis()-begin}")
     return results
   }
-  
+
   def findJobFilename(jobDir) {
     return jobDir.name.contains("-") ? jobDir.name[0..(jobDir.name.lastIndexOf("-"))-1] : ""
   }
@@ -351,7 +351,7 @@ public class JobManager implements Runnable,Publisher {
     log.trace("Finished resolving file details; elapsedMs=${System.currentTimeMillis()-begin}")
     return jobDetails
   }
-  
+
   protected String resolveDetails(String details) {
     // Include dependent properties if specified
     if (details?.trim()) {
@@ -379,7 +379,7 @@ public class JobManager implements Runnable,Publisher {
   public Job inflateJob(File jobDir) {
     def details = "CORRUPT JOB: ${jobDir.canonicalPath}"
     def jobFilename = findJobFilename(jobDir)
-    def jobFile = new File(jobDir, jobFilename)    
+    def jobFile = new File(jobDir, jobFilename)
     details = resolveFileDetails(jobFile) ?: details
     def job = new Job(jobDir.name, jobDir, new File(projectDir, jobFilename), details, jobProperties())
     job.loadResults()
@@ -431,28 +431,28 @@ public class JobManager implements Runnable,Publisher {
     } else {
       job.jobDir.deleteDir()
     }
-    
+
     if (job.shouldRepeat()) {
       queueJob(job.name, job.details)
     }
   }
-  
+
   public List<Job> fetchStaleJobs() {
     log.trace("Starting to fetch stale jobs")
     def begin = System.currentTimeMillis()
 
     def staleJobs = []
     // return just one job at a time to avoid pruning too aggresively, otherwise
-    // we could end up with fewer jobs that minJobRetention requires.  
-    def job = archivedJobs().find { 
+    // we could end up with fewer jobs that minJobRetention requires.
+    def job = archivedJobs().find {
       def relatedJobs = browseJobsUnsimplified(it.project).findAll { it.isStale() }
       if (relatedJobs.size() > this.mgrprops['project.minJobRetention'].toInteger()) {
-        return it.isStale() 
+        return it.isStale()
       }
       return false
     }
     if (job) staleJobs << job
-    log.trace("Finished fetching stale jobs; elapsedMs=${System.currentTimeMillis()-begin}")    
+    log.trace("Finished fetching stale jobs; elapsedMs=${System.currentTimeMillis()-begin}")
     return staleJobs
   }
 
@@ -482,22 +482,22 @@ public class JobManager implements Runnable,Publisher {
     file.text = details
     return file
   }
-  
+
   public String runJob(Job job) {
     if (!job) return null
-    
+
     def jobFilename = findJobFilename(job.jobDir)
     def jobFile = new File(pendingDir, jobFilename)
-    
+
     if (!jobFile.exists()) {
       jobFile = new File(job.jobDir, jobFilename)
     }
 
     PauseManager.instance.unpauseProject(this, job.project)
-    
+
     return addJob(jobFile, false)
   }
-  
+
   def similarJobsExist(job) {
     log.trace("Starting detection of similar job existence; job=${job?.id}")
     def begin = System.currentTimeMillis()
@@ -546,7 +546,7 @@ public class JobManager implements Runnable,Publisher {
     def jobDetails = resolveFileDetails(file)
 
     def job = new Job(jobId, jobDir, new File(projectDir, file.name), jobDetails, jobProperties())
-    
+
     // If this job has never run then run it now, don't wait for a trigger.
     job.runningRelatedJobs = currentJobs().count { it.project == job.project }
     def similarExist = similarJobsExist(job)
@@ -601,7 +601,7 @@ public class JobManager implements Runnable,Publisher {
 
   public def browseProjects(Date since = null) {
     def latestJobs = fetchLatestJobs()
-    return latestJobs.findAll { it.isUpdatedSince(since) || PauseManager.instance.hasProjectPauseToggledSince(since, it.project) }.collect { 
+    return latestJobs.findAll { it.isUpdatedSince(since) || PauseManager.instance.hasProjectPauseToggledSince(since, it.project) }.collect {
       def map = it.toSimple()
       map + [paused:PauseManager.instance.isProjectPaused(map.project), acked:AckManager.instance.getAck(it.id)]
     }
@@ -618,7 +618,7 @@ public class JobManager implements Runnable,Publisher {
   public def browseJobs(String project) {
     browseJobsUnsimplified(project).collect { it.toSimple() }
   }
-  
+
   public def findLatestJob(String project, JobStatus status=null) {
     def jobs = browseJobs(project)
 
@@ -642,7 +642,7 @@ public class JobManager implements Runnable,Publisher {
     def foundJobs = allJobs().findAll { job ->
       job.id ==~ /.*${match}.*/
     }.sort { job1, job2 ->
-      def id1 = getJobNum(job1.id).toInteger() 
+      def id1 = getJobNum(job1.id).toInteger()
       def id2 = getJobNum(job2.id).toInteger()
 
       id1 <=> id2
@@ -699,7 +699,7 @@ public class JobManager implements Runnable,Publisher {
   protected String getCompletedDir() {
     jobDirectory + "/completed"
   }
-  
+
   protected String getEventDir() {
     jobDirectory + "/event"
   }
@@ -723,14 +723,14 @@ public class JobManager implements Runnable,Publisher {
       .execute()
       .waitForProcessOutput(System.out, System.err);
   }
-  
+
   public static String findReason(Throwable e) {
     if (e.cause) {
       return findReason(e.cause)
     }
     return e.toString()
   }
-  
+
   def lookupSecureValue(fullKey) {
     return this.secureProps.find { k, v -> fullKey.startsWith(k) }?.value
   }
@@ -742,9 +742,9 @@ public class JobManager implements Runnable,Publisher {
         log.warn("Attempting to reference local path within config repo, however config repo is not configured; input='${input}'")
       }
     }
-    return input    
+    return input
   }
-  
+
   public def fetchUrlInputStream(input) {
     input = prepareLocalUrl(input)
     def url = new URL(input).openConnection()
@@ -756,7 +756,7 @@ public class JobManager implements Runnable,Publisher {
     log.debug("Connecting to URL; url=${input}; auth=${auth != null}")
     return url.inputStream
   }
-  
+
   public def fetchUrlText(url) {
     log.trace("Starting to fetch url; url=${url}")
     def begin = System.currentTimeMillis()
@@ -768,13 +768,13 @@ public class JobManager implements Runnable,Publisher {
     log.trace("Finished fetching url; elapsedMs=${System.currentTimeMillis()-begin}")
     return value
   }
-  
+
   public def cache(url, value) {
     synchronized (urlCache) {
       urlCache[url] = [value:value,time:System.currentTimeMillis()]
     }
   }
-  
+
   public def cached(url) {
     def value
     synchronized (urlCache) {
@@ -786,9 +786,9 @@ public class JobManager implements Runnable,Publisher {
         }
       }
     }
-    return value  
+    return value
   }
-  
+
   public String getLogContents() {
     def logFile = log.rootLogger?.allAppenders?.find { it instanceof FileAppender }?.file
     if (logFile) {
@@ -801,7 +801,7 @@ public class JobManager implements Runnable,Publisher {
         }
         return text
       }
-    }    
+    }
     return ""
   }
 
@@ -904,11 +904,11 @@ public class JobManager implements Runnable,Publisher {
 
   public Map getMetrics() {
     def metrics = [
-      toxic_jobs_pending:0, 
-      toxic_jobs_running:0, 
-      toxic_jobs_succeeded:0, 
+      toxic_jobs_pending:0,
+      toxic_jobs_running:0,
+      toxic_jobs_succeeded:0,
       toxic_jobs_failed:0,
-      toxic_jobs_completed:0, 
+      toxic_jobs_completed:0,
       toxic_jobs_total:0
     ]
 
@@ -998,8 +998,8 @@ public class JobManager implements Runnable,Publisher {
       activeJobs += getJobsByStatus(JobStatus.RUNNING)
       activeJobs += getJobsByStatus(JobStatus.ENDING)
       return !activeJobs.find { j ->
-        mutex.equalsIgnoreCase(j.mutex) 
-      } 
+        mutex.equalsIgnoreCase(j.mutex)
+      }
     }
     return true
   }
