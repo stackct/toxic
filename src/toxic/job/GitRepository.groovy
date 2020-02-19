@@ -30,7 +30,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
         checkoutTargetBranch()
         exec("git pull", false)
       }
-      
+
       // Handle submodules (if any)
       exec("git submodule update --recursive --remote --init")
       exec(['git', 'submodule', 'foreach', 'git checkout master && git pull --rebase'], false)
@@ -101,7 +101,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
           revision['name']         = parts[2]
           revision['email']        = parts[3]
           revision['summary']      = parts[4]
-          
+
           revisions << revision
         }
       }
@@ -141,7 +141,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     }
 
     log.debug("git command result +++ local=${local}; remote=${remote}; cmd=${cmds}; exitValue=${proc.exitValue()}")
-    
+
     if (proc.exitValue() != 0) {
       log.debug("git command returned stderr; local=${local}; remote=${remote}; cmd=${cmds}; exitValue=${proc.exitValue()}; stderr=${stderr.toString()}")
 

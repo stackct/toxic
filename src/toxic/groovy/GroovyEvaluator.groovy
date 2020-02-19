@@ -29,6 +29,13 @@ public class GroovyEvaluator {
     return allowedInput
   }
 
+  public static sanitizeMap(Map memory, String key) {
+    def val = memory[key]
+    if (val != null && !(val instanceof Map)) {
+      memory.remove(key)
+    }
+  }
+
   /**
    * Evaluates/executes the given Groovy script and returns the optional result.
    *
@@ -49,6 +56,7 @@ public class GroovyEvaluator {
     def scriptBase
     if (memory && (!memory.recompileScripts || (memory.recompileScripts?.toLowerCase() == 'false'))) {
       def key = input.hashCode() + "_" + input.size()
+      sanitizeMap(memory, "fastClassMap")
       if (memory.fastClassMap == null) {
         synchronized(memory) {
           if (memory.fastClassMap == null) {
@@ -127,7 +135,7 @@ public class GroovyEvaluator {
         }
         long elapsed = System.currentTimeMillis() - start
         if (log.isDebugEnabled()) log.debug("Finished evaluating Groovy script; elapsedMs=${elapsed}; inputScript=$input")
-        
+
         if (memory) {
           // Accumulate perf stats
           if (!memory["groovyshellAccumScriptExecMs_${memory.tmId}"]) {
@@ -136,7 +144,7 @@ public class GroovyEvaluator {
           }
           memory["groovyshellAccumScriptExecMs_${memory.tmId}"] += elapsed
           memory["groovyshellAccumScriptExecCount_${memory.tmId}"] += 1
-          
+
           // Report perf stats
           long totalMs = memory["groovyshellAccumScriptExecMs_${memory.tmId}"]
           long totalCount = memory["groovyshellAccumScriptExecCount_${memory.tmId}"]
@@ -161,19 +169,19 @@ public class GroovyEvaluator {
    */
   public static def clearClassLoader(shell, memory) {
     def cleared = false
-    
+
     if (shell && memory != null) {
       int maxCount = memory["groovyResetClassLoaderExecutionCount"] ? memory["groovyResetClassLoaderExecutionCount"].toInteger() : 0
       int scriptCount = memory["groovyshellExecutionsSinceLastFlush"] ? memory["groovyshellExecutionsSinceLastFlush"].toInteger() + 1 : 1
       memory["groovyshellExecutionsSinceLastFlush"] = scriptCount
       if (scriptCount >= maxCount) {
-        // Reset the class loader to clean up stale classes; otherwise permgen space 
+        // Reset the class loader to clean up stale classes; otherwise permgen space
         // will become exhausted.
         shell.resetLoadedClasses()
         shell.classLoader.clearCache()
         memory["groovyshellExecutionsSinceLastFlush"] = 0
         cleared = true
-      } 
+      }
     }
     return cleared
   }

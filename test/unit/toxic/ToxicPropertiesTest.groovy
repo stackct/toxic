@@ -26,12 +26,12 @@ public class ToxicPropertiesTest {
     assert tp.get("t") == expectedResult
     assert tp.getProperty("t") == expectedResult
   }
-  
+
   @Test
   public void testGetIsTrue() {
     def props = new ToxicProperties()
     assert !props.isTrue("foo")
-    
+
     [true, "true", "True", "TRUE"].each {
       props.foo = it
       assert props.isTrue("foo")
@@ -121,6 +121,19 @@ public class ToxicPropertiesTest {
     //assert result2 == "[foo:1, bar:test, secure.baz:***]"
   }
 
+  @Test
+  public void testToProperties() {
+    ToxicProperties tp = new ToxicProperties()
+    tp.foo = 1
+    tp.bar = "test"
+    tp['secure.baz'] = "secureBaz"
+    tp.obj = new ToxicProperties()
+    def result = tp.toStringProperties()
+    assert result.contains("foo=1")
+    assert result.contains("bar=test")
+    assert result.contains("secure.baz=***")
+    assert result.contains("obj=")
+  }
 
   @Test
   public void testEach() {
@@ -240,7 +253,7 @@ public class ToxicPropertiesTest {
     assert tp.c == "bar"
     assert tp.d == "bar"
   }
-  
+
   @Test
   public void test_forProperties() {
     def tp = new ToxicProperties()
@@ -250,13 +263,13 @@ public class ToxicPropertiesTest {
     tp["b.1"] = 4
     tp["b.10"] = 5
     tp["b.390"] = 6
-    
+
     def found = []
     tp.forProperties("a.") { key, value -> found << value }
-    
+
     assert found == [1,22,3]
   }
-  
+
   @Test
   public void test_push_pop() {
     def tp = new ToxicProperties()
@@ -294,14 +307,14 @@ public class ToxicPropertiesTest {
   @Test
   public void test_is_empty_entry() {
     def tp = [
-      "a": null, 
-      "b": "", 
+      "a": null,
+      "b": "",
       "c": 0,
       "d": true,
       "e": false
 
     ] as ToxicProperties
-    
+
     assert tp.isNothing("foo")
     assert tp.isNothing("a")
     assert !tp.isNothing("b")

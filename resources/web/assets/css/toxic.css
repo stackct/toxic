@@ -143,3 +143,8 @@ table#projects thead tr th:nth-child(6) {
 .chart-tip {
   color: darkGray;
 }
+
+.job-details {
+    height: 500px;
+    overflow-y: scroll;
+}

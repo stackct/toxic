@@ -41,13 +41,13 @@ NOTE: If you are running on Windows, you are on your own.
 ## Screencasts
 
 ### Navigation
-![Pickle Navigation](resources/pickle-explorer-navigation.gif)
+![Pickle Navigation](https://github.com/stackct/toxic/raw/master/resources/vscode/pickle/resources/pickle-explorer-navigation.gif)
 
 ### Authoring
-![Pickle Navigation](resources/pickle-explorer-authoring.gif)
+![Pickle Authoring](https://github.com/stackct/toxic/raw/master/resources/vscode/pickle/resources/pickle-explorer-authoring.gif)
 
 ### Test Execution
-![Pickle Navigation](resources/pickle-explorer-run-test.gif)
+![Pickle Test Execution](https://github.com/stackct/toxic/raw/master/resources/vscode/pickle/resources/pickle-explorer-run-test.gif)
 
 ## Next
 

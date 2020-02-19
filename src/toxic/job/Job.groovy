@@ -38,7 +38,7 @@ public class Job implements Callable, Comparable, Publisher {
   boolean repeat
   int runningRelatedJobs = 0
   int suites
-  int failed  
+  int failed
   String cachedSequence
   String cachedProject
   String cachedImageRepository
@@ -46,14 +46,14 @@ public class Job implements Callable, Comparable, Publisher {
   transient boolean processing
   long resultsLastAccessedTime
   List<String> satisfiedTriggers = []
-  
+
   // Used to optimize resources for tasks in-progress only
   def taskMasterResultIndex = [:]
   def localSimpleResults = [:]
   def lastCompleted
   def previousJob
   def lastStartTimeTriggered
-  
+
   public Job() {
     properties = new ToxicProperties()
   }
@@ -81,7 +81,7 @@ public class Job implements Callable, Comparable, Publisher {
       artifactsDir = jobDir
     }
     updateStatus(JobStatus.PENDING)
-    log.trace("Finished constructing job; id=${id}; elapsedMs=${System.currentTimeMillis()-begin}")    
+    log.trace("Finished constructing job; id=${id}; elapsedMs=${System.currentTimeMillis()-begin}")
   }
 
   public call() {
@@ -102,7 +102,7 @@ public class Job implements Callable, Comparable, Publisher {
           update()
         } else {
           log.info("Skipping job run due to discard flag; jobId=${id}")
-        }        
+        }
 
         log.info("Job ending; jobId=${id}; jobDir=${jobDir.canonicalPath}")
         updateStatus(JobStatus.ENDING)
@@ -137,7 +137,7 @@ public class Job implements Callable, Comparable, Publisher {
       use (NotificationCenter) {
         notify(EventType.JOB_CHANGED, this.toSimple())
       }
-      
+
     } finally {
       processing = false
     }
@@ -146,7 +146,7 @@ public class Job implements Callable, Comparable, Publisher {
   void addRemoteResult(TaskResult taskResult) {
     this.agent.addRemoteResult(taskResult)
   }
-  
+
   def parseTime(String value, Calendar now) {
     def formats = ["hh:mm:ssaa", "HH:mm:ss", "hh:mmaa", "HH:mm", "hhaa", "HH"]
     for (def format: formats) {
@@ -167,7 +167,7 @@ public class Job implements Callable, Comparable, Publisher {
   boolean immediateTrigger(String value) {
     return value?.toBoolean()
   }
-  
+
   boolean startTimeTrigger(String value) {
     def now = Calendar.instance
     def startTimes = value.split(",").collect { parseTime(it.trim(), now) }
@@ -200,16 +200,16 @@ public class Job implements Callable, Comparable, Publisher {
   boolean repoCommitTrigger(String value) {
     attachRepository()
 
-    if (!repo || !"true".equalsIgnoreCase(value)) 
+    if (!repo || !"true".equalsIgnoreCase(value))
       return false
-   
+
     return SourceRepoMonitor.instance.hasRepoChanged(repo)
   }
-  
+
   boolean dependsOnTrigger(String value) {
     def previousJob = properties?.jobManager?.findLatestJob(project, JobStatus.COMPLETED)
     def latestOtherJob = properties?.jobManager?.findLatestJob(value, JobStatus.COMPLETED)
-    def result = (latestOtherJob && !latestOtherJob?.failed && (latestOtherJob.completedDate > previousJob?.startedDate)) 
+    def result = (latestOtherJob && !latestOtherJob?.failed && (latestOtherJob.completedDate > previousJob?.startedDate))
     log.debug("dependsOn Results; latestOtherJobFailed=${latestOtherJob?.failed}; latestCompletedDate=${latestOtherJob?.completedDate?.format('yyyy-MM-dd HH:mm:ss.SSS')}; previousStartedDate=${previousJob?.startedDate?.format('yyyy-MM-dd HH:mm:ss.SSS')}")
     return result
   }
@@ -217,13 +217,13 @@ public class Job implements Callable, Comparable, Publisher {
   boolean eventTrigger(String value) {
     def previousJob = properties?.jobManager?.findLatestJob(project, JobStatus.COMPLETED)
     def event = EventManager.instance.findEvent(value)
-    return (event && (event.time > previousJob?.startedDate?.time)) 
+    return (event && (event.time > previousJob?.startedDate?.time))
   }
 
   def concurrencyLimitReached() {
     return runningRelatedJobs > 0 && !this.properties.isTrue("job.allowConcurrentRuns")
   }
-  
+
   def requirementsSatisfied(boolean reviewTriggers = true) {
     if (!this.properties || !this.properties.keySet().find { it.startsWith("doDir") }) {
       log.error("Job does not have a valid property set, aborting job; props=\"${this.properties}\"")
@@ -266,11 +266,11 @@ public class Job implements Callable, Comparable, Publisher {
       args << "${key}=${value}".toString()
     }
   }
-  
+
   public boolean isStale() {
     // Can't be stale if it's still pending or running
     if (!isCompleted()) return false
-    
+
     // Only stale if its age exceeds the maxAgeInDays property
     def maxAgeInDays = this.properties['job.maxAgeInDays'].toInteger()
     def jobDate = completedDate ?: new Date(jobDir.lastModified())
@@ -324,6 +324,25 @@ public class Job implements Callable, Comparable, Publisher {
     return args
   }
 
+  protected updateDetails() {
+    def cleanProps = this.properties.clone()
+    cleanProps.remove("log")
+    cleanProps.remove("jobManager")
+    cleanProps.remove("eventManager")
+    cleanProps.remove("job")
+    cleanProps.remove("job.artifactsDir")
+    cleanProps.remove("job.logFile")
+    cleanProps.remove("job.workDir")
+    cleanProps.remove("project.workDir")
+    cleanProps.remove("junitFile")
+    this.details = cleanProps.toStringProperties()
+
+    def jobFile = new File(this.jobDir, this.projectWorkDir.name)
+    if (jobFile.isFile()) {
+      jobFile.text = this.details
+    }
+  }
+
   protected initialize() {
     def args = loadJobDetails()
 
@@ -334,7 +353,7 @@ public class Job implements Callable, Comparable, Publisher {
     FileUtils.forceMkdir(artifactsDir)
 
     log.debug("initialize(); projectWorkDir=${projectWorkDir}; artifactsDir=${artifactsDir}")
-    
+
     attachRepository()
     updateRepository()
     args = loadJobDetailsFromRepo(args)
@@ -344,7 +363,10 @@ public class Job implements Callable, Comparable, Publisher {
     // reload the parent hierarchy .properties files that could now exist
     newProps = Main.loadProperties(args)
     this.properties.putAll(newProps)
-    
+
+    // Update final version of properties into job file
+    updateDetails()
+
     if (properties.jobManager) {
       previousJob = properties.jobManager.findLatestJob(project, JobStatus.COMPLETED)
     }
@@ -410,7 +432,7 @@ public class Job implements Callable, Comparable, Publisher {
 
     if (this.properties['job.splunk.loghost'] && this.properties['job.splunk.logport']) {
       def layout = new PatternLayout(this.properties['job.logLayout'])
-      
+
       new SplunkRawTCPAppender(layout).with { appender ->
         appender.name = "splunk"
         appender.host = this.properties['job.splunk.loghost']
@@ -436,10 +458,10 @@ public class Job implements Callable, Comparable, Publisher {
     // only remove if empty, to keep clutter minimzed, can also force delete via -job.end.script. arg
     projectWorkDir.delete()
   }
-  
+
   protected callNotifications() {
     // Don't notify on a first run, otherwise a first run that fails will notify everyone that has ever committed to the repo
-    if (!previousJob) return 
+    if (!previousJob) return
 
     this.properties.forProperties("job.notification.") { key, value ->
       try {
@@ -490,7 +512,7 @@ public class Job implements Callable, Comparable, Publisher {
     def summary = toSimple()
     summary.startedTime = summary.startedDate?.time
     summary.submittedTime = summary.submittedDate?.time
-    summary.completedTime = summary.completedDate?.time 
+    summary.completedTime = summary.completedDate?.time
     formatter.formatSummary(summary)
   }
 
@@ -505,7 +527,7 @@ public class Job implements Callable, Comparable, Publisher {
         updateSimpleResult(tmpResults, r)
       }
       this.suites = tmpResults.size()
-      this.failed = tmpResults.count { f,r -> r.find { t -> !t.success } }    
+      this.failed = tmpResults.count { f,r -> r.find { t -> !t.success } }
       this.localSimpleResults = tmpResults
       this.resultsLastAccessedTime = System.currentTimeMillis()
 
@@ -520,7 +542,7 @@ public class Job implements Callable, Comparable, Publisher {
       }
     }
   }
-  
+
   def updateSimpleResult(tmpResults, r) {
     def simple = r.toSimple()
     def familyResults = tmpResults[simple.suite]
@@ -528,12 +550,12 @@ public class Job implements Callable, Comparable, Publisher {
       familyResults = []
       tmpResults[simple.suite] = familyResults
     }
-    familyResults << simple   
-    
+    familyResults << simple
+
     // Get the most recently completed result
     if (simple.complete && simple.stopTime > lastCompleted?.stopTime) lastCompleted = simple
   }
-  
+
   def getSimpleResults() {
     if (!processing && !this.localSimpleResults) {
       synchronized (this) {
@@ -548,7 +570,7 @@ public class Job implements Callable, Comparable, Publisher {
     }
     return this.localSimpleResults
   }
-  
+
   def limit(list, prop) {
     def value
     try {
@@ -557,9 +579,9 @@ public class Job implements Callable, Comparable, Publisher {
       list = list?.size() > max ? list[-max..-1] : list
     } catch (Exception e) {
       log.warn("Failed to limit list size; max=${value}; reason=${JobManager.findReason(e)}")
-    }    
+    }
   }
-  
+
   public performAction(action, auth) {
     action = lookupPropertyKey(action)
     def script = this.properties[action]
@@ -603,9 +625,9 @@ public class Job implements Callable, Comparable, Publisher {
       }
     }
   }
-  
+
   private lookupPropertyKey(incorrectlyCasedKey) {
-    return this.properties.find { k, v -> k?.toString().equalsIgnoreCase(incorrectlyCasedKey) }?.key
+    return this.properties.keySet().find { k -> k?.toString()?.equalsIgnoreCase(incorrectlyCasedKey) }
   }
 
   def collectActionAuths(action) {
@@ -621,7 +643,7 @@ public class Job implements Callable, Comparable, Publisher {
     }
     return auths ? auths.tokenize(";,")?.sort() : null
   }
-  
+
   public collectActions(prefix) {
     def actions = [:]
     this.properties.forProperties(prefix) { key, script ->
@@ -632,7 +654,7 @@ public class Job implements Callable, Comparable, Publisher {
     }
     return actions
   }
-  
+
   public collectValidActions() {
     def actions = [:]
     actions += collectActions("job.action.")
@@ -643,7 +665,7 @@ public class Job implements Callable, Comparable, Publisher {
       } else {
         actions += collectActions("job.actionIfCompleteSuccess.")
       }
-    } 
+    }
     if (failed) {
       actions += collectActions("job.actionIfFailure.")
     }
@@ -673,7 +695,7 @@ public class Job implements Callable, Comparable, Publisher {
     map.logSize         = logFile?.size()
     map.commits         = limit(this.commits, 'job.maxCommits')
     map.lastCompleted   = this.lastCompleted
-    map.actions         = collectValidActions()  
+    map.actions         = collectValidActions()
     map.prevFailed      = this.previousJob?.failed ?: 0
     map.tags            = this.fetchTags()
     map.group           = this.properties['job.group'] ?: ""
@@ -714,23 +736,23 @@ public class Job implements Callable, Comparable, Publisher {
         startTime: et.first().startTime,
         duration:  et.collect { it.duration }.sum(),
       ]
-    }    
+    }
     return res?.findAll { it }
   }
 
   public List toTaskBreakdown(String suite) {
     return simpleResults[suite]
   }
-  
+
   public File getLogFile() {
     return this.properties['job.logFile'] ? new File(this.properties['job.logFile']) : null
   }
 
   public File getReadMeFile() {
     def readme = new File(this.projectWorkDir, "README.md")
-    if (!readme.exists()) readme = new File(this.projectWorkDir, "readme.md") 
-    if (!readme.exists()) readme = new File(this.projectWorkDir, "README.txt") 
-    if (!readme.exists()) readme = new File(this.projectWorkDir, "readme.txt") 
+    if (!readme.exists()) readme = new File(this.projectWorkDir, "readme.md")
+    if (!readme.exists()) readme = new File(this.projectWorkDir, "README.txt")
+    if (!readme.exists()) readme = new File(this.projectWorkDir, "readme.txt")
     readme
   }
 
@@ -754,7 +776,7 @@ public class Job implements Callable, Comparable, Publisher {
 
   public def fetchTags() {
     String ext = '.tag'
-    
+
     fetchArtifacts()
       .findAll { artifact -> artifact.name.endsWith(ext) && artifact.name != ext }
       .collect { artifact -> artifact.name - ext }
@@ -933,7 +955,7 @@ public class Job implements Callable, Comparable, Publisher {
   protected void updateStatus(status) {
     if (this.currentStatus != JobStatus.ABANDONED) this.currentStatus = status
   }
-  
+
   int compareTo(Object other) {
     int result = 0
     if (other instanceof Job) {
@@ -959,7 +981,7 @@ public class Job implements Callable, Comparable, Publisher {
     suites += stats.suites
     failed += stats.failures
   }
-  
+
   String getMutex() {
     return this.properties?.mutex ?: ""
   }
