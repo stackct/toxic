@@ -45,6 +45,7 @@ RUN npm i -g redoc-cli
 RUN curl -L https://aka.ms/downloadazcopy-v10-linux -o /tmp/azcopy.tgz \
     && tar -x --strip=1 -f /tmp/azcopy.tgz -C /usr/local/bin \
     && chown root:root /usr/local/bin/azcopy \
+    && chmod a+x /usr/local/bin/azcopy \
     && apk add libc6-compat
 
 RUN sed -i 's/ref="console"/ref="rolling"/' /opt/toxic/conf/log4j.xml
