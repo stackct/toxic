@@ -114,7 +114,7 @@ public class SqlTaskTest {
     def result = st.transmit("SELECT 123 as A, 456 as B, 789 as C", tp)
     assert result == "123,456,789"
   }
-*/  
+*/
   @Test
   public void testConnection() {
     ToxicProperties tp = new ToxicProperties()
@@ -122,23 +122,24 @@ public class SqlTaskTest {
     tp.sqlUser="sa"
     tp.sqlPass="Test12"
     tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
-    
+
     def connMock = new Object() {
       def rows = { sql, rsMeta -> [[c1:"123",c2:"456",c3:"789"]] }
       def execute = { sql ->  }
     }
-    
+
     def sqlMock = new MockFor(Sql)
     sqlMock.demand.newInstance { s1, s2, s3, s4 -> connMock }
 
     SqlTask st = new SqlTask()
     st.init(null, tp)
-    
-    def result 
+
+    def result
     sqlMock.use {
       result = st.transmit("SELECT 123 as A, 456 as B, 789 as C", null, tp)
     }
     assert result == "123,456,789"
+    assert tp.lastResponse == result
   }
 
   @Test
@@ -208,6 +209,7 @@ public class SqlTaskTest {
     task.init("test", toxicProperties)
     task.execute('EXEC stored_procedure')
   }
+
 
   @Test
   void should_execute_with_retry() {
@@ -293,5 +295,19 @@ public class SqlTaskTest {
     sqlMock.use {
       st.transmit("SELECT 123 as A, 456 as B, 789 as C", null, tp)
     }
+  }
+
+  @Test
+  void should_add_sqlexception_to_results_during_execute() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.sqlConnection = [execute: { String sql, Closure processResults ->
+      throw new SQLException("something")
+    }]
+
+    SqlTask task = new SqlTask()
+
+    task.init("test", toxicProperties)
+    def results = task.execute('EXEC stored_procedure')
+    assert results == "java.sql.SQLException: something"
   }
 }
