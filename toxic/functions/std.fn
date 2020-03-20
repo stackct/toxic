@@ -68,6 +68,15 @@ function "GetDate", {
   output "date"
 }
 
+function "GetFiles", {
+  description "Returns a list of files within a directory"
+  path        "{{ libPath }}/std/get_files"
+
+  arg "dir"
+
+  output "value"
+}
+
 function "StartHttpServer", {
   description "starts a http server that can be used as a partner simulator"
   path "{{ libPath }}/std/interceptor/start"

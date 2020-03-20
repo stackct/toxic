@@ -162,8 +162,8 @@ step "DoSomething", "do", {
 }
 ```
 
-Steps can be repeated by using a `foreach` block. `foreach` will repeat the step for each item in the comma separated list.
-The collection can be a statically defined string, or an interpolated value from the output of another step.
+Steps can be repeated by using a `foreach` block. `foreach` will repeat the step for each item in the list.
+The list can be a comma separated string value, an array list, or an interpolated value from the output of another step.
 Use the `{{ each }}` variable to reference the item of the current iteration.
 NOTE: At this time the output variables from a step containing a foreach will only contain the step output produced from the last iteration of the step.
 
@@ -174,7 +174,7 @@ step "ForeachFunc", "item", {
     foo     "{{ each }}"
 }
 
-Example using the output from another step:
+Example using the output from another step. outputItems could be either a string or list type:
 step "ForeachFunc", "item", {
     foreach "{{ step.anotherstep.outputItems }}"
 
