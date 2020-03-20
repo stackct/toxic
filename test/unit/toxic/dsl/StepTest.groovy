@@ -6,7 +6,6 @@ import org.junit.rules.ExpectedException
 import toxic.ToxicProperties
 
 import static org.junit.Assert.fail
-import static org.junit.Assert.fail
 
 class StepTest {
   @Rule
@@ -236,5 +235,36 @@ class StepTest {
     assert props['task.retry.every'] == 5
     assert props['task.retry.successes'] == 10
     assert props['task.retry.condition'] instanceof Closure
+  }
+
+  @Test
+  void should_not_traverse_steps_when_foreach_is_null() {
+    def step = new Step(name:'name', function:'fn')
+    def steps = []
+    step.eachStep([:], { stepItem ->
+      steps << stepItem
+    })
+    assert 1 == steps.size()
+    assert step == steps[0]
+  }
+
+  @Test
+  void should_interpolate_the_foreach_item() {
+    def step = new Step(name:'name', function:'fn')
+    step.foo("foo")
+    step.bar("{{ bar }}")
+    step.baz(0)
+    step.item("{{ each }}")
+    step.foreach('0,1,2')
+
+    def steps = []
+    step.eachStep([:], { stepItem ->
+      steps << stepItem.clone()
+    })
+    assert 3 == steps.size()
+
+    assert [foo:'foo', bar:'{{ bar }}', baz:0, item:'0'] == steps[0].args
+    assert [foo:'foo', bar:'{{ bar }}', baz:0, item:'1'] == steps[1].args
+    assert [foo:'foo', bar:'{{ bar }}', baz:0, item:'2'] == steps[2].args
   }
 }

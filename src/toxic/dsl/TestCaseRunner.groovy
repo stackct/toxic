@@ -152,7 +152,9 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         testCase.stepSequence.eachWithIndex { seq, stepIndex ->
             props.stepIndex = stepIndex
             step = seq.step
-            executeStep(step)
+            step.eachStep(props, { stepItem ->
+              executeStep(stepItem)
+            })
         }
         executeAssertions()
         end = System.currentTimeMillis()

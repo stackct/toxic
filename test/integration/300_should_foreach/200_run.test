@@ -1,0 +1,19 @@
+test "Foreach" {
+  description "Verifies a step can be called several times"
+
+  tags "foreach"
+
+  step "GetItems", "get", { }
+
+  step "ForeachFunc", "item", {
+    foreach "{{ step.get.items }}"
+
+    item    "{{ each }}"
+  }
+
+  assertions {
+    eq "{{ step.item.count }}", "10"
+    eq "{{ step.item.sum }}",   "45"
+    eq "{{ step.item.value }}", "9"
+  }
+}

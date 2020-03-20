@@ -67,13 +67,7 @@ class TestCaseTask extends toxic.Task {
 
   List<Step> cloneSteps(List<Step> steps) {
     steps.collect {
-      def bos = new ByteArrayOutputStream()
-      def oos = new ObjectOutputStream(bos)
-      oos.writeObject(it);
-      oos.flush()
-      def bin = new ByteArrayInputStream(bos.toByteArray())
-      def ois = new ObjectInputStream(bin)
-      return ois.readObject()
+      return it.clone()
     }
   }
 

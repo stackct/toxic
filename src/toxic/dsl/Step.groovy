@@ -14,6 +14,7 @@ class Step implements Serializable {
   String function
   Map<String,Object> args = [:]
   Map<String,Object> outputs = [:]
+  String foreach
   Wait wait
   Step parentStep
   boolean lastStepInSequence
@@ -57,6 +58,32 @@ class Step implements Serializable {
     wait = w
   }
 
+  def foreach(String foreach) {
+    this.foreach = foreach
+  }
+
+  def eachStep(def props, Closure closure) {
+    if(null == foreach) {
+      closure(this)
+      return
+    }
+
+    interpolate(props, foreach).split(',').eachWithIndex { item, index ->
+      def originalArgs = [:]
+      args.each { k, v ->
+        def interpolatedValue = interpolate([each:item], v)
+        if(interpolatedValue) {
+          originalArgs[k] = v
+          args[k] = interpolatedValue
+        }
+      }
+      closure(this)
+      originalArgs.each { k, v ->
+        args[k] = v
+      }
+    }
+  }
+
   Function getFunction(def props) {
     props.functions["${function}"]
   }
@@ -98,6 +125,16 @@ class Step implements Serializable {
     else {
       getLog(props).debug("Skipping output result copy because function was not defined for step; step=${name}")
     }
+  }
+
+  Step clone() {
+    def bos = new ByteArrayOutputStream()
+    def oos = new ObjectOutputStream(bos)
+    oos.writeObject(this);
+    oos.flush()
+    def bin = new ByteArrayInputStream(bos.toByteArray())
+    def ois = new ObjectInputStream(bin)
+    return ois.readObject()
   }
 
   static def interpolate(def props, String property) {
