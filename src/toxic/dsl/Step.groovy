@@ -14,7 +14,7 @@ class Step implements Serializable {
   String function
   Map<String,Object> args = [:]
   Map<String,Object> outputs = [:]
-  String foreach
+  def foreach
   Wait wait
   Step parentStep
   boolean lastStepInSequence
@@ -58,7 +58,7 @@ class Step implements Serializable {
     wait = w
   }
 
-  def foreach(String foreach) {
+  def foreach(def foreach) {
     this.foreach = foreach
   }
 
@@ -68,7 +68,12 @@ class Step implements Serializable {
       return
     }
 
-    interpolate(props, foreach).split(',').eachWithIndex { item, index ->
+    foreach = interpolate(props, foreach)
+    if(foreach instanceof String) {
+      foreach = foreach.split(',')
+    }
+
+    foreach.eachWithIndex { item, index ->
       def originalArgs = [:]
       args.each { k, v ->
         def interpolatedValue = interpolate([each:item], v)

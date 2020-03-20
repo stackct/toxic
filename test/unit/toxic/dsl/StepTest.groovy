@@ -249,11 +249,27 @@ class StepTest {
   }
 
   @Test
-  void should_interpolate_the_foreach_item() {
+  void should_not_interpolate_non_foreach_args() {
     def step = new Step(name:'name', function:'fn')
     step.foo("foo")
     step.bar("{{ bar }}")
     step.baz(0)
+    step.foreach('0,1,2')
+
+    def steps = []
+    step.eachStep([:], { stepItem ->
+      steps << stepItem.clone()
+    })
+    assert 3 == steps.size()
+
+    assert [foo:'foo', bar:'{{ bar }}', baz:0] == steps[0].args
+    assert [foo:'foo', bar:'{{ bar }}', baz:0] == steps[1].args
+    assert [foo:'foo', bar:'{{ bar }}', baz:0] == steps[2].args
+  }
+
+  @Test
+  void should_interpolate_the_foreach_item_from_string() {
+    def step = new Step(name:'name', function:'fn')
     step.item("{{ each }}")
     step.foreach('0,1,2')
 
@@ -263,8 +279,49 @@ class StepTest {
     })
     assert 3 == steps.size()
 
-    assert [foo:'foo', bar:'{{ bar }}', baz:0, item:'0'] == steps[0].args
-    assert [foo:'foo', bar:'{{ bar }}', baz:0, item:'1'] == steps[1].args
-    assert [foo:'foo', bar:'{{ bar }}', baz:0, item:'2'] == steps[2].args
+    assert [item:'0'] == steps[0].args
+    assert [item:'1'] == steps[1].args
+    assert [item:'2'] == steps[2].args
+  }
+
+  @Test
+  void should_interpolate_the_foreach_item_from_list() {
+    def step = new Step(name:'name', function:'fn')
+    step.item("{{ each }}")
+    step.foreach(['0', '1', '2'])
+
+    def steps = []
+    step.eachStep([:], { stepItem ->
+      steps << stepItem.clone()
+    })
+    assert 3 == steps.size()
+
+    assert [item:'0'] == steps[0].args
+    assert [item:'1'] == steps[1].args
+    assert [item:'2'] == steps[2].args
+  }
+
+  @Test
+  void should_interpolate_the_foreach_string_list_from_another_step() {
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("{{ step.foo.stringItems }}")
+
+    def steps = []
+    step.eachStep([step:[foo:[stringItems:'0,1,2']]], { stepItem ->
+      steps << stepItem.clone()
+    })
+    assert 3 == steps.size()
+  }
+
+  @Test
+  void should_interpolate_the_foreach_list_from_another_step() {
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("{{ step.foo.stringItems }}")
+
+    def steps = []
+    step.eachStep([step:[foo:[stringItems:['0', '1', '2']]]], { stepItem ->
+      steps << stepItem.clone()
+    })
+    assert 3 == steps.size()
   }
 }
