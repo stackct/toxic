@@ -600,7 +600,3 @@ $ ln -s $(pwd)/resources/vscode/pickle/snippets/pickle.json` $HOME/Library/Appli
 ```
 
 **NOTE** - Symlinks are preferred as changes to the source snippets will reflect automatically.
-
-## What's Next
-
-* Parallel test execution

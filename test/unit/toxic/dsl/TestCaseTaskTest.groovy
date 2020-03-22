@@ -89,17 +89,20 @@ class TestCaseTaskTest {
 
     props.functions = ['fn_1': new Function(path: 'fn_1'), 'fn_2': new Function(path: 'fn_2'), 'fn_3': new Function(path: 'fn_3')]
     def testCases = testCaseTask.parse(input)
-    def assertSequence = { int testCaseIndex, def expectedSeq ->
-      def actualSeq = testCases[testCaseIndex].stepSequence
-      assert expectedSeq.size() == actualSeq.size()
-      expectedSeq.eachWithIndex { it, i ->
-        assert it == actualSeq[i].step.name
-      }
-    }
 
     assert 2 == testCases.size()
-    assertSequence(0, ['step1'])
-    assertSequence(1, ['step1', 'step2', 'step3'])
+
+    assert 1 == testCases[0].steps.size()
+    assert 'step1' == testCases[0].steps[0].name
+    assert [] == testCases[0].steps[0].steps
+
+    assert 3 == testCases[1].steps.size()
+    assert 'step1' == testCases[1].steps[0].name
+    assert [] == testCases[1].steps[0].steps
+    assert 'step2' == testCases[1].steps[1].name
+    assert [] == testCases[1].steps[1].steps
+    assert 'step3' == testCases[1].steps[2].name
+    assert [] == testCases[1].steps[2].steps
   }
 
   @Test
@@ -125,7 +128,7 @@ class TestCaseTaskTest {
   }
 
   @Test
-  void should_set_step_index_and_level_during_init() {
+  void should_parse_steps_that_call_higher_order_functions() {
     def functionFile = """
       function "SingleStep" {
         path "/foo/path/to/fn"
@@ -159,21 +162,24 @@ class TestCaseTaskTest {
     }
 
     def testCases = testCaseTask.parse(input)
-    def assertSequence = { int testCaseIndex, int sequenceIndex, String expectedStepName, int expectedLevel ->
-      def actualSeq = testCases[testCaseIndex].stepSequence[sequenceIndex]
-      assert expectedStepName == actualSeq.step.name
-      assert expectedLevel == actualSeq.level
-    }
 
     assert 2 == testCases.size()
-    assert 3 == testCases[0].stepSequence.size()
-    assert 3 == testCases[1].stepSequence.size()
-    assertSequence(0, 0, 'singleStep', 0)
-    assertSequence(0, 1, 'multiStep', 0)
-    assertSequence(0, 2, 'singleStep', 1)
-    assertSequence(1, 0, 'singleStep', 0)
-    assertSequence(1, 1, 'multiStep', 0)
-    assertSequence(1, 2, 'singleStep', 1)
+
+    assert 2 == testCases[0].steps.size()
+    assert 'singleStep' == testCases[0].steps[0].name
+    assert [] == testCases[0].steps[0].steps
+    assert 'multiStep' == testCases[0].steps[1].name
+    assert 1 == testCases[0].steps[1].steps.size()
+    assert 'singleStep' == testCases[0].steps[1].steps[0].name
+    assert [] == testCases[0].steps[1].steps[0].steps
+
+    assert 2 == testCases[1].steps.size()
+    assert 'singleStep' == testCases[1].steps[0].name
+    assert [] == testCases[1].steps[0].steps
+    assert 'multiStep' == testCases[1].steps[1].name
+    assert 1 == testCases[1].steps[1].steps.size()
+    assert 'singleStep' == testCases[1].steps[1].steps[0].name
+    assert [] == testCases[1].steps[1].steps[0].steps
   }
 
   @Test
@@ -456,14 +462,14 @@ class TestCaseTaskTest {
     def testCases = testCaseTask.parse(input)
     assert 1 == testCases.size()
 
-    def seq = testCases[0].stepSequence
-    assert 7 == seq.size()
-    assert 'singleStep1' == seq[0].step.name
-    assert 'multiStep1' == seq[1].step.name
-    assert 'singleStep2' == seq[2].step.name
-    assert 'multiStep2' == seq[3].step.name
-    assert 'singleStep3' == seq[4].step.name
-    assert 'multiStep3' == seq[5].step.name
-    assert 'singleStep4' == seq[6].step.name
+    def tree = Step.getTree(testCases[0].steps)
+    assert 7 == tree.size()
+    assert '|-- SingleStep:singleStep1' == tree[0]
+    assert '|-- MultiStep1:multiStep1' == tree[1]
+    assert '|   |-- SingleStep:singleStep2' == tree[2]
+    assert '|   |-- MultiStep2:multiStep2' == tree[3]
+    assert '|   |   |-- SingleStep:singleStep3' == tree[4]
+    assert '|   |   |-- MultiStep3:multiStep3' == tree[5]
+    assert '|   |   |   |-- SingleStep:singleStep4' == tree[6]
   }
 }

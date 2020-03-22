@@ -116,7 +116,7 @@ class StepTest {
 
   @Test
   void should_copy_interpolated_values_to_memory_map() {
-    TestCase testCase = new TestCase(stepSequence: [])
+    TestCase testCase = new TestCase()
     testCase.steps << new Step(name: 'create_order', function: 'create_order', outputs: [orderId: '12345', amount: 1000, map: [key: 'value']])
     testCase.steps << new Step(name: 'void_order', function: 'void_order', args: [total: '{{ step.create_order.amount }}'
       , list: ['{{step.create_order.orderId}}' , '{{step.create_order.amount}}' , 'test', true]
@@ -125,12 +125,9 @@ class StepTest {
     ])
 
     Function voidFunction = new Function(args: [new Arg(name: 'total'), new Arg(name: 'list'), new Arg(name: 'order'), new Arg(name: 'map')])
-    def props = [testCase: testCase, stepIndex: 1, functions: [create_order:new Function(), void_order:voidFunction]]
-    testCase.steps.each {
-      testCase.stepSequence << [step: it, level: 0]
-    }
-    props.step = new StepOutputResolver(props)
-    testCase.steps[props.stepIndex].copyArgsToMemory(props)
+    def props = [testCase: testCase, functions: [create_order:new Function(), void_order:voidFunction]]
+    props.step = new StepOutputResolver(testCase, testCase.steps[1], testCase.steps)
+    testCase.steps[1].copyArgsToMemory(props)
     assert '12345' == props.order.orderId
     assert 1000 == props.order.amount
     assert 1000 == props.total
@@ -144,9 +141,9 @@ class StepTest {
     testCase.steps << new Step(name: 'foo_step', function: 'foo_fn')
 
     Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: true, defaultValue: 'bar')])
-    def props = [testCase: testCase, stepIndex: 0, functions: [foo_fn: fn]]
-    props.step = new StepOutputResolver(props)
-    testCase.steps[props.stepIndex].copyArgsToMemory(props)
+    def props = [testCase: testCase, functions: [foo_fn: fn]]
+    props.step = new StepOutputResolver(testCase, testCase.steps[0], testCase.steps)
+    testCase.steps[0].copyArgsToMemory(props)
     assert 'bar' == props.foo
   }
 
@@ -156,9 +153,9 @@ class StepTest {
     testCase.steps << new Step(name: 'foo_step', function: 'foo_fn')
 
     Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: true, defaultValue: '{{ var.foo }}')])
-    def props = [testCase: testCase, stepIndex: 0, functions: [foo_fn: fn], var: [foo: 'bar']]
-    props.step = new StepOutputResolver(props)
-    testCase.steps[props.stepIndex].copyArgsToMemory(props)
+    def props = [testCase: testCase, functions: [foo_fn: fn], var: [foo: 'bar']]
+    props.step = new StepOutputResolver(testCase, testCase.steps[0], testCase.steps)
+    testCase.steps[0].copyArgsToMemory(props)
     assert 'bar' == props.foo
   }
 
@@ -168,9 +165,9 @@ class StepTest {
     testCase.steps << new Step(name: 'foo_step', function: 'foo_fn')
 
     Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: false)])
-    def props = [testCase: testCase, stepIndex: 0, functions: [foo_fn: fn]]
-    props.step = new StepOutputResolver(props)
-    testCase.steps[props.stepIndex].copyArgsToMemory(props)
+    def props = [testCase: testCase, functions: [foo_fn: fn]]
+    props.step = new StepOutputResolver(testCase, testCase.steps[0], testCase.steps)
+    testCase.steps[0].copyArgsToMemory(props)
     assert !props.containsKey('foo')
   }
 
@@ -180,9 +177,9 @@ class StepTest {
     testCase.steps << new Step(name: 'foo_step', function: 'foo_fn', args: [foo: 'bar'])
 
     Function fn = new Function(args: [new Arg(name: 'foo', hasDefaultValue: true, defaultValue: 'foobar')])
-    def props = [testCase: testCase, stepIndex: 0, functions: [foo_fn: fn]]
-    props.step = new StepOutputResolver(props)
-    testCase.steps[props.stepIndex].copyArgsToMemory(props)
+    def props = [testCase: testCase, functions: [foo_fn: fn]]
+    props.step = new StepOutputResolver(testCase, testCase.steps[0], testCase.steps)
+    testCase.steps[0].copyArgsToMemory(props)
     assert 'bar' == props.foo
   }
 
@@ -191,14 +188,14 @@ class StepTest {
     TestCase testCase = new TestCase()
     testCase.steps << new Step(name: 'create an order', function: 'create_order', args: [:])
 
-    def props = [testCase: testCase, stepIndex: 0]
-    props.step = new StepOutputResolver(props)
+    def props = [testCase: testCase]
+    props.step = new StepOutputResolver(testCase, testCase.steps[0], testCase.steps)
 
     Function function = new Function(name: 'create_order', args: [new Arg(name: 'someRequiredArg', required: true)])
     props.functions = [create_order: function]
 
     try {
-      testCase.steps[props.stepIndex].copyArgsToMemory(props)
+      testCase.steps[0].copyArgsToMemory(props)
       fail('Expected IllegalStateException')
     }
     catch(IllegalStateException e) {
@@ -211,14 +208,14 @@ class StepTest {
     TestCase testCase = new TestCase()
     testCase.steps << new Step(name: 'create an order', function: 'create_order', args: ['not-defined':'someValue'])
 
-    def props = [testCase: testCase, stepIndex: 0]
-    props.step = new StepOutputResolver(props)
+    def props = [testCase: testCase]
+    props.step = new StepOutputResolver(testCase, testCase.steps[0], testCase.steps)
 
     Function function = new Function(name: 'create_order', args: [])
     props.functions = [create_order: function]
 
     try {
-      testCase.steps[props.stepIndex].copyArgsToMemory(props)
+      testCase.steps[0].copyArgsToMemory(props)
       fail('Expected IllegalStateException')
     }
     catch(IllegalStateException e) {
@@ -239,9 +236,11 @@ class StepTest {
 
   @Test
   void should_not_traverse_steps_when_foreach_is_null() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
     def step = new Step(name:'name', function:'fn')
     def steps = []
-    step.eachStep([:], { stepItem ->
+    Step.eachStep([step], toxicProperties, { stepItem ->
       steps << stepItem
     })
     assert 1 == steps.size()
@@ -250,6 +249,10 @@ class StepTest {
 
   @Test
   void should_not_interpolate_non_foreach_args() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
+    toxicProperties.functions = [fn:new Function(args: [new Arg(name: 'foo'), new Arg(name: 'bar'), new Arg(name: 'baz')])]
+
     def step = new Step(name:'name', function:'fn')
     step.foo("foo")
     step.bar("{{ bar }}")
@@ -257,7 +260,7 @@ class StepTest {
     step.foreach('0,1,2')
 
     def steps = []
-    step.eachStep([:], { stepItem ->
+    Step.eachStep([step], toxicProperties, { stepItem ->
       steps << stepItem.clone()
     })
     assert 3 == steps.size()
@@ -268,13 +271,17 @@ class StepTest {
   }
 
   @Test
-  void should_interpolate_the_foreach_item_from_string() {
+  void should_interpolate_the_foreach_item_from_a_string() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
+    toxicProperties.functions = [fn:new Function(args: [new Arg(name: 'item')])]
+
     def step = new Step(name:'name', function:'fn')
     step.item("{{ each }}")
     step.foreach('0,1,2')
 
     def steps = []
-    step.eachStep([:], { stepItem ->
+    Step.eachStep([step], toxicProperties, { stepItem ->
       steps << stepItem.clone()
     })
     assert 3 == steps.size()
@@ -285,13 +292,17 @@ class StepTest {
   }
 
   @Test
-  void should_interpolate_the_foreach_item_from_list() {
+  void should_interpolate_the_foreach_item_from_a_list() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
+    toxicProperties.functions = [fn:new Function(args: [new Arg(name: 'item')])]
+
     def step = new Step(name:'name', function:'fn')
     step.item("{{ each }}")
     step.foreach(['0', '1', '2'])
 
     def steps = []
-    step.eachStep([:], { stepItem ->
+    Step.eachStep([step], toxicProperties, { stepItem ->
       steps << stepItem.clone()
     })
     assert 3 == steps.size()
@@ -302,26 +313,57 @@ class StepTest {
   }
 
   @Test
-  void should_interpolate_the_foreach_string_list_from_another_step() {
+  void should_interpolate_the_foreach_from_a_string() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.stringItems = '0,1,2'
+    toxicProperties.testCase = new TestCase()
     def step = new Step(name:'name', function:'fn')
-    step.foreach("{{ step.foo.stringItems }}")
+    step.foreach("{{ stringItems }}")
 
-    def steps = []
-    step.eachStep([step:[foo:[stringItems:'0,1,2']]], { stepItem ->
-      steps << stepItem.clone()
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
     })
-    assert 3 == steps.size()
+    assert 3 == stepCount
   }
 
   @Test
-  void should_interpolate_the_foreach_list_from_another_step() {
+  void should_interpolate_the_foreach_from_a_list() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.stringItems = ['0', '1', '2']
+    toxicProperties.testCase = new TestCase()
     def step = new Step(name:'name', function:'fn')
-    step.foreach("{{ step.foo.stringItems }}")
+    step.foreach("{{ stringItems }}")
 
-    def steps = []
-    step.eachStep([step:[foo:[stringItems:['0', '1', '2']]]], { stepItem ->
-      steps << stepItem.clone()
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
     })
-    assert 3 == steps.size()
+    assert 3 == stepCount
+  }
+
+  @Test
+  void should_get_current_tree() {
+    Step step1 = new Step(function: 'fn1', name: 'step1')
+    Step step2 = new Step(function: 'fn2', name: 'step2')
+    Step step3 = new Step(function: 'fn3', name: 'step3')
+    step1.steps << step2
+    step2.steps << step3
+    Step step4 = new Step(function: 'fn4', name: 'step4')
+
+    def props = [testCase:[name:'foo_test', steps: [step1, step4]]]
+    def tree = Step.getCurrentTree(props).split('\n')
+    assert 5 == tree.size()
+    assert tree[0] == '~> foo_test'
+    assert tree[1] == '|-- fn1:step1'
+    assert tree[2] == '|   |-- fn2:step2'
+    assert tree[3] == '|   |   |-- fn3:step3'
+    assert tree[4] == '|-- fn4:step4'
+
+    props = [testCase:[name:'foo_test', steps: [step1, step4]], currentStep: step1]
+    tree = Step.getCurrentTree(props).split('\n')
+    assert 2 == tree.size()
+    assert tree[0] == '~> foo_test'
+    assert tree[1] == '|-- fn1:step1'
   }
 }
