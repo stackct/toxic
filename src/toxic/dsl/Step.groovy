@@ -14,10 +14,9 @@ class Step implements Serializable {
   String function
   Map<String,Object> args = [:]
   Map<String,Object> outputs = [:]
+  List<Step> steps = []
   def foreach
   Wait wait
-  Step parentStep
-  boolean lastStepInSequence
 
   def getLog(props) {
     return props?.log ?: this.slog
@@ -60,33 +59,6 @@ class Step implements Serializable {
 
   def foreach(def foreach) {
     this.foreach = foreach
-  }
-
-  def eachStep(def props, Closure closure) {
-    if(null == foreach) {
-      closure(this)
-      return
-    }
-
-    foreach = interpolate(props, foreach)
-    if(foreach instanceof String) {
-      foreach = foreach.split(',')
-    }
-
-    foreach.eachWithIndex { item, index ->
-      def originalArgs = [:]
-      args.each { k, v ->
-        def interpolatedValue = interpolate([each:item], v)
-        if(interpolatedValue) {
-          originalArgs[k] = v
-          args[k] = interpolatedValue
-        }
-      }
-      closure(this)
-      originalArgs.each { k, v ->
-        args[k] = v
-      }
-    }
   }
 
   Function getFunction(def props) {
@@ -142,6 +114,30 @@ class Step implements Serializable {
     return ois.readObject()
   }
 
+  static void parseSteps(List<Step> steps, def props, List<String> functionCallStack = []) {
+    steps.eachWithIndex { step, index ->
+      if(!props.functions.containsKey(step.function)) {
+        throw new IllegalStateException("Undefined function; name=${step.function}")
+      }
+      if(functionCallStack.contains(step.function)) {
+        throw new IllegalStateException("Circular function call detected; name=${step.function}; callStack=${functionCallStack}")
+      }
+
+      Function function = step.getFunction(props)
+      if(!function.path) {
+        List<String> stepsFunctionCallStack = functionCallStack.collect()
+        stepsFunctionCallStack << function.name
+        def subSteps = function.steps.collect {
+          Step subStep = it.clone()
+          subStep.inheritPrefix(step)
+          step.steps << subStep
+          return subStep
+        }
+        parseSteps(subSteps, props, stepsFunctionCallStack)
+      }
+    }
+  }
+
   static def interpolate(def props, String property) {
     // Attempts to match a property containing only the string value to interpolate.
     // Note that for this type of resolution, a non-String value could be returned.
@@ -182,5 +178,100 @@ class Step implements Serializable {
     }
 
     return value
+  }
+
+  static void eachStep(List<Step> steps, def props, Closure closure, int startIndex=0) {
+    Step foreachStep = null
+    for(int i=startIndex; i<steps.size(); i++) {
+      Step step = steps[i]
+      if(step.foreach) {
+        startIndex = i
+        foreachStep = step
+        break
+      }
+      executeStep(step, steps, props, closure)
+    }
+
+    if(foreachStep) {
+      executeForeachStep(foreachStep, steps, props, closure, startIndex)
+    }
+  }
+
+  static void executeStep(Step step, List<Step> scopedSteps, def props, Closure closure) {
+    preStepExecution(step, scopedSteps, props)
+    if(step.steps) {
+      eachStep(step.steps, props, closure)
+    }
+    else {
+      closure(step)
+    }
+    postStepExecution(step, props)
+  }
+
+  static void executeForeachStep(Step step, List<Step> scopedSteps, def props, Closure closure, int startIndex) {
+    props.push()
+    props.step = new StepOutputResolver(props.testCase, step, scopedSteps)
+    def foreach = interpolate(props, step.foreach)
+    if(foreach instanceof String) {
+      foreach = foreach.split(',')
+    }
+    props.pop()
+
+    scopedSteps.remove(startIndex)
+    foreach.eachWithIndex { item, index ->
+      def clonedStep = step.clone()
+      clonedStep.foreach = null
+      clonedStep.name += "[${index}]"
+      clonedStep.args.each { k, v ->
+        def interpolatedValue = interpolate([each:item], v)
+        if(interpolatedValue) {
+          clonedStep.args[k] = interpolatedValue
+        }
+      }
+      scopedSteps.addAll(startIndex + index, clonedStep)
+    }
+
+    eachStep(scopedSteps, props, closure, startIndex)
+  }
+
+  static void preStepExecution(Step step, List<Step> scopedSteps, def props) {
+    props.push()
+    props.currentStep = step
+    props.step = new StepOutputResolver(props.testCase, step, scopedSteps)
+    step.getLog(props).info("Executing step; test=${props.testCase.name}; step=${step.name}; fn=${step.function}")
+    step.copyArgsToMemory(props)
+  }
+
+  static void postStepExecution(Step step, def props) {
+    // The only reason to resolve output variables during step completion is when the step is a higher order function
+    // The scopedSteps of the resolver will be the steps within the higher order function
+    props.step = new StepOutputResolver(props.testCase, step, step.steps)
+    step.moveOutputResultsToStep(props)
+    props.pop()
+  }
+
+  static String getCurrentTree(def props) {
+    def tree = ["~> ${props.testCase.name}"]
+    addStepsToTree(props.testCase.steps, tree, props.currentStep)
+    return tree.join('\n')
+  }
+
+  static def getTree(List<Step> steps) {
+    def tree = []
+    addStepsToTree(steps, tree)
+    return tree
+  }
+
+  static String addStepsToTree(List<Step> steps, def tree, Step stopStep = null, int index = 0) {
+    steps.find { step ->
+      def tab = '|   ' * index
+      tree <<  "${tab}|-- ${step.function}:${step.name}"
+      if(step == stopStep) {
+        return step
+      }
+      if(step.steps) {
+        addStepsToTree(step.steps, tree, stopStep, index + 1)
+      }
+    }
   }
 }

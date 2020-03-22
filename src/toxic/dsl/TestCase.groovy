@@ -7,7 +7,6 @@ class TestCase extends StepParser {
   Set<String> tags = [] as Set
   List<String> assertions = []
   File file
-  def stepSequence = []
 
   static def parse(String input) {
     parse(new TestCase(), input)

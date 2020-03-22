@@ -12,8 +12,15 @@ test "Foreach" {
   }
 
   assertions {
-    eq "{{ step.item.count }}", "10"
-    eq "{{ step.item.sum }}",   "45"
-    eq "{{ step.item.value }}", "9"
+    eq "{{ step.item[0].value }}", "0"
+    eq "{{ step.item[1].value }}", "1"
+    eq "{{ step.item[2].value }}", "2"
+    eq "{{ step.item[3].value }}", "3"
+    eq "{{ step.item[4].value }}", "4"
+    eq "{{ step.item[5].value }}", "5"
+    eq "{{ step.item[6].value }}", "6"
+    eq "{{ step.item[7].value }}", "7"
+    eq "{{ step.item[8].value }}", "8"
+    eq "{{ step.item[9].value }}", "9"
   }
 }

@@ -11,7 +11,5 @@ function "ForeachFunc" {
 
   input "item"
 
-  output "count"
-  output "sum"
   output "value"
 }
