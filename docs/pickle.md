@@ -165,7 +165,7 @@ step "DoSomething", "do", {
 Steps can be repeated by using a `foreach` block. `foreach` will repeat the step for each item in the list.
 The list can be a comma separated string value, an array list, or an interpolated value from the output of another step.
 Use the `{{ each }}` variable to reference the item of the current iteration.
-NOTE: At this time the output variables from a step containing a foreach will only contain the step output produced from the last iteration of the step.
+The foreach block will replace your single step with several pickle tests.  Use array notation when referencing the output variables from the repeated step.
 
 Example using a statically defined string:
 step "ForeachFunc", "item", {
@@ -179,6 +179,17 @@ step "ForeachFunc", "item", {
     foreach "{{ step.anotherstep.outputItems }}"
 
     foo     "{{ each }}"
+}
+
+Example resolving the output from a repeated step:
+step "ForeachFunc", "item", {
+  foreach "0,1,2"
+  item    "{{ each }}"
+}
+assertions {
+  eq "{{ step.item[0].stepOutputVar }}", "0"
+  eq "{{ step.item[1].stepOutputVar }}", "1"
+  eq "{{ step.item[2].stepOutputVar }}", "2"
 }
 ### Assertions
 
