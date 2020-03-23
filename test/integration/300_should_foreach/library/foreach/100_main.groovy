@@ -1,0 +1,1 @@
+memory.value = memory.item

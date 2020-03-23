@@ -1,12 +1,13 @@
 
 package toxic.junit
 
-import toxic.TaskResult
-import toxic.TaskResultsFormatter
 import org.apache.log4j.*
 
-public class JUnitParser {
-  private static Logger log = Logger.getLogger(JUnitParser.class)
+import toxic.TaskResult
+import toxic.TaskResultsFormatter
+
+public class XUnitJUnitParser {
+  private static Logger log = Logger.getLogger(XUnitJUnitParser.class)
 
   def parseDir(File dir, List taskResults) {
     def stats = [:]
@@ -72,14 +73,22 @@ public class JUnitParser {
           }
           if (failureMsg) {
             result.success = false
-            result.error = failureMsg
+            try {
+              result.error = failureMsg.split('\\nError: ')[1]
+            } catch (java.lang.ArrayIndexOutOfBoundsException e) {
+              result.error = failureMsg;
+            }
             print "failureMsg=" + failureMsg
             suiteFailed = true
           } else {
             result.success = true
           }
           if (timestamp) {
-            result.startTime = Date.parse("yyyy-MM-dd'T'HH:mm:ss", timestamp).time
+            try {
+              result.startTime = Date.parse("yyyy-MM-dd'T'HH:mm:ss", timestamp).time
+            } catch (java.text.ParseException e) {
+              result.startTime = Date.parse("EEE, dd MMM yyyy HH:mm:ss z", timestamp).time
+            }
             result.stopTime = result.startTime + (long)Math.round(testcase.@time.toString().toDouble() * 1000.0)
           } else {
             result.startTime = startTime

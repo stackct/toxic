@@ -1,0 +1,15 @@
+function "GetItems" {
+  description "Returns a list of items"
+  path "{{ libPath }}/items"
+
+  output "items"
+}
+
+function "ForeachFunc" {
+  description "Function to be looped several times"
+  path "{{ libPath }}/foreach"
+
+  input "item"
+
+  output "value"
+}
