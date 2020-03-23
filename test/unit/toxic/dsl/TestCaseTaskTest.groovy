@@ -1,6 +1,8 @@
 package toxic.dsl
 
 import org.junit.Test
+import toxic.ToxicProperties
+import static org.junit.Assert.fail
 
 import static org.junit.Assert.fail
 
@@ -9,7 +11,7 @@ class TestCaseTaskTest {
   private TestCaseTask testCaseTask
 
   TestCaseTaskTest() {
-    props = [:]
+    props = new ToxicProperties()
     testCaseTask = new TestCaseTask(props: props)
   }
 
@@ -471,5 +473,51 @@ class TestCaseTaskTest {
     assert '|   |   |-- SingleStep:singleStep3' == tree[4]
     assert '|   |   |-- MultiStep3:multiStep3' == tree[5]
     assert '|   |   |   |-- SingleStep:singleStep4' == tree[6]
+  }
+
+  @Test
+  void should_not_allow_step_variables_to_leak_into_higher_order_functions() {
+    def functionFile = """
+      function "SingleStep" {
+        path "/foo/path/to/fn"
+        description "foo-description"
+
+        input "foo"
+        output "foo"
+      }
+      function "HigherOrderFunc" {
+        description "foo-description"
+
+        step "SingleStep", "singleStep2", {
+          foo '{{ step.singleStep1.foo }}'
+        }
+      }
+    """
+    def input = """
+      test "test1" {
+        description "test multi step function"
+        step "SingleStep", "singleStep1", {
+          foo 'a'
+        }
+        step "HigherOrderFunc", "higherOrderFunc", {
+        }
+      }
+    """
+
+    props.functions = [:]
+    Function.parse(functionFile).each {
+      props.functions[it.name] = it
+    }
+
+    try {
+      testCaseTask.parse(input).each({ testCase ->
+        props.testCase = testCase
+        Step.eachStep(testCase.steps, props, {})
+      })
+      fail("Expected StepNotFoundException")
+    }
+    catch(StepNotFoundException e) {
+      assert e.message == 'Could not resolve values due to undefined step; testCase=test1; step=singleStep2; missingStepReference=step.singleStep1'
+    }
   }
 }
