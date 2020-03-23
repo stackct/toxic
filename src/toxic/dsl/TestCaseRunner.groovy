@@ -15,18 +15,15 @@ import java.util.concurrent.TimeoutException
 class TestCaseRunner implements Callable<TestCaseRunner> {
   private final static Log slog = Log.getLogger(this)
   private TaskMaster taskMaster
-  private TestCase testCase
-  private Step step
   private ConfigObject props
   private List<TaskResult> results
   private Exception error
 
   private TestCaseRunner(TaskMaster taskMaster, TestCase testCase, ConfigObject props) {
     this.taskMaster = taskMaster
-    this.testCase = testCase
     this.props = props
     this.props.testCase = testCase
-    this.props.step = new StepOutputResolver(props)
+    this.props.step = new StepOutputResolver(testCase, new Step(name: 'assertions'), testCase.steps)
     this.props.var = new VariableResolver(props)
     this.results = new ArrayList<TaskResult>()
   }
@@ -43,7 +40,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     }
     catch(AbortExecutionException e) {
       TestCaseRunner runner = e.testCaseRunner
-      def values = [testCase: runner.testCase.name, step: runner.step.name]
+      def values = [:]
       if(runner.error.message) {
         values.reason = runner.error.message
       }
@@ -56,7 +53,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         logStackTrace = false
       }
 
-      getLog(props).error(Log.collectMap("Task failed", values), logStackTrace ? runner.error : null)
+      getLog(props).error(Log.collectMap("Task failed", values) + "\n" + Step.getCurrentTree(runner.props), logStackTrace ? runner.error : null)
     }
   }
 
@@ -98,10 +95,10 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         if (!finishedFutures.contains(it)) {
           try {
             runner = it.get(20, TimeUnit.MILLISECONDS)
-            if (!TaskResult.areAllSuccessful(runner.results) && testAttempts[runner.testCase] < maxAttempts) {
-              testAttempts[runner.testCase]++
-              getLog(props).warn("Test case failed, will retry; test=" + runner.testCase + "; attempt=" + testAttempts[runner.testCase] + "; maxAttempts=" + maxAttempts)
-              futures << pool.submit(new TestCaseRunner(tm, runner.testCase, props.clone()))
+            if (!TaskResult.areAllSuccessful(runner.results) && testAttempts[runner.props.testCase] < maxAttempts) {
+              testAttempts[runner.props.testCase]++
+              getLog(props).warn("Test case failed, will retry; test=" + runner.props.testCase + "; attempt=" + testAttempts[runner.props.testCase] + "; maxAttempts=" + maxAttempts)
+              futures << pool.submit(new TestCaseRunner(tm, runner.props.testCase, props.clone()))
             } else {
               appendResults(results, runner.results)
             }
@@ -149,11 +146,10 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
       try {
         start = System.currentTimeMillis()
-        testCase.stepSequence.eachWithIndex { seq, stepIndex ->
-            props.stepIndex = stepIndex
-            step = seq.step
-            executeStep(step)
-        }
+        Step.eachStep(props.testCase.steps, props, { step ->
+          if (taskMaster.shouldAbort()) return
+          executeDirItem(new DirItem(props.functions[step.function].path))
+        })
         executeAssertions()
         end = System.currentTimeMillis()
         success = TaskResult.areAllSuccessful(this.results)
@@ -165,8 +161,8 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         if (!taskMaster.shouldAbort()) {
           appendResults(this.results, new TaskResult([
                   id:        UUID.randomUUID().toString(),
-                  family:    testCase.file.name,
-                  name:      testCase.name,
+                  family:    props.testCase.file.name,
+                  name:      props.testCase.name,
                   type:      TestCaseTask.class.name,
                   success:   success,
                   error:     error?.message,
@@ -176,32 +172,14 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
                   duration:  (end - start)
           ]))
 
-          getLog(props).info("Finished test case; test=${testCase.name}; file=${testCase.file.name}; success=${success}")
+          getLog(props).info("Finished test case; test=${props.testCase.name}; file=${props.testCase.file.name}; success=${success}")
         } else {
-          getLog(props).info("Aborting test case; test=${testCase.name}; file=${testCase.file.name}")
+          getLog(props).info("Aborting test case; test=${props.testCase.name}; file=${props.testCase.file.name}")
         }
       }
     }
 
     return this
-  }
-
-  void executeStep(Step step) {
-    if (taskMaster.shouldAbort()) return
-
-    preStepExecution(step)
-
-    Function fn = props.functions[step.function]
-    if (!fn?.path) return // step refers to a higher order function
-
-    executeDirItem(new DirItem(fn.path))
-
-    postStepExecution(step)
-    if(step.lastStepInSequence)
-    {
-      getLog(props).info("Completing step sequence; test=${props.testCase.name}; step=${step.parentStep.name}; fn=${step.parentStep.function}")
-      postStepExecution(step.parentStep)
-    }
   }
 
   void executeAssertions() {
@@ -214,13 +192,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       interpolatedContents.toString()
     }
 
-    executeDirItem(new DirItem(testCase.assertionFile(new File("noop"), resolver)))
-  }
-
-  void preStepExecution(Step step) {
-    props.push()
-    getLog(props).info("Executing step; test=${props.testCase.name}; step=${step.name}; fn=${step.function}")
-    step.copyArgsToMemory(props)
+    executeDirItem(new DirItem(props.testCase.assertionFile(new File("noop"), resolver)))
   }
 
   void executeDirItem(DirItem dirItem) {
@@ -237,11 +209,6 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
 
       props.taskId++
     }
-  }
-
-  void postStepExecution(Step step) {
-    step.moveOutputResultsToStep(props)
-    props.pop()
   }
 }
 

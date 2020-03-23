@@ -52,11 +52,6 @@ function "VerifyUrls" {
   output "result"
 }
 
-function "FlushOutput" {
-  description "A noop function used to instruct pickle to copy output results to memory when the last step in a higher order function would have been a call to another higher order function"
-  path        "{{ libPath }}/std/flush_output"
-}
-
 function "GetDate", {
   description "Returns the current date offset by optional number of days"
   path        "{{ libPath }}/std/get_date"
@@ -66,6 +61,15 @@ function "GetDate", {
   arg "format",     false, "yyyyMMdd"
   
   output "date"
+}
+
+function "GetFiles", {
+  description "Returns a list of files within a directory"
+  path        "{{ libPath }}/std/get_files"
+
+  arg "dir"
+
+  output "value"
 }
 
 function "StartHttpServer", {

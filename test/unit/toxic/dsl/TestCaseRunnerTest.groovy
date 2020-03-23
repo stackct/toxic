@@ -21,7 +21,8 @@ class TestCaseRunnerTest {
   @Test
   void should_run_test_cases() {
     props.functions = ['fn': new Function(path: '/path/to/fn')]
-    testCase.stepSequence = [[step: new Step(function: 'fn')]]
+    props.testCase = testCase
+    testCase.steps = [new Step(function: 'fn')]
 
     def dirItems = []
     testCaseRunner.metaClass.executeDirItem = { DirItem dirItem ->

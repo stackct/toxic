@@ -1,13 +1,16 @@
 package toxic.junit
 
-import org.junit.*
-import java.nio.file.*
-import org.apache.commons.io.*
-import toxic.*
 import groovy.mock.interceptor.*
+
+import java.nio.file.*
+
+import org.apache.commons.io.*
+import org.junit.*
+
+import toxic.*
 import toxic.groovy.*
 
-public class JUnitParserTest {
+public class XUnitJUnitParserTest {
   def tmpFile
 
   @Before
@@ -34,7 +37,7 @@ public class JUnitParserTest {
     File.metaClass.exists = { -> exists = true; name.contains("somedir") }
     File.metaClass.isDirectory = { -> name.contains("somedir") }
     def msgs = []
-    def parser = new JUnitParser() {
+    def parser = new XUnitJUnitParser() {
       def log = new Object() { def info(msg) { msgs << msg }}
       def parseFile(File xmlFile, List results) { parsed << xmlFile; return [suites: 1,failures:2] }
     }
@@ -53,7 +56,7 @@ public class JUnitParserTest {
     File.metaClass.exists = { -> false }
     File.metaClass.isDirectory = { -> false }
     def msgs = []
-    def parser = new JUnitParser() {
+    def parser = new XUnitJUnitParser() {
       def log = new Object() { def info(msg) { msgs << msg }}
       def parseFile(File xmlFile, List results) { parsed << xmlFile; return [suites:0,failures:0] }
     }
@@ -62,6 +65,40 @@ public class JUnitParserTest {
     assert !stats.suites
     assert !stats.failures
     assert !parsed
+  }
+
+  @Test
+  void should_parse_xunit_xml() {
+    tmpFile.text = '''<testsuite name="Cafecito Tests" tests="4" failures="0" errors="1" skipped="0" timestamp="Wed, 19 Feb 2020 15:53:29 GMT" time="23.937">
+<testcase classname="/app/#/Takeoff/: takeoff templates created" name="by copying search template name to create takeoff panel" time="0.172"/>
+<testcase classname="/app/#/Takeoff/: takeoff templates created when start measuring" name="will error if no measurement type selected" time="6.069"/>
+<testcase classname="/app/#/Takeoff/: takeoff templates created when start measuring" name="will error if no page is opened" time="6.036"/>
+<testcase classname="/app/#/Takeoff/: takeoff templates created when start measuring" name="is completed" time="10.009"><failure>Timeout of 10000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+Error: Timeout of 10000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+    at Test.Runnable._timeoutError (http://localhost:5000/vwa/1.0.0/cafecito-tests.js:5441:10)
+    at http://localhost:5000/vwa/1.0.0/cafecito-tests.js:5252:24</failure></testcase>
+</testsuite>'''
+
+    def actualResults = []
+    def stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
+    assert actualResults.size() == 4
+
+    def firstResult = actualResults.first()
+    assert firstResult.id         == "/app/#/Takeoff/: takeoff templates created.by copying search template name to create takeoff panel"
+    assert firstResult.family     == "/app/#/Takeoff/: takeoff templates created"
+    assert firstResult.name       == "by copying search template name to create takeoff panel"
+    assert firstResult.type       == null
+    assert firstResult.success    == true
+    assert firstResult.startTime  == 1582127609000
+    assert firstResult.stopTime > firstResult.startTime
+    assert firstResult.error      == null
+
+    def errorResult = actualResults[3];
+    assert errorResult.type       == ""
+    assert errorResult.success    == false
+    assert errorResult.error.toString() == '''Timeout of 10000ms exceeded. For async tests and hooks, ensure "done()" is called; if returning a Promise, ensure it resolves.
+    at Test.Runnable._timeoutError (http://localhost:5000/vwa/1.0.0/cafecito-tests.js:5441:10)
+    at http://localhost:5000/vwa/1.0.0/cafecito-tests.js:5252:24'''
   }
 
   @Test
@@ -85,7 +122,7 @@ public class JUnitParserTest {
                       </testsuites>'''
 
     def actualResults = []
-    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    def stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 2
     assert actualResults[0].id == "toxic.slack.ToxicSlackHandlerTest.should_fetch_external_url"
     assert actualResults[0].family == "toxic.slack.ToxicSlackHandlerTest"
@@ -109,7 +146,7 @@ public class JUnitParserTest {
     assert stats.failures == 1
 
     // Reparse should not readd the same test results
-    stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 2
     assert stats.suites == 0
     assert stats.failures == 0
@@ -134,7 +171,7 @@ public class JUnitParserTest {
 </testsuites>'''
 
     def actualResults = []
-    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    def stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 3
     assert actualResults[0].id == "MessageParser.MessageParser load translation yml file the file exists"
     assert actualResults[0].family == "MessageParser"
@@ -158,7 +195,7 @@ public class JUnitParserTest {
     assert stats.failures == 0
 
     // Reparse should not readd the same test results
-    stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 3
     assert stats.suites == 0
     assert stats.failures == 0
@@ -177,7 +214,7 @@ public class JUnitParserTest {
                       </system-err>
                       </testsuite>'''
     def actualResults = []
-    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    def stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 1
     assert actualResults[0].id == "toxic.slack.ToxicSlackHandlerTest.should_fetch_external_url"
     assert actualResults[0].family == "toxic.slack.ToxicSlackHandlerTest"
@@ -209,7 +246,7 @@ public class JUnitParserTest {
 </testsuites>'''
 
     def actualResults = []
-    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    def stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 1
     assert actualResults[0].id == "downloadSupportDocs.Should successfully download support documents"
     assert actualResults[0].family == "downloadSupportDocs"
@@ -246,7 +283,7 @@ In value:  KeyCollection&lt;String, Object&gt; ["exceptionMessage", "baseExcepti
 </testsuites>'''
 
     def actualResults = []
-    def stats = new JUnitParser().parseFile(tmpFile, actualResults)
+    def stats = new XUnitJUnitParser().parseFile(tmpFile, actualResults)
     assert actualResults.size() == 1
     assert actualResults[0].id == "CTKO.CombinedServer.Tests.CTKO.Api.Controllers.v2.PagesControllerTest.ShouldLogMessageIfAccessViolationOccurs"
     assert actualResults[0].family == "CTKO.CombinedServer.Tests"

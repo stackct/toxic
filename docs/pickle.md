@@ -162,6 +162,35 @@ step "DoSomething", "do", {
 }
 ```
 
+Steps can be repeated by using a `foreach` block. `foreach` will repeat the step for each item in the list.
+The list can be a comma separated string value, an array list, or an interpolated value from the output of another step.
+Use the `{{ each }}` variable to reference the item of the current iteration.
+The foreach block will replace your single step with several pickle steps.  Use array notation when referencing the output variables from the repeated step.
+
+Example using a statically defined string:
+step "ForeachFunc", "item", {
+    foreach "0,1,2,3"
+
+    foo     "{{ each }}"
+}
+
+Example using the output from another step. outputItems could be either a string or list type:
+step "ForeachFunc", "item", {
+    foreach "{{ step.anotherstep.outputItems }}"
+
+    foo     "{{ each }}"
+}
+
+Example resolving the output from a repeated step:
+step "ForeachFunc", "item", {
+  foreach "0,1,2"
+  item    "{{ each }}"
+}
+assertions {
+  eq "{{ step.item[0].stepOutputVar }}", "0"
+  eq "{{ step.item[1].stepOutputVar }}", "1"
+  eq "{{ step.item[2].stepOutputVar }}", "2"
+}
 ### Assertions
 
 Tests are concluded to have passed or failed, based on the statement contained within the Assertions block. Each statement in the Assertion block is composed using _matchers_. The supported matchers are:
@@ -582,7 +611,3 @@ $ ln -s $(pwd)/resources/vscode/pickle/snippets/pickle.json` $HOME/Library/Appli
 ```
 
 **NOTE** - Symlinks are preferred as changes to the source snippets will reflect automatically.
-
-## What's Next
-
-* Parallel test execution

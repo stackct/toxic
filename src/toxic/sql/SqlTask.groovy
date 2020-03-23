@@ -50,7 +50,7 @@ public class SqlTask extends CompareTask {
 
   private String toStringVal(Object obj) {
     def val = obj
-    
+
     if (obj instanceof java.math.BigDecimal) {
       val = obj.toPlainString()
     }
@@ -91,14 +91,19 @@ public class SqlTask extends CompareTask {
     }
 
     def results = []
-    props.sqlConnection.execute(sql) { boolean isResultSet, def rowResultOrAffectedCount ->
-      if(isResultSet) {
-        results << rowResultOrAffectedCount
+    try {
+      props.sqlConnection.execute(sql) { boolean isResultSet, def rowResultOrAffectedCount ->
+        if(isResultSet) {
+          results << rowResultOrAffectedCount
+        }
+        else {
+          results << "${rowResultOrAffectedCount} row(s) affected"
+        }
       }
-      else {
-        results << "${rowResultOrAffectedCount} row(s) affected"
-      }
+    } catch (SQLException e) {
+      results << e.toString()
     }
+
     results.join('\n')
   }
 
@@ -127,8 +132,9 @@ public class SqlTask extends CompareTask {
     if (memory.sqlVerbose == "true") {
       log.info("Received:\n" + result)
     }
+    memory.lastResponse = result.toString()
 
-    return result.toString()
+    return memory.lastResponse
   }
 
   void retry(int maxAttempts, int delayMs, Closure c) {

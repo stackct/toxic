@@ -977,7 +977,7 @@ public class Job implements Callable, Comparable, Publisher {
   }
 
   def parseJUnitXmlFilesInDir(File dir) {
-    def stats = new JUnitParser().parseDir(dir, results)
+    def stats = new XUnitJUnitParser().parseDir(dir, results)
     suites += stats.suites
     failed += stats.failures
   }
