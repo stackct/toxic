@@ -8,6 +8,7 @@ test "Foreach" {
   step "ForeachFunc", "item", {
     foreach "{{ step.get.items }}"
 
+    count   "{{ step.get.count }}"
     item    "{{ each }}"
   }
 
