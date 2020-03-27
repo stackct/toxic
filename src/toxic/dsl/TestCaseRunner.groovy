@@ -54,7 +54,7 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       }
 
       def tree = '';
-      if(props.currentStep) {
+      if(runner.props.currentStep) {
         tree = "\n" + Step.getCurrentTree(runner.props);
       }
 
