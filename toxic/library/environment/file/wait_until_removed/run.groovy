@@ -1,7 +1,6 @@
 import util.Wait
 
 def cmd = memory['file.cmds'][memory.runtime]
-memory.log("TWRR >> cmd ${cmd}")
 
 if(memory.create) {
   assert 0 == execWithEnv(cmd.create)
