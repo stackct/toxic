@@ -210,25 +210,29 @@ class Step implements Serializable {
 
   static void executeForeachStep(Step step, List<Step> scopedSteps, def props, Closure closure, int startIndex) {
     props.push()
-    props.step = new StepOutputResolver(props.testCase, step, scopedSteps)
-    def foreach = interpolate(props, step.foreach)
-    if(foreach instanceof String) {
-      foreach = foreach.split(',')
-    }
-    props.pop()
-
-    scopedSteps.remove(startIndex)
-    foreach.eachWithIndex { item, index ->
-      def clonedStep = step.clone()
-      clonedStep.foreach = null
-      clonedStep.name += "[${index}]"
-      clonedStep.args.each { k, v ->
-        def interpolatedValue = interpolate([each:item], v)
-        if(interpolatedValue) {
-          clonedStep.args[k] = interpolatedValue
-        }
+    try {
+      props.step = new StepOutputResolver(props.testCase, step, scopedSteps)
+      def foreach = interpolate(props, step.foreach)
+      if(foreach instanceof String) {
+        foreach = foreach.split(',')
       }
-      scopedSteps.addAll(startIndex + index, clonedStep)
+
+      scopedSteps.remove(startIndex)
+      foreach.eachWithIndex { item, index ->
+        def clonedStep = step.clone()
+        clonedStep.foreach = null
+        clonedStep.name += "[${index}]"
+        clonedStep.args.each { k, v ->
+          def interpolatedValue = interpolate(props+[each:item], v)
+          if(interpolatedValue) {
+            clonedStep.args[k] = interpolatedValue
+          }
+        }
+        scopedSteps.addAll(startIndex + index, clonedStep)
+      }
+    }
+    finally {
+      props.pop()
     }
 
     eachStep(scopedSteps, props, closure, startIndex)

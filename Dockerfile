@@ -14,12 +14,17 @@ COPY ${DIST_DIR_NAME} /opt/toxic
 
 # TODO: Move this to a multi-stage build
 RUN apk update && apk add bash curl docker git jq make npm nss openjdk8 openssh openssl openssl-dev tar python3 zip \
-    && apk add --virtual=build gcc libffi-dev musl-dev python3-dev \
-    && pip3 install --upgrade pip \
+    && apk add --virtual=build gcc libffi-dev musl-dev python3-dev
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+RUN python3 get-pip.py
+
+RUN pip3 install --upgrade pip \
     && pip3 install cffi \
     && pip3 install azure-cli \
-    && pip3 install awscli \
-    && ln -s /usr/bin/python3 /usr/bin/python \
+    && pip3 install awscli
+
+RUN ln -s /usr/bin/python3 /usr/bin/python \
     && apk del --purge build \
     && docker -v \
     && addgroup -g 2000 toxic \
