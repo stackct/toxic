@@ -53,7 +53,12 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
         logStackTrace = false
       }
 
-      getLog(props).error(Log.collectMap("Task failed", values) + "\n" + Step.getCurrentTree(runner.props), logStackTrace ? runner.error : null)
+      def tree = '';
+      if(runner.props.currentStep) {
+        tree = "\n" + Step.getCurrentTree(runner.props);
+      }
+
+      getLog(props).error(Log.collectMap("Task failed", values) + tree, logStackTrace ? runner.error : null)
     }
   }
 

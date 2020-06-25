@@ -329,6 +329,15 @@ class TestCaseTaskTest {
     assert testCases[0].name == 'test2'
     assert testCases[1].name == 'test3'
 
+    // Mutex Include and Exclude
+    testCases = []
+    props.functions = functions
+    props.includeTags = 'foo'
+    props.excludeTags = 'baz'
+
+    testCases = testCaseTask.parse(input)
+    assert testCases.size() == 0
+
     // No filtering
     testCases = []
     props.functions = functions

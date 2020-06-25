@@ -3,6 +3,7 @@ function "GetItems" {
   path "{{ libPath }}/items"
 
   output "items"
+  output "count"
 }
 
 function "ForeachFunc" {
@@ -10,6 +11,7 @@ function "ForeachFunc" {
   path "{{ libPath }}/foreach"
 
   input "item"
+  input "count"
 
   output "value"
 }
