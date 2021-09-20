@@ -1,6 +1,6 @@
 # toxic
 
-[![Build Status](https://travis-ci.org/stackct/toxic.svg?branch=master)](https://travis-ci.org/stackct/toxic)
+![build](https://github.com/stackct/toxic/actions/workflows/main.yml/badge.svg)
 
 Toxic (Task Orchestrator for XHTTP-Integrated Components) is a software development tool with standalone task orchestration capabilites from the command-line, as well as optional hosted functionality.
 
@@ -18,26 +18,26 @@ One significant drawback to Toxic's upbringing is that it was never a formal pro
 
 ## Setup with Intellij™
 
-* [Setup Guide](docs/intellij.md)
+- [Setup Guide](docs/intellij.md)
 
 ## User Guide
 
-* [User Guide](docs/user-guide.md)
+- [User Guide](docs/user-guide.md)
 
 ## Testing DSL
 
 Toxic contains a DSL (domain-specific language) that enables expressive tests to be written leveraging Toxic primitive tasks.
 
-* [Pickle - Testing DSL](docs/pickle.md)
+- [Pickle - Testing DSL](docs/pickle.md)
 
 ## Deployment
 
-* [Helm Deployment](docs/deployment.md)
+- [Helm Deployment](docs/deployment.md)
 
 ### Visual Studio Code Plugin
 
-* [Pickle Explorer](resources/vscode/pickle/README.md)
-Requires VSCode 1.29.0 or newer
+- [Pickle Explorer](resources/vscode/pickle/README.md)
+  Requires VSCode 1.29.0 or newer
 
 1. Make sure 'code' is available in your path and that it opens vscode
 
