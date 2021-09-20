@@ -58,7 +58,7 @@ class JsonValidator extends HttpValidator {
   }
 
   void validate(List expected, List actual, def failures, String basePath, def memory) {
-    
+
     if(expected?.size() != actual?.size()) {
       failures << mismatchFailure(expected, actual, basePath)
     }
@@ -85,8 +85,8 @@ class JsonValidator extends HttpValidator {
   }
 
   void validate(def expected, def actual, def failures, String path, def memory) {
-    if(skipValidation(expected)) { 
-      return 
+    if(skipValidation(expected)) {
+      return
     }
 
     if(isVariableAssignment(expected)) {
@@ -102,7 +102,7 @@ class JsonValidator extends HttpValidator {
     }
   }
 
-  /* Any unquoted variables, such as map or list references, will be replaced 
+  /* Any unquoted variables, such as map or list references, will be replaced
      with the String representation of the JSON structure.
   */
   static String normalizeRequest(String s, ToxicProperties props) {
@@ -111,6 +111,8 @@ class JsonValidator extends HttpValidator {
     regexes << /((?<=\n)\s*[^"])(%)([^%]+)(%)([^"])/
     // Match a colon followed by any number of spaces, until an unquoted % is found, capture a variable until a close percent without a trailing quote
     regexes << /(:\s*[^"])(%)([^%]+)(%)([^"])/
+    // Support req.json files with single %json% in the file.
+    regexes << /^(\s*)(%)([^%]+)(%)(\s*)$/
 
     regexes.each {
       s = s.replaceAll(it) { all, begin, openDelimiter, variable, closeDelimiter, end ->

@@ -64,7 +64,8 @@ memory.kubePortForward = { ->
 }
 
 memory.kubeSecret = { String namespace, String name, String file ->
-  execWithEnv([kubectl, '--namespace', namespace, 'create', 'secret', 'generic', name, '--from-file', file])
+  execWithEnv([kubectl, '-n', namespace, 'delete', 'secret', name])
+  execWithEnv([kubectl, '-n', namespace, 'create', 'secret', 'generic', name, '--from-file', file])
 }
 
 memory.kubeExportSecret = { String namespace, String name, String file ->
@@ -89,18 +90,14 @@ memory.kubeApply = { String namespace, String file ->
   execWithEnv([kubectl, '--namespace', namespace, 'apply', '-f', file])
 }
 
-memory.helmInit = {
-  return execWithEnv([helm, 'init', '--client-only'])
-}
-
 memory.helmRepoAdd = { String name, String url ->
   def cmds = []
   cmds << helm
   cmds << 'repo'
   cmds << 'add'
-  memory.addHelmAuth(cmds)
   cmds << name
   cmds << url
+  memory.addHelmAuth(cmds)
 
   return execWithEnv(cmds)
 }
@@ -117,13 +114,14 @@ memory.helmInstall = { String name, String chart, def values, def overrides = nu
 
   def cmds = []
   cmds << helm
-  cmds << 'install'
-  cmds << '--wait'
-  cmds << '--timeout'; cmds << execTimeout.toString()
-  cmds << '--namespace'; cmds << memory['namespace']
-  cmds << '--name'; cmds << release
-  memory.addHelmAuth(cmds)
+  cmds << 'upgrade'
+  cmds << release
   cmds << chart
+  cmds << '--install'
+  cmds << '--namespace'; cmds << memory['namespace']
+  cmds << '--wait'
+  cmds << '--timeout'; cmds << "${execTimeout.toString()}s"
+  memory.addHelmAuth(cmds)
 
   exitCode &= memory.execWithValues(cmds, values, overrides)
   exitCode &= memory.collectSummary(release, '-setup')
@@ -141,10 +139,10 @@ memory.helmUpgrade = { String name, String chart, def values, def overrides ->
   def cmds = []
   cmds << helm
   cmds << 'upgrade'
-  cmds << '--wait'
   cmds << release
-  memory.addHelmAuth(cmds)
   cmds << chart
+  cmds << '--wait'
+  memory.addHelmAuth(cmds)
 
   exitCode &= memory.execWithValues(cmds, values, overrides)
   exitCode &= memory.collectSummary(release, '-upgrade')
@@ -175,7 +173,7 @@ memory.execWithValues = { cmds, values, overrides ->
 }
 
 memory.collectSummary = { String release, String suffix = "", String outputDir = memory['artifactsDir'] ->
-  execWithEnv([helm, 'status', release])
+  execWithEnvNoLogging([helm, 'status', release])
   new File(outputDir, "${release}-status${suffix}.log").write(outputBuffer.toString())
 
   // Parse Load Balancer IP, if any - supports one LoadBalancer per chart
@@ -197,13 +195,13 @@ memory.collectSummary = { String release, String suffix = "", String outputDir =
 }
 
 memory.collectDetails = { String namespace, String suffix = "", String outputDir = memory['artifactsDir'] ->
-  execWithEnv([kubectl, '--namespace', namespace, 'describe', 'all'])
+  execWithEnvNoLogging([kubectl, '--namespace', namespace, 'describe', 'all'])
   new File(outputDir, "${namespace}-details${suffix}.log").write(outputBuffer.toString())
 
   return 0
 }
 
-memory.helmDelete = { String name ->
+memory.helmUninstall = { String name ->
   def namespace = memory['namespace']
   def release = namespace + '-' + name
 
@@ -212,8 +210,7 @@ memory.helmDelete = { String name ->
 
   def cmds = []
   cmds << helm
-  cmds << 'delete'
-  cmds << '--purge'
+  cmds << 'uninstall'
   cmds << release
 
   int exitCode = -1
@@ -267,7 +264,7 @@ memory.getLogs = { String pod, String container, String namespace = memory['name
 }
 
 memory.namespaceExists = { String namespace = memory['namespace'] ->
-  execWithEnvNoLogging([kubectl, 'get', 'ns', '--include-uninitialized=true', '-o=json'])
+  execWithEnvNoLogging([kubectl, 'get', 'ns', '-o=json'])
   def ns = outputBuffer.toString()
 
   new JsonSlurper().parseText(ns).items.any { item ->
@@ -297,4 +294,6 @@ memory.inParallelMap = { Map map, Closure c ->
   threads.each {
     it.join()
   }
+
+  return 0
 }

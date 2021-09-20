@@ -2,7 +2,7 @@ import util.Wait
 
 // Delete the charts
 memory.inParallelMap(memory.parseEnvironment(memory.spec).charts) { chart, props ->
-  memory.helmDelete(chart)
+  memory.helmUninstall(chart)
 }
 
 // Delete the namespace

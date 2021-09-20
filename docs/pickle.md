@@ -140,7 +140,7 @@ step "DoSomething", "do", {
 }
 ```
 
-`condition` blocks contain one ore more matchers (see [Assertions](#assertions)). Multiple matchers within a single `condition` block are considered `AND` operations. To specify `OR` operations, use multiple `condition` blocks.
+`condition` blocks contain one or more matchers (see [Assertions](#assertions)). Multiple matchers within a single `condition` block are considered `AND` operations. To specify `OR` operations, use multiple `condition` blocks.
 
 ```groovy
 step "DoSomething", "do", {
@@ -168,20 +168,28 @@ Use the `{{ each }}` variable to reference the item of the current iteration.
 The foreach block will replace your single step with several pickle steps.  Use array notation when referencing the output variables from the repeated step.
 
 Example using a statically defined string:
+
+```
 step "ForeachFunc", "item", {
     foreach "0,1,2,3"
 
     foo     "{{ each }}"
 }
+```
 
 Example using the output from another step. outputItems could be either a string or list type:
+
+```
 step "ForeachFunc", "item", {
     foreach "{{ step.anotherstep.outputItems }}"
 
     foo     "{{ each }}"
 }
+```
 
 Example resolving the output from a repeated step:
+
+```
 step "ForeachFunc", "item", {
   foreach "0,1,2"
   item    "{{ each }}"
@@ -191,6 +199,7 @@ assertions {
   eq "{{ step.item[1].stepOutputVar }}", "1"
   eq "{{ step.item[2].stepOutputVar }}", "2"
 }
+```
 ### Assertions
 
 Tests are concluded to have passed or failed, based on the statement contained within the Assertions block. Each statement in the Assertion block is composed using _matchers_. The supported matchers are:

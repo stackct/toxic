@@ -1,4 +1,3 @@
-
 package toxic.dir
 
 import toxic.ToxicProperties
@@ -28,27 +27,47 @@ public class DirItemTest {
 
   @Test
   public void testNextFileDir() {
-    def di = new DirItem("/tmp")
-    // Assumes at least two file in the lib directory
-    assert !(di.nextFile().isDirectory())
-    assert !(di.nextFile().isDirectory())
+    def tmpDir
+    try {
+      tmpDir = File.createTempDir('toxic', 'tmpdir')
+      new File(tmpDir, 'foo').text = 'foo'
+      new File(tmpDir, 'bar').text = 'bar'
+
+      def di = new DirItem(tmpDir)
+      assert !(di.nextFile().isDirectory())
+      assert !(di.nextFile().isDirectory())
+    }
+    finally {
+      tmpDir?.deleteDir()
+    }
   }
 
   @Test
   public void testNextFileDir_withPushPop() {
-    def props = new ToxicProperties()
-    props.pushpop = true
-    def di = new DirItem("/tmp")
+    def tmpDir
+    try {
+      tmpDir = File.createTempDir('toxic', 'tmpdir')
+      new File(tmpDir, 'foo').text = 'foo'
+      new File(tmpDir, 'bar').text = 'bar'
+      new File(tmpDir, 'baz').text = 'baz'
 
-    assert props.stackSize() == 0
-    assert di.nextFile(props)
-    assert props.stackSize() >= 1
-    def fileDrain = di.nextFile(props)
-    while (fileDrain) {
+      def props = new ToxicProperties()
+      props.pushpop = true
+      def di = new DirItem(tmpDir)
+
+      assert props.stackSize() == 0
+      assert di.nextFile(props)
       assert props.stackSize() >= 1
-      fileDrain = di.nextFile(props)
+      def fileDrain = di.nextFile(props)
+      while (fileDrain) {
+        assert props.stackSize() >= 1
+        fileDrain = di.nextFile(props)
+      }
+      assert props.stackSize() == 0
     }
-    assert props.stackSize() == 0
+    finally {
+      tmpDir?.deleteDir()
+    }
   }
 
   @Test

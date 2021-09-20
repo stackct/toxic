@@ -17,10 +17,10 @@ class ListCommand extends BaseCommand {
 
     use (Table) {
       sb.append(projects.collect { j -> 
-        [job: j.id, paused: PauseManager.instance.isProjectPaused(j.project) ?: '', status: j.status, failed: j.failed ?: '', blame: blameList(j), link: linkJob(j.id)]
+        [job: j.id, paused: PauseManager.instance.isProjectPaused(j.project) ?: '', status: j.status, failed: j.failed ?: '', blame: blameList(j)]
       }.toTable())
     }
-    return "```${sb}```"
+    return "```${sb}```".toString()
   }
 
   String blameList(def j) {

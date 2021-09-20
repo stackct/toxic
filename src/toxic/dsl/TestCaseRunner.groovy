@@ -150,6 +150,10 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
       long end = 0
 
       try {
+        // Allocate a test session header to track api requests on a server.
+        props["http.header.x-toxicTestId"] = UUID.randomUUID().toString()
+        props["http.header.x-toxicTestName"] = props.testCase.name
+
         start = System.currentTimeMillis()
         Step.eachStep(props.testCase.steps, props, { step ->
           if (taskMaster.shouldAbort()) return

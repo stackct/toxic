@@ -430,6 +430,16 @@ NOT_VALID_JSON
   }
 
   @Test
+  void should_normalize_request_if_only_variable_in_file() {
+    String expected = """{"foo":"bar"}"""
+    String formatting   = """%json%"""
+
+    ToxicProperties props = new ToxicProperties()
+    props.json = [foo: 'bar']
+    assert expected == JsonValidator.normalizeRequest(formatting, props)
+  }
+
+  @Test
   void should_not_normalize_request_with_surrounding_spaces() {
     String expected = """[
   {"foo1":"bar1"},

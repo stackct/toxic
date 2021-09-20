@@ -126,9 +126,8 @@ class Wait {
   private boolean isTimedOut() {
     if (!timeout) return false
 
-    use (TimeCategory) {
-      (DateTime.now() - start).toMilliseconds() >= this.timeout
-    }
+    def elapsed = start ? (TimeCategory.minus(DateTime.now(), start).toMilliseconds()) : 0
+    return elapsed >= this.timeout
   }
 
   private boolean attemptsExhausted() {

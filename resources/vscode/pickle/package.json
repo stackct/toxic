@@ -1,147 +1,147 @@
 {
-    "name": "pickle",
-    "publisher": "dotariel",
-    "displayName": "Pickle Explorer",
-    "description": "Code snippets, content navigation, and test execution support for Pickle.",
-    "repository": {},
-    "version": "0.0.1",
-    "icon": "resources/pickle-icon-128x128.png",
-    "engines": {
-        "vscode": "^1.29.0"
-    },
-    "categories": [
-        "Other"
+  "name": "pickle",
+  "publisher": "dotariel",
+  "displayName": "Pickle Explorer",
+  "description": "Code snippets, content navigation, and test execution support for Pickle.",
+  "repository": {},
+  "version": "0.0.1",
+  "icon": "resources/pickle-icon-128x128.png",
+  "engines": {
+    "vscode": "^1.29.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:toxic/**/*.test",
+    "workspaceContains:toxic/**/*.fn",
+    "workspaceContains:toxic/**/*.dep"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "snippets": [
+      {
+        "language": "groovy",
+        "path": "./snippets/pickle.json"
+      }
     ],
-    "activationEvents": [
-        "workspaceContains:toxic/**/*.test",
-        "workspaceContains:toxic/**/*.fn",
-        "workspaceContains:toxic/**/*.dep"
-    ],
-    "main": "./out/extension",
-    "contributes": {
-        "snippets": [
-            {
-                "language": "groovy",
-                "path": "./snippets/pickle.json"
-            }
-        ],
-        "configuration": {
-            "type": "object",
-            "title": "Pickle configuration",
-            "properties": {
-                "pickle.runtimeArgs": {
-                    "type": "array",
-                    "description": "List of runtime arguments in the format: -key=value"
-                },
-                "pickle.notifications.success": {
-                    "type": "boolean",
-                    "description": "Enable notifications for successful tests",
-                    "default": true
-                },
-                "pickle.notifications.failure": {
-                    "type": "boolean",
-                    "description": "Enable notifications for failed tests",
-                    "default": true
-                },
-                "pickle.expand.tests": {
-                    "type": "boolean",
-                    "description": "Expand test files to show all test cases",
-                    "default": false
-                }
-            }
+    "configuration": {
+      "type": "object",
+      "title": "Pickle configuration",
+      "properties": {
+        "pickle.runtimeArgs": {
+          "type": "array",
+          "description": "List of runtime arguments in the format: -key=value"
         },
-        "commands": [
-            {
-                "title": "Locate",
-                "command": "pickleExplorer.openFile",
-                "icon": "resources/edit.svg"
-            },
-            {
-                "title": "Run Test",
-                "command": "pickleExplorer.runTest",
-                "icon": "resources/run.svg"
-            },
-            {
-                "title": "Run All",
-                "command": "pickleExplorer.runAll",
-                "icon": "resources/stack.svg"
-            }
-        ],
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "pickle-explorer",
-                    "title": "Pickle Explorer",
-                    "icon": "resources/pickle-icon.png"
-                }
-            ]
+        "pickle.notifications.success": {
+          "type": "boolean",
+          "description": "Enable notifications for successful tests",
+          "default": true
         },
-        "menus": {
-            "view/title": [
-                {
-                    "command": "pickleExplorer.runAll",
-                    "when": "view == pickle-tests",
-                    "group": "navigation"
-                }
-            ],
-            "view/item/context": [
-                {
-                    "command": "pickleExplorer.runTest",
-                    "when": "viewItem == pickle-runnable",
-                    "group": "inline"
-                }
-            ],
-            "commandPalette": [
-                {
-                    "command": "pickleExplorer.openFile",
-                    "when": "false"
-                },
-                {
-                    "command": "pickleExplorer.runTest",
-                    "when": "false"
-                },
-                {
-                    "command": "pickleExplorer.runAll",
-                    "when": "false"
-                }
-            ]
+        "pickle.notifications.failure": {
+          "type": "boolean",
+          "description": "Enable notifications for failed tests",
+          "default": true
         },
-        "views": {
-            "pickle-explorer": [
-                {
-                    "id": "pickle-deps",
-                    "name": "Dependencies",
-                    "when": "activated"
-                },
-                {
-                    "id": "pickle-functions",
-                    "name": "Functions",
-                    "when": "activated"
-                },
-                {
-                    "id": "pickle-tests",
-                    "name": "Tests",
-                    "when": "activated"
-                }
-            ]
+        "pickle.expand.tests": {
+          "type": "boolean",
+          "description": "Expand test files to show all test cases",
+          "default": false
         }
+      }
     },
-    "scripts": {
-        "vscode:prepublish": "npm i && npm run compile",
-        "clean": "rm -fr ./node_modules && rm -fr ./out",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    "commands": [
+      {
+        "title": "Locate",
+        "command": "pickleExplorer.openFile",
+        "icon": "resources/edit.svg"
+      },
+      {
+        "title": "Run Test",
+        "command": "pickleExplorer.runTest",
+        "icon": "resources/run.svg"
+      },
+      {
+        "title": "Run All",
+        "command": "pickleExplorer.runAll",
+        "icon": "resources/stack.svg"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "pickle-explorer",
+          "title": "Pickle Explorer",
+          "icon": "resources/pickle-icon.png"
+        }
+      ]
     },
-    "devDependencies": {
-        "@types/mocha": "^2.2.42",
-        "@types/node": "^8.10.25",
-        "tslint": "^5.8.0",
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.22"
+    "menus": {
+      "view/title": [
+        {
+          "command": "pickleExplorer.runAll",
+          "when": "view == pickle-tests",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "pickleExplorer.runTest",
+          "when": "viewItem == pickle-runnable",
+          "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "pickleExplorer.openFile",
+          "when": "false"
+        },
+        {
+          "command": "pickleExplorer.runTest",
+          "when": "false"
+        },
+        {
+          "command": "pickleExplorer.runAll",
+          "when": "false"
+        }
+      ]
     },
-    "dependencies": {
-        "vsce": "^1.69.0"
+    "views": {
+      "pickle-explorer": [
+        {
+          "id": "pickle-deps",
+          "name": "Dependencies",
+          "when": "activated"
+        },
+        {
+          "id": "pickle-functions",
+          "name": "Functions",
+          "when": "activated"
+        },
+        {
+          "id": "pickle-tests",
+          "name": "Tests",
+          "when": "activated"
+        }
+      ]
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm i && npm run compile",
+    "clean": "rm -fr ./node_modules && rm -fr ./out",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^12.20.23",
+    "tslint": "^5.20.1",
+    "typescript": "^4.4.2",
+    "vscode": "^1.1.37"
+  },
+  "dependencies": {
+    "vsce": "^1.96.3"
+  }
 }
