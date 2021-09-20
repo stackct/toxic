@@ -10,9 +10,6 @@ import toxic.slack.*
 import spark.*
 import toxic.webhook.UpsourceDiscussionEvent
 
-import java.io.*
-import java.net.*
-import java.util.zip.*
 import groovy.json.*
 import java.lang.management.*
 import org.apache.log4j.*
@@ -437,6 +434,14 @@ public class WebServer implements Runnable {
       def sb = new StringBuilder()
       jobManager.getMetrics().each { k,v -> sb.append("${k} ${v}\n")} 
       makeResponse(sb.toString(), false)
+    }
+    
+    addRoute("/heapDump") { req, resp ->
+      def mxBean = ManagementFactory.newPlatformMXBeanProxy(ManagementFactory.getPlatformMBeanServer(), 'com.sun.management:type=HotSpotDiagnostic', com.sun.management.HotSpotDiagnosticMXBean.class)
+      def file = new File(System.getProperty('java.io.tmpdir'), "heapDump.hprof")
+      file.delete()
+      mxBean.dumpHeap(file.getAbsolutePath(), true)
+      makeResponse(file.getAbsolutePath())
     }
   }
 

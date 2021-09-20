@@ -8,6 +8,17 @@ function "DeployEnvironment" {
   output "loadBalancerIp"
 }
 
+function "BlockTillReady" {
+    description "waits until the application is ready"
+    path "{{ libPath }}/environment/block_till_ready"
+
+    input "url"
+    input "intervalMs", false, 500
+    input "attempts", false, 600
+
+    output "ready"
+}
+
 function "UpgradeEnvironment" {
   description "Updates an existing environment with the given value"
   path "{{ libPath }}/environment/upgrade"

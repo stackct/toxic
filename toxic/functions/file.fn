@@ -1,0 +1,25 @@
+function "CreateTempDir" {
+  description "Creates a temp directory"
+  path "{{ libPath }}/file/create_temp_dir"
+
+  input "prefix"
+
+  output "path"
+}
+
+function "CopyFileToDir" {
+  description "Copies a file to a destination"
+  path "{{ libPath }}/file/copy"
+
+  input "src"
+  input "dest"
+
+  output "path"
+}
+
+function "DeleteDir" {
+  description "Deletes a directory"
+  path "{{ libPath }}/file/delete_dir"
+
+  input "path"
+}

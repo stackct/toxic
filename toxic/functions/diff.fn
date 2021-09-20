@@ -1,0 +1,12 @@
+function "DiffImage" {
+  description "Compares two images for differences"
+  path "{{ libPath }}/diff/image"
+
+  input "imageFile"
+  input "reconstructFile"
+  input "differenceFile"
+  input "rebasePrompt", false
+  input "baselineFile", false
+
+  output "expectedMatchesBaseline"
+}

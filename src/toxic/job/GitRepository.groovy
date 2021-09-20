@@ -28,7 +28,7 @@ public class GitRepository extends ChangesetUrlResolver implements SourceReposit
     collectChanges().with { changes ->
       if (changes) {
         checkoutTargetBranch()
-        exec("git pull", false)
+        exec("git pull --ff-only", false)
       }
 
       // Handle submodules (if any)

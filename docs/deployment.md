@@ -12,7 +12,7 @@ helm install --namespace toxic --name toxic helm/toxic
 
 ### Teardown
 ```
-helm delete toxic --purge
+helm uninstall toxic
 minikube delete
 ```
 

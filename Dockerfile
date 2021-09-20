@@ -7,13 +7,14 @@ ENV LANG     en_US.UTF-8
 ENV LC_ALL   en_US.UTF-8
 
 ARG DIST_DIR_NAME
-ARG K8S_VERSION=v1.15.2
+ARG K8S_VERSION=v1.20.9
+ARG HELM_VERSION=3.6.3
 ARG YQ_VERSION=2.4.0
 
 COPY ${DIST_DIR_NAME} /opt/toxic
 
 # TODO: Move this to a multi-stage build
-RUN apk update && apk add bash curl docker git jq make npm nss openjdk8 openssh openssl openssl-dev tar python3 zip \
+RUN apk update && apk add bash curl docker git imagemagick jq make npm nss openjdk8 openssh openssl openssl-dev tar python3 zip \
     && apk add --virtual=build gcc libffi-dev musl-dev python3-dev
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -31,7 +32,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python \
     && adduser -u 2000 -G toxic -D toxic \
     && adduser toxic docker
 
-RUN curl https://storage.googleapis.com/kubernetes-helm/helm-v2.9.0-linux-amd64.tar.gz -o /tmp/helm.tar.gz \
+RUN curl https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz --output /tmp/helm.tar.gz \
 	&& tar -zxvf /tmp/helm.tar.gz -C /tmp \
 	&& mv /tmp/linux-amd64/helm /usr/local/bin/helm \
 	&& rm -rf /tmp/linux-amd64 \
