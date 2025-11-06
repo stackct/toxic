@@ -1,63 +1,71 @@
 package toxic.dsl
 
+import groovy.io.FileType
+import log.Log
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.apache.commons.compress.utils.IOUtils
-import org.apache.commons.io.FilenameUtils
 
 class DepResolver {
-  static def supportedExts = ['.tgz']
+  private final static Log log = Log.getLogger(this)
+  public static final int ORAS_RETRY_LIMIT = 3
+
   String url
-  String username
-  String password
   File depsDir
 
-  DepResolver(String artifact, def props) {
-    validateProps(props)
-    this.url = createUrl(props['pickle.repoUrl'], artifact, props['pickle.ext'])
-    if(props.containsKey('pickle.repoUsername') && props.containsKey('pickle.repoPassword')) {
-      this.username = props['pickle.repoUsername']
-      this.password = props['pickle.repoPassword']
-    }
-    this.depsDir = new File(props.homePath, createDepsPath(artifact))
-  }
-
-  void validateProps(def props) {
-    if(!props['pickle.repoUrl']) {
-      throw new DependencyResolutionException('Missing required property -pickle.repoUrl')
-    }
+  DepResolver(String depName, String depUrl, def props) {
+    this.depsDir = new File(props.homePath, "gen/deps/${depName}")
+    this.url = depUrl
   }
 
   void resolve() {
-    extract(retrieve())
-  }
-
-  private File retrieve() {
-    URL url = new URL(url)
-    URLConnection urlConnection = url.openConnection()
-    if(username && password) {
-      String auth = "Basic " + "${username}:${password}".bytes.encodeBase64()
-      urlConnection.setRequestProperty("Authorization", auth)
-    }
     File retrieveDir = depsDir.getParentFile()
     retrieveDir.mkdirs()
-    File artifactFile = new File(retrieveDir, FilenameUtils.getName(url.getPath()))
-    OutputStream outputStream = artifactFile.newOutputStream()
-    outputStream << urlConnection.inputStream
-    outputStream.close()
-    artifactFile
+
+    this.orasPull(retrieveDir, this.url - 'oci://')
+
+    retrieveDir.eachFile FileType.FILES, {
+      try {
+        extract(it)
+      }
+      finally {
+        it.delete()
+      }
+    }
   }
 
-  private void extract(File file) {
+  void orasPull(outputDir, url) {
+    if(System.getenv('DOCKER_REGISTRY') && System.getenv('DOCKER_USER') && System.getenv('DOCKER_PASSWORD')) {
+      "oras login ${System.getenv('DOCKER_REGISTRY')} -u ${System.getenv('DOCKER_USER')} -p ${System.getenv('DOCKER_PASSWORD')}"
+              .execute()
+              .waitForProcessOutput(System.out, System.err)
+    }
+
+    util.Wait.on { ->
+      log.info("oras pull -o ${outputDir} ${url}")
+      def sout = new StringBuilder(), serr = new StringBuilder()
+      def proc = "oras pull -ko ${outputDir} ${url}".execute()
+      proc.consumeProcessOutput(sout, serr)
+      proc.waitForOrKill(10000)
+      if(0 == proc.exitValue() ) {
+        return true
+      } else {
+        throw new Exception("oras pull failed, try running an az acr login; url=${url}; exitCode=${proc.exitValue()}; sout=${sout}; serr=${serr}")
+      }
+    }.atMostAttempts(ORAS_RETRY_LIMIT).start()
+
+  }
+
+  private void extract(File depPackage) {
     depsDir.deleteDir()
     depsDir.mkdirs()
-    switch (fileExtension(file)) {
+
+    switch (fileExtension(depPackage)) {
       case '.tgz':
-        unTarGz(depsDir, file)
+        unTarGz(depsDir, depPackage)
         break
     }
-    file.delete()
   }
 
   private void unTarGz(File outputDir, File artifactFile) throws IOException {
@@ -74,32 +82,6 @@ class DepResolver {
       }
       IOUtils.copy(inputStream, new FileOutputStream(file))
     }
-  }
-
-  private String createUrl(String baseUrl, String artifact, String defaultExt) {
-    String ext = ''
-    if(!supportedArtifact(artifact) && defaultExt) {
-      ext = ".${defaultExt}"
-    }
-    "${baseUrl}/${artifact}${ext}"
-  }
-
-  private String createDepsPath(String artifact) {
-    String artifactDirName = artifact
-    if(supportedArtifact(artifact)) {
-      artifactDirName = artifact.take(artifact.lastIndexOf('.'))
-    }
-    "gen/deps/${artifactDirName}"
-  }
-
-  boolean supportedArtifact(String artifact) {
-    boolean supported = false
-    supportedExts.each {
-      if(artifact.endsWith(it)) {
-        supported = true
-      }
-    }
-    supported
   }
 
   static String fileExtension(File file) {

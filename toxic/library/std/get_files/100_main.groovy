@@ -1,4 +1,4 @@
 memory.value = []
 new File(memory.dir).eachFile {
-  memory.value << it
+  if( !memory.pattern || it.name.matches(memory.pattern) ) memory.value << it
 }

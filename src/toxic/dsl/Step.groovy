@@ -1,6 +1,8 @@
 package toxic.dsl
 
 import log.Log
+import toxic.groovy.GroovyEvaluator
+import toxic.color.Color
 
 class Step implements Serializable {
   static final Log slog = Log.getLogger(this)
@@ -73,15 +75,21 @@ class Step implements Serializable {
         args[arg.name] = arg.defaultValue
       }
     }
+    String stepInputs = ""
     args.each { k, v ->
       function.validateArgIsDefined(k)
       def interpolatedValue = interpolate(props, v)
+
       getLog(props).debug("Copying step input to memory; test=${props.testCase.name}; step=${name}; fn=${function}; ${k}=${interpolatedValue}")
       props[k] = interpolatedValue
+      stepInputs +="\t${k}=${interpolatedValue.toString()}\n"
     }
+    MessageCollector.add("Copying step inputs to memory; test=${props.testCase.name}; step=${name}; fn=${function.name};\n${stepInputs}" )
 
     if (wait) {
-      getLog(props).debug("Detected wait condition")
+      def message = "Detected wait condition"
+      getLog(props).debug(message)
+      props['task.retry.delayMs'] = wait.delayMs
       props['task.retry.atMostMs'] = wait.timeoutMs
       props['task.retry.every'] = wait.intervalMs
       props['task.retry.successes'] = wait.successes
@@ -93,14 +101,19 @@ class Step implements Serializable {
   void moveOutputResultsToStep(props) {
     Function function = getFunction(props)
     if(function) {
+      String stepOutputs = ""
       function.outputs.each { k, v ->
         def interpolatedValue = v ? interpolate(props, v) : props[k]
         getLog(props).debug("Copying step output from memory; test=${props.testCase.name}; step=${name}; fn=${function}; ${k}=${interpolatedValue}")
         outputs[k] = interpolatedValue
+        stepOutputs += "\t${k}=${interpolatedValue.toString()}\n"
       }
+      MessageCollector.add("Copying step output from memory; test=${props.testCase.name}; step=${name}; fn=${function.name};\n${stepOutputs}")
     }
     else {
-      getLog(props).debug("Skipping output result copy because function was not defined for step; step=${name}")
+      def message = "Skipping output result copy because function was not defined for step; step=${name}"
+      getLog(props).debug(message)
+      MessageCollector.add(message)
     }
   }
 
@@ -213,6 +226,7 @@ class Step implements Serializable {
     try {
       props.step = new StepOutputResolver(props.testCase, step, scopedSteps)
       def foreach = interpolate(props, step.foreach)
+      foreach = tryToParseIntRange(foreach)
       if(foreach instanceof String) {
         foreach = foreach.split(',')
       }
@@ -238,11 +252,33 @@ class Step implements Serializable {
     eachStep(scopedSteps, props, closure, startIndex)
   }
 
+  static Object tryToParseIntRange(value) {
+    if(!(value instanceof String)) {
+      return value
+    }
+    def intTokens = value.split('\\.\\.')
+    if(intTokens.length != 2) {
+      return value
+    }
+    try {
+      return new GroovyEvaluator().eval(value)
+    }
+    catch(Exception e) {
+      return value
+    }
+  }
+
   static void preStepExecution(Step step, List<Step> scopedSteps, def props) {
     props.push()
     props.currentStep = step
     props.step = new StepOutputResolver(props.testCase, step, scopedSteps)
-    step.getLog(props).info("Executing step; test=${props.testCase.name}; step=${step.name}; fn=${step.function}")
+
+    def stepName = Color.step(props, step.name)
+    def stepFunction = Color.step(props, step.function)
+    def message = "Executing step; test=${props.testCase.name}; step=${stepName}; fn=${stepFunction}"
+    step.getLog(props).info(message)
+
+    MessageCollector.add(message)
     step.copyArgsToMemory(props)
   }
 

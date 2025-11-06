@@ -19,6 +19,7 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
   abstract getExtension(): string
 
   basePath = 'toxic'
+  baseDepPath = 'gen/deps'
 
   excludePath = 'gen/'
 
@@ -29,7 +30,7 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
   refresh(uri: vscode.Uri) {
     // TODO: This refreshes the entire tree. The scope of the refresh could be reduced to just the node
     // that changed, but will require a separate data structure to map Uri -> BaseNode.
-    this._onDidChangeTreeData.fire()
+    this._onDidChangeTreeData.fire(null)
   }
 
   get args(): string[] {
@@ -57,8 +58,6 @@ export abstract class BaseNodeProvider implements vscode.TreeDataProvider<BaseNo
   }
 
   sortNodes(a: BaseNode, b: BaseNode): number {
-    console.log('sorting node', a, b)
-
     if (a.label < b.label) return -1
     if (a.label > b.label) return 1
     return 0

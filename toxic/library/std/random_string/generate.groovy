@@ -5,5 +5,10 @@ def generate = { n ->
   }
 }
 
-memory['prefix'] = memory['prefix'] ?: 'int-'
-memory['value'] = memory['prefix'] + generate((int)memory['length'])
+def prefix = memory['prefix'] = memory['prefix'] ?: 'int-'
+if (prefix == "none") {
+  memory['value'] = generate((int)memory['length'])
+}
+else {
+  memory['value'] = prefix + generate((int)memory['length'])
+}

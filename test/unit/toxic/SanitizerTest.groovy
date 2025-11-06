@@ -1,10 +1,10 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic
 
 import org.junit.Test
 
 public class SanitizerTest {
-  
+
   @Test
   public void should_sanitize_base_terms() {
     assert "test= password=***; sd=ffs; littlePass=***; pass=***; fooPassword=***" == Sanitizer.sanitize("test= password=oh;noes,; sd=ffs; littlePass=hideme; pass=barf; fooPassword=dsf")

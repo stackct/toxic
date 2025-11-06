@@ -96,6 +96,13 @@ class AssertionTest {
   }
 
   @Test
+  void should_evaluate_string_notcontains() {
+    assert true == notcontains('foobar', 'bingo')
+    assert '!foobar.contains(foo). Expression: foobar.contains(foo)' == notcontains('foobar', 'foo')
+    assert '!foo.contains(foo). Expression: {{foo}}.contains({{foo}})' == notcontains('{{foo}}', '{{foo}}')
+  }
+
+  @Test
   void should_evaluate_map_contains() {
     assert true == contains([foo:'bar'], 'foo')
     assert '[foo:bar].containsKey(bla). Expression: [foo:bar].containsKey(bla)' == contains([foo:'bar'], 'bla')
@@ -149,6 +156,10 @@ class AssertionTest {
 
   def contains(Object ying, Object yang) {
     evaluateAssertion(new Assertion().contains(ying, yang))
+  }
+
+  def notcontains(String ying, String yang){
+    evaluateAssertion(new Assertion().notcontains(ying, yang))
   }
 
   def startswith(Object ying, Object yang) {

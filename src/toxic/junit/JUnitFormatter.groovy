@@ -1,6 +1,9 @@
 
 package toxic.junit
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import toxic.TaskResult
 import toxic.TaskResultsFormatter
 
@@ -42,9 +45,13 @@ public class JUnitFormatter implements TaskResultsFormatter {
       def name = xmlEscape(it.name)
       def family = xmlEscape(it.family)
       def elapsedTimeSecs = it.elapsedTimeMillis / 1000
+      def messages = it.messages?.join('\n')
       totalElapsedTimeMs += it.elapsedTimeMillis
 
-      if (it.success) {
+      if(!it.family.endsWith('.test')){
+        // discard functions and test file entries for junit report
+        total--
+      } else if (it.success) {
         testCasesXml += "  <testcase name='$name ($id)' time='$elapsedTimeSecs' classname='$family'/>\n"
       } else {
         def element = "failure"
@@ -52,14 +59,17 @@ public class JUnitFormatter implements TaskResultsFormatter {
         def details = ""
         def stack = ""
         if (it.error != null) {
-          type = xmlEscape(it.error.class.name)
+          type = xmlEscape(it.errorType)
           details = xmlEscape(it.error)
           fail++
         }
-
+        
+        //Remove any Ansi color codes for the file output
+        String messagesData = Pattern.compile("\u001b\\[\\d+(;\\d+)*m").matcher(messages).replaceAll("");
+    
         testCasesXml += "  <testcase name='$name ($id)' time='$elapsedTimeSecs' classname='$family'>\n"
         testCasesXml += "    <$element type='$type' message='$details'>\n"
-        testCasesXml += "      <![CDATA[$stack]]>\n"
+        testCasesXml += "<![CDATA[$messagesData]]>\n"
         testCasesXml += "    </$element>\n"
         testCasesXml += "  </testcase>\n"
       }

@@ -39,9 +39,7 @@ fi
 classpath="${classpath}/conf"
 classpath="${classpath}${classpathSeparator}${TOXIC_HOME}/conf"
 classpath="${classpath}${classpathSeparator}${TOXIC_HOME}/resources"
-classpath="${classpath}${classpathSeparator}${TOXIC_HOME}/gen/classes"
-classpath="${classpath}${classpathSeparator}${TOXIC_HOME}/gen/build/classes"
-classpath="${classpath}${classpathSeparator}${TOXIC_HOME}/lib/*"
+classpath="${classpath}${classpathSeparator}${TOXIC_HOME}/build/libs/*"
 classpath="${classpath}${classpathSeparator}${TOXIC_HOME}"
 
 if [ -n "${TOXIC_HEAP_MAX}" ]; then
@@ -51,4 +49,4 @@ if [ -n "${TOXIC_PERMGEN_MAX}" ]; then
   TOXIC_JRE_OPTIONS="${TOXIC_JRE_OPTIONS} -XX:MaxPermSize=${TOXIC_PERMGEN_MAX}"
 fi
 
-baseToxicCmd="java -XX:+CMSClassUnloadingEnabled $TOXIC_JRE_OPTIONS -cp '${classpath}' -DTOXIC_HOME=${TOXIC_HOME}"
+baseToxicCmd="java $TOXIC_JRE_OPTIONS -cp '${classpath}' -DTOXIC_HOME=${TOXIC_HOME}"

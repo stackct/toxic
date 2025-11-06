@@ -13,20 +13,18 @@ export abstract class BaseNode extends vscode.TreeItem {
 
   iconPath = null
 
-  contextValue = 'pickle-item'
-
   tooltip = this.label
 
   command = {
     title: 'Locate',
-    command: 'pickleExplorer.openFile',
+    command: 'pickle.openFile',
     arguments: [this],
     tooltip: 'Locate',
   } as vscode.Command
 
   selection = {
-    start: new vscode.Position(this.line, 0),
-    end: new vscode.Position(this.line, 0),
+    start: new vscode.Position(this.line || 0, 0),
+    end: new vscode.Position(this.line || 0, 0),
   } as vscode.Selection
 
   public openFile() {

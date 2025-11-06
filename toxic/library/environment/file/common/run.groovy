@@ -1,15 +1,19 @@
 import toxic.ValidationException
 
 if (memory.runtime == 'k8s') {
-  execWithEnv(["kubectl", "-n", memory.namespace, "get", "pods", "--no-headers"])
-  out.toString().eachLine { line ->
-    if (line.startsWith(memory.containerName)) {
-      def pieces = line.split(" ")
-      if (pieces) {
-        memory.podName = pieces[0]
+    execWithEnv(['kubectl', '-n', memory.namespace, 'get', 'pods', '-o', 'jsonpath=\'{range .items[*]}{.metadata.name}{"|"}{.spec.containers[*].name}{","}{end}\''])
+    out.toString().replace("'", "").split(',').each { line ->
+      def podAndContainers = line.split('\\|')
+      if(podAndContainers.length == 2) {
+        def pod = podAndContainers[0]
+        def containers = podAndContainers[1]
+        containers.split(' ').each { container ->
+          if (container == memory.containerName) {
+            memory.podName = pod
+          }
+        }
       }
     }
-  }
 }
 
 def k8sExec = ['kubectl', '-n', memory['namespace'], 'exec', memory['podName'], '-c', memory['containerName'], '--']

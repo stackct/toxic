@@ -83,6 +83,7 @@ class RetryTest {
 
   @Test
   void should_initialize_name() {
+    Retry.log.setLevel(Retry.class.name, 'debug')
     def text = Log.capture(Retry.log) {
       Wait.mock() {
         Retry.factory(FileNotFoundException, [ name: "log this" ]).run() {

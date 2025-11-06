@@ -1,4 +1,3 @@
-
 package toxic.sql
 
 import groovy.mock.interceptor.MockFor
@@ -10,7 +9,7 @@ import toxic.ToxicProperties
 import java.sql.Clob
 import java.sql.SQLException
 
-public class SqlTaskTest {
+class SqlTaskTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none()
 
@@ -104,10 +103,9 @@ public class SqlTaskTest {
   @Test
   public void testTransmit() {
     ToxicProperties tp = new ToxicProperties()
-    tp.sqlUrl="jdbc:jtds:sqlserver://lab-sql-1/master"
+    tp.sqlUrl="jdbc:sqlserver://lab-sql-1;databaseName=master"
     tp.sqlUser="sa"
     tp.sqlPass="Test12"
-    tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
 
     SqlTask st = new SqlTask()
     st.init(null, tp)
@@ -118,10 +116,9 @@ public class SqlTaskTest {
   @Test
   public void testConnection() {
     ToxicProperties tp = new ToxicProperties()
-    tp.sqlUrl="jdbc:jtds:sqlserver://lab-sql-1/master"
+    tp.sqlUrl="jdbc:sqlserver://lab-sql-1;databaseName=master"
     tp.sqlUser="sa"
     tp.sqlPass="Test12"
-    tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
 
     def connMock = new Object() {
       def rows = { sql, rsMeta -> [[c1:"123",c2:"456",c3:"789"]] }
@@ -129,7 +126,7 @@ public class SqlTaskTest {
     }
 
     def sqlMock = new MockFor(Sql)
-    sqlMock.demand.newInstance { s1, s2, s3, s4 -> connMock }
+    sqlMock.demand.newInstance { s1, s2, s3 -> connMock }
 
     SqlTask st = new SqlTask()
     st.init(null, tp)
@@ -149,7 +146,6 @@ public class SqlTaskTest {
       tp.sqlUrl="url"
       tp.sqlUser="user"
       tp.sqlPass="pwd"
-      tp.sqlDriver="driver"
       if(propToRemove) {
         tp.remove(propToRemove)
       }
@@ -174,7 +170,6 @@ public class SqlTaskTest {
     check(propsWithout("sqlUrl"))
     check(propsWithout("sqlUser"))
     check(propsWithout("sqlPass"))
-    check(propsWithout("sqlDriver"))
 
     def msg
     try {
@@ -184,7 +179,7 @@ public class SqlTaskTest {
     } catch(IllegalArgumentException ex) {
       msg = ex.getMessage()
     }
-    assert msg.contains("sqlUrl,sqlUser,sqlPass,sqlDriver")
+    assert msg.contains("sqlUrl,sqlUser,sqlPass")
   }
 
   @Test
@@ -207,7 +202,7 @@ public class SqlTaskTest {
 
     SqlTask task = new SqlTask()
     task.init("test", toxicProperties)
-    task.execute('EXEC stored_procedure')
+    task.execute('EXEC stored_procedure', [:] as ConfigObject)
   }
 
 
@@ -224,7 +219,7 @@ public class SqlTaskTest {
   def testRetries(String retries, String exceptionMessage, boolean shouldThrow) {
     int executions = 0
     SqlTask task = new SqlTask() {
-      protected def execute(String sql) {
+      protected def execute(String sql, def memory) {
         executions++
         if (executions <= 3) {
           throw new java.sql.SQLException(exceptionMessage)
@@ -249,10 +244,9 @@ public class SqlTaskTest {
   @Test
   void should_create_new_sql_instance_with_retry() {
     ToxicProperties tp = new ToxicProperties()
-    tp.sqlUrl="jdbc:jtds:sqlserver://lab-sql-1/master"
+    tp.sqlUrl="jdbc:sqlserver://lab-sql-1;databaseName=master"
     tp.sqlUser="sa"
     tp.sqlPass="Test12"
-    tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
     tp.sqlRetries=3
 
     def connMock = new Object() {
@@ -261,8 +255,8 @@ public class SqlTaskTest {
     }
 
     def sqlMock = new MockFor(Sql)
-    sqlMock.demand.newInstance(3) { s1, s2, s3, s4 -> throw new SQLException('Network error IOException: Operation timed out (Connection timed out)') }
-    sqlMock.demand.newInstance { s1, s2, s3, s4 -> connMock }
+    sqlMock.demand.newInstance(3) { s1, s2, s3 -> throw new SQLException('Network error IOException: Operation timed out (Connection timed out)') }
+    sqlMock.demand.newInstance { s1, s2, s3 -> connMock }
 
     SqlTask st = new SqlTask()
     st.init(null, tp)
@@ -280,14 +274,13 @@ public class SqlTaskTest {
     expectedException.expectMessage('Network error IOException: Operation timed out (Connection timed out)')
 
     ToxicProperties tp = new ToxicProperties()
-    tp.sqlUrl="jdbc:jtds:sqlserver://lab-sql-1/master"
+    tp.sqlUrl="jdbc:sqlserver://lab-sql-1;databaseName=master"
     tp.sqlUser="sa"
     tp.sqlPass="Test12"
-    tp.sqlDriver="net.sourceforge.jtds.jdbc.Driver"
     tp.sqlRetries=3
 
     def sqlMock = new MockFor(Sql)
-    sqlMock.demand.newInstance(4) { s1, s2, s3, s4 -> throw new SQLException('Network error IOException: Operation timed out (Connection timed out)') }
+    sqlMock.demand.newInstance(4) { s1, s2, s3 -> throw new SQLException('Network error IOException: Operation timed out (Connection timed out)') }
 
     SqlTask st = new SqlTask()
     st.init(null, tp)
@@ -295,6 +288,33 @@ public class SqlTaskTest {
     sqlMock.use {
       st.transmit("SELECT 123 as A, 456 as B, 789 as C", null, tp)
     }
+  }
+
+  @Test
+  void should_retry_when_session_is_in_the_kill_state() {
+    def actualExecutionCount = 0
+    def actualExceptionMessage = ''
+
+    def toxicProperties = new ToxicProperties()
+    toxicProperties.sqlRetries=3
+    toxicProperties.sqlRetriesDelayMs=0
+    toxicProperties.sqlConnection = [execute: { String sql, Closure processResults ->
+      actualExecutionCount++
+      throw new SQLException("Cannot continue the execution because the session is in the kill state.")
+    }]
+
+    def task = new SqlTask()
+    task.init(null, toxicProperties)
+
+    try {
+      task.transmit("INSERT INTO foo values ('bar')", null, toxicProperties)
+    }
+    catch(Exception e) {
+      actualExceptionMessage = e.message
+    }
+
+    assert 4 == actualExecutionCount
+    assert 'Cannot continue the execution because the session is in the kill state.' == actualExceptionMessage
   }
 
   @Test
@@ -307,7 +327,7 @@ public class SqlTaskTest {
     SqlTask task = new SqlTask()
 
     task.init("test", toxicProperties)
-    def results = task.execute('EXEC stored_procedure')
+    def results = task.execute('EXEC stored_procedure', [:] as ConfigObject)
     assert results == "java.sql.SQLException: something"
   }
 }

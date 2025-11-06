@@ -9,8 +9,6 @@ class TestNode extends BaseNode {
   get args(): string[] {
     return ['-test=' + this.label.split(' ').join('\\ ')]
   }
-
-  contextValue = 'pickle-runnable'
 }
 
 class TestFileNode extends TestNode {
@@ -31,19 +29,13 @@ class TestFileNode extends TestNode {
     light: path.join(__filename, '..', '..', 'resources', 'test.svg'),
     dark: path.join(__filename, '..', '..', 'resources', 'test.svg'),
   }
-
-  contextValue = 'pickle-runnable'
 }
 
 export class TestNodeProvider extends BaseNodeProvider {
-  private matchRegExp: RegExp = /^test "([\w\s\-,()]+)".*/
+  private matchRegExp: RegExp = /^test "([\w\s\-,()\/']+)".*/
 
   constructor() {
     super()
-    vscode.commands.registerCommand('pickleExplorer.runTest', (test: TestNode) =>
-      Runtime.runTest(test.label, test.resourceUri.fsPath, test.args),
-    )
-    vscode.commands.registerCommand('pickleExplorer.openTest', (test: TestNode) => test.openFile())
   }
 
   getExtension(): string {
@@ -73,8 +65,11 @@ export class TestNodeProvider extends BaseNodeProvider {
   }
 
   sortFiles(a: vscode.Uri, b: vscode.Uri): number {
-    if (a < b) return -1
-    if (a > b) return 1
+    let a1 = a.path.substring(a.path.lastIndexOf('/') + 1)
+    let b1 = b.path.substring(b.path.lastIndexOf('/') + 1)
+
+    if (a1 < b1) return -1
+    if (a1 > b1) return 1
     return 0
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic
 
 import org.junit.*

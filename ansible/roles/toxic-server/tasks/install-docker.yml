@@ -1,9 +1,0 @@
-- name: Install Docker
-  yum: name={{ item }} state=latest
-  become: true
-  with_items:
-  - docker
-
-- name: Start Docker
-  service: name=docker state=restarted enabled=yes
-  become: true

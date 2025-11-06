@@ -100,7 +100,7 @@ class TaskResultsPublisherTest {
       assert 'POST' == request.requestMethod
       assert 'application/json' == request.'Content-Type'
       assert 'http://localhost:8001' == request.url
-      assert JsonOutput.toJson([taskResult1.toSimple(), taskResult2.toSimple(), taskResult3.toSimple()]) == new String(request.bytes)
+      assert JsonOutput.toJson([taskResult1.toSimple(), taskResult2.toSimple(), taskResult3.toSimple()]) == new String(request.bytes())
     }
   }
 
@@ -141,7 +141,7 @@ class TaskResultsPublisherTest {
       assert 'POST' == request.requestMethod
       assert 'application/octet-stream' == request.'Content-Type'
       assert 'http://localhost:8001' == request.url
-      assert filePath == new String(request.bytes)
+      assert filePath == new String(request.bytes())
     }
   }
 
@@ -161,7 +161,7 @@ class TaskResultsPublisherTest {
       assert 'POST' == request.requestMethod
       assert 'application/octet-stream' == request.'Content-Type'
       assert 'http://localhost:8001/api/job/12345/publish/artifact/results.tar.gz' == request.url
-      assert filePath == new String(request.bytes)
+      assert filePath == new String(request.bytes())
     }
   }
 
@@ -194,7 +194,11 @@ class TaskResultsPublisherTest {
   }
 
   void mockHttpResponse(def handlers, Closure closure) {
+    def outputStream = new ByteArrayOutputStream()
     def request = [:]
+    request.bytes = {
+      outputStream.toByteArray()
+    }
     URL.metaClass.openConnection = {
       request.url = delegate.toString()
       new HttpURLConnection(new URL(request.url)) {
@@ -210,7 +214,8 @@ class TaskResultsPublisherTest {
           if(handlers.writeIoException) {
             throw new IOException('Failed to write request')
           }
-          [write:{byte[] bytes -> request.bytes = bytes}, flush:{request.flushed=true}] as OutputStream}
+          outputStream
+        }
         int getResponseCode() { handlers.httpOk ? HttpURLConnection.HTTP_OK : HttpURLConnection.HTTP_INTERNAL_ERROR }
       }
     }

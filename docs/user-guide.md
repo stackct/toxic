@@ -27,7 +27,7 @@ For example, you might have a test.properties file that contains:
 
 ```
 foo=123
-bar=`memory.foo + 1000
+bar=`memory.foo + 1000`
 ```
 
 Now suppose an HTTP request task references the `bar` variable, it will be replaced with the value `1123`. Ex:
@@ -499,12 +499,12 @@ memory.oldTaskIterations = null
 
 ### Developer Setup
 
-Install Ant and the Java Development Kit (JDK) and have both tools available in your shell `PATH`.
+Install Gradle and the Java Development Kit (JDK) and have both tools available in your shell `PATH`.
 
 Run the following command line to build the project and run the unit tests: 
 
 ```
-ant clean test
+make test
 ```
 
 The test results summary will appear on the console but detailed results can be found in `gen/test/index.html`.

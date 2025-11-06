@@ -4,6 +4,7 @@ package toxic.groovy
 import toxic.Toxic
 import toxic.Sanitizer
 import org.apache.log4j.*
+import toxic.dsl.MessageCollector
 
 /*
  * Methods added to this class are available in each of the GroovyTask scripts.
@@ -81,7 +82,9 @@ abstract class GroovyScriptBase extends Script {
           retainer.append(buf)
         }
         if(logOutput) {
-          logger.info("Process ${tag}; elapsedMs=${elapsedMs}\n${buf}")
+          def message = "Process ${tag}; elapsedMs=${elapsedMs}; output below\n${buf}"
+          logger.info(message)
+          MessageCollector.add(message)
         }
       }
       return outputHandler
@@ -105,7 +108,10 @@ abstract class GroovyScriptBase extends Script {
     synchronized(sem) { sem.notify() }
     outputThread.join()
     def result = proc.exitValue()
-    logger.info("Shell command finished; result=${result}; timeoutSecs=${timeoutSecs}; elapsedMs=${System.currentTimeMillis() - startTime}")
+
+    def message = "Shell command finished; result=${result}; timeoutSecs=${timeoutSecs}; elapsedMs=${System.currentTimeMillis() - startTime}"
+    logger.info(message)
+
     return result
   }
   
@@ -123,11 +129,21 @@ abstract class GroovyScriptBase extends Script {
 
     // Can use these safely only in single-threaded scripting, for multi-threading
     // always use the getOutputBuffer/getErrorBuffer methods.
+    //
+    // The getOutputBuffer() can sometimes be empty when running
+    // multiple threads concurrently within a groovy script.
+    // If you need to concurrently run execs and get the stdout from those execs within a groovy script,
+    // try instead redirecting the stdout to a temporary file on disk and then reading from that temporary file.
     out = out != null ? out : getOutputBuffer()
     err = err != null ? err : getErrorBuffer()
     resetBuffers()
 
-    logger.info("Executing shell command; cmd=${Sanitizer.sanitize(cmd, memory['sanitize.terms'] ?: [])}")
+
+    if (memory.cmdVerbose == "true") {
+      def message = "Executing shell command; cmd=${Sanitizer.sanitize(cmd, memory['sanitize.terms'] ?: [])}"
+      logger.info(message)
+    }
+
     execExitCode =  monitorProc(logger, Runtime.runtime.exec(cmd))
     return execExitCode
   }
@@ -145,6 +161,11 @@ abstract class GroovyScriptBase extends Script {
 
     // Can use these safely only in single-threaded scripting, for multi-threading
     // always use the getOutputBuffer/getErrorBuffer methods.
+    //
+    // The getOutputBuffer() can sometimes be empty when running
+    // multiple threads concurrently within a groovy script.
+    // If you need to concurrently run execs and get the stdout from those execs within a groovy script,
+    // try instead redirecting the stdout to a temporary file on disk and then reading from that temporary file.
     this.out = out != null ? out : getOutputBuffer()
     this.err = err != null ? err : getErrorBuffer()
     resetBuffers()
@@ -160,10 +181,22 @@ abstract class GroovyScriptBase extends Script {
     def env = pb.environment()
     env << envVars
 
-    logger.info("Executing shell command; timeoutSecs=${timeoutSecs}; cmd=${Sanitizer.sanitize(cmdAndArgs.join(' '), memory['sanitize.terms'] ?: [])}")
+    if (memory.cmdVerbose == "true") {
+      def cmdToLog = joinWithQuotes(cmdAndArgs)
+      def message = "Executing shell command; timeoutSecs=${timeoutSecs}; cmd=${Sanitizer.sanitize(cmdToLog, memory['sanitize.terms'] ?: [])}"
+      logger.info(message)
+    }
+
     memory.lastStartedProc = pb.start()
     execExitCode = monitorProc(logger, memory.lastStartedProc, logOutput, timeoutSecs)
     return execExitCode
+  }
+
+  def joinWithQuotes(array) {
+    return array.collect { element ->
+      element = element instanceof String ? element : element.toString()
+      element.contains(' ') ? "\"${element}\"" : element
+    }.join(' ')
   }
 
   def fail = { reason ->

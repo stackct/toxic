@@ -101,5 +101,19 @@
       "  ${0}",
       "}"
     ]
+  },
+  "Wait": {
+    "prefix": "wait",
+    "description": "wait in step",
+    "body": [
+      "wait {",
+      "  intervalMs   ${1}",
+      "  timeoutMs    ${2}",
+      "",
+      "  condition {",
+      "    neq \"{{ ${3} }}\", \"${4}\"",
+      "  }",
+      "}"
+    ]
   }
 }

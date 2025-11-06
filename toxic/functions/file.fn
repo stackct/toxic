@@ -7,6 +7,15 @@ function "CreateTempDir" {
   output "path"
 }
 
+//SHOULD ONLY BE USED INSIDE A TEMP FOLDER
+function "CreateDir" {
+  description "Creates a directory"
+  path "{{ libPath }}/file/create_dir"
+
+  input "path"
+  input "name"
+}
+
 function "CopyFileToDir" {
   description "Copies a file to a destination"
   path "{{ libPath }}/file/copy"

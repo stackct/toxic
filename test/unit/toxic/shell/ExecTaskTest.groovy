@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic.shell
 
 import org.junit.*
@@ -38,7 +38,7 @@ public class ExecTaskTest {
     def result = execTask.transmit(input, null, [:])
     assert System.currentTimeMillis() - startTime > 2000
   }
-  
+
   @Test
   public void test_timeout_exec() {
     def execTask = new ExecTask()
@@ -50,7 +50,7 @@ public class ExecTaskTest {
     def result = execTask.transmit(input, null, [:])
     assert System.currentTimeMillis() - startTime < 5000
   }
-  
+
   @Test
   public void test_failed_exec() {
     def execTask = new ExecTask()

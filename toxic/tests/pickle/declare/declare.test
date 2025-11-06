@@ -1,0 +1,13 @@
+test "Declare with multiple variables" {
+  description "Declare with multiple variables"
+
+  declare {
+    boolVariable    true
+    stringVariable "[foo:bar]"
+  }
+
+  assertions {
+    eq "true",      "{{ var.boolVariable }}"
+    eq "[foo:bar]", "{{ var.stringVariable }}"
+  }
+}

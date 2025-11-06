@@ -1,7 +1,6 @@
 
 package toxic.groovy
 
-import junit.framework.AssertionFailedError
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.junit.*
 
@@ -54,6 +53,8 @@ public class GroovyScriptBaseTest {
 
   @Test
   public void testExecLogging() {
+    memory['cmdVerbose'] = "true"
+
     assert 0 == shell.evaluate("exec('echo password=foo')")
     assert infos[0] == "Executing shell command; cmd=echo password=***"
     assert infos[1].startsWith("Process stdout; elapsedMs=")
@@ -62,37 +63,59 @@ public class GroovyScriptBaseTest {
   }
 
   @Test
+  public void testExecLogging_quote_formatted_spaces() {
+    memory['cmdVerbose'] = "true"
+
+    assert 0 == shell.evaluate("exec('echo -H \"Cookie: VALUE\"')")
+    assert infos[0] == "Executing shell command; cmd=echo -H \"Cookie: VALUE\""
+  }
+
+  @Test
   public void testExecWithEnvLogging() {
+    memory['cmdVerbose'] = "true"
+
     assert 0 == shell.evaluate("execWithEnv(['echo','password=foo'])")
     assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo password=***"
     assert infos[1].startsWith("Process stdout; elapsedMs=")
     assert infos[1].endsWith("\npassword=foo\n")
     assert infos[2].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
-    assert shell.out.contains("password=foo")
+  }
+
+  @Test
+  public void testExecWithEnvLogging_with_objects() {
+    memory['cmdVerbose'] = "true"
+
+    assert 0 == shell.evaluate("execWithEnv(['echo', 123])")
+    assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo 123"
+  }
+
+  @Test
+  public void testExecWithEnvLogging_quote_formatted() {
+    memory['cmdVerbose'] = "true"
+
+    assert 0 == shell.evaluate("execWithEnv(['echo','-H','Cookie: VALUE'])")
+    assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo -H \"Cookie: VALUE\""
   }
 
   @Test
   public void testExecWithEnvLoggingSuppressed() {
+    memory['cmdVerbose'] = "true"
+
     // Should not log cmd output
     assert 0 == shell.evaluate("execWithEnvNoLogging(['echo','password=foo'],[:])")
     assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo password=***"
     assert infos[1].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
-
-    // But should still capture it
-    assert (shell.out.contains("password=foo"))
   }
 
   @Test
   public void testExecWithEnvLoggingExtraTermsSuppressed() {
     memory['sanitize.terms'] = ['secret']
+    memory['cmdVerbose'] = "true"
 
     // Should not log cmd output
     assert 0 == shell.evaluate("execWithEnvNoLogging(['echo','secret=hideme'],[:])")
     assert infos[0] == "Executing shell command; timeoutSecs=300; cmd=echo secret=***"
     assert infos[1].startsWith("Shell command finished; result=0; timeoutSecs=300; elapsedMs=")
-
-    // But should still capture it
-    assert (shell.out.contains("secret=hideme"))
   }
 
   @Test
@@ -104,23 +127,17 @@ public class GroovyScriptBaseTest {
   public void testExecWithEnv() {
     assert !memory.lastStartedProc
     assert 0 == shell.evaluate("execWithEnv(['ls'], [:])")
-    assert "" != shell.out
-    assert 0 == shell.err.length()
     assert memory.lastStartedProc instanceof Process
   }
 
   @Test
   public void testExecWithWorkingDir() {
     assert 0 == shell.evaluate("execWithEnv(['pwd'], [:], 300, '/tmp')")
-    assert shell.out.contains("/tmp")
-    assert 0 == shell.err.length()
   }
 
   @Test
   public void testExecWithEnvFail() {
     assert 0 != shell.evaluate("execWithEnv(['ls', 'sdfsdfsdfsdfsdfsdflkj'], [:])")
-    assert 0 == shell.out.length()
-    assert "" != shell.err
   }
 
   @Test

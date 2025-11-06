@@ -1,7 +1,5 @@
 # toxic
 
-![build](https://github.com/stackct/toxic/actions/workflows/main.yml/badge.svg)
-
 Toxic (Task Orchestrator for XHTTP-Integrated Components) is a software development tool with standalone task orchestration capabilites from the command-line, as well as optional hosted functionality.
 
 In the standalone mode, Toxic will traverse a directory structure looking for registered task files (ending in extensions such as .http, .sql, etc) and execute those files as tasks. At the conclusion of the traversal, the results will be output to the console and saved into a jUnit XML format. This mode is often used for providing integration, or black-box testing.
@@ -16,9 +14,24 @@ Toxic originally was created to automated the repeatable tests that humans were 
 
 One significant drawback to Toxic's upbringing is that it was never a formal project with resource budgeting, codereview requirements, unit test coverage. So when you observe deficiencies with the product, such as the lack of built-in multi-lingual support, consider this background.
 
-## Setup with Intellij™
+## Prerequisites
 
-- [Setup Guide](docs/intellij.md)
+- Java JDK17
+- Gradle 7.6+
+  - Mac: `$ brew install gradle`
+  - Linux: `$ apt-get install -y gradle`
+
+## Local Setup
+
+```bash
+$ make
+```
+
+## Execution
+
+```bash
+$ bin/toxic -doDir=toxic/tests
+```
 
 ## User Guide
 
@@ -30,20 +43,6 @@ Toxic contains a DSL (domain-specific language) that enables expressive tests to
 
 - [Pickle - Testing DSL](docs/pickle.md)
 
-## Deployment
+## See Also
 
-- [Helm Deployment](docs/deployment.md)
-
-### Visual Studio Code Plugin
-
-- [Pickle Explorer](resources/vscode/pickle/README.md)
-  Requires VSCode 1.29.0 or newer
-
-1. Make sure 'code' is available in your path and that it opens vscode
-
-1. Run the following from within the toxic directory:
-
-```
-make vscode
-```
-
+- [Pickle Extension for VS Code](resources/vscode/pickle/README.md)

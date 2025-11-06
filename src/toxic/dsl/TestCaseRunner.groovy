@@ -6,6 +6,7 @@ import toxic.TaskMaster
 import toxic.TaskResult
 import toxic.dir.DirItem
 import toxic.dir.DirOrganizer
+import toxic.color.Color
 
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
@@ -178,13 +179,20 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
                   startTime: start,
                   stopTime:  end,
                   complete:  true,
-                  duration:  (end - start)
+                  duration:  (end - start),
+                  messages: MessageCollector.getMessages(),
+                  stackTrace: error?.stackTrace
           ]))
 
-          getLog(props).info("Finished test case; test=${props.testCase.name}; file=${props.testCase.file.name}; success=${success}")
+          def message = "Finished test case; test=${props.testCase.name}; file=${props.testCase.file.name}; success=${success}"
+          if (success) message = Color.success(props, message)
+          else         message = Color.failure(props, message)
+
+          getLog(props).info(message)
         } else {
           getLog(props).info("Aborting test case; test=${props.testCase.name}; file=${props.testCase.file.name}")
         }
+        MessageCollector.reset()
       }
     }
 
@@ -194,7 +202,9 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
   void executeAssertions() {
     if (taskMaster.shouldAbort()) return
 
-    getLog(props).info("Executing assertions; test=${props.testCase.name}")
+    def message = "Executing assertions; test=${props.testCase.name}"
+    getLog(props).info(message)
+    MessageCollector.add(message)
     def resolver = { contents ->
       def interpolatedContents = ''<<''
       contents.eachLine { interpolatedContents << Step.interpolate(props, it) + '\n' }
@@ -210,7 +220,6 @@ class TestCaseRunner implements Callable<TestCaseRunner> {
     while (organizer.hasNext() && !taskMaster.isShutdown() && !taskMaster.shouldAbort()) {
       Task task = organizer.next()
       def taskResults = task.execute(props)
-
       def t = TaskResult.getFailedTask(taskResults)
       if (t) {
         throw new AbortExecutionException(this, t.error ?: t.name + " failed")

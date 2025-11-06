@@ -227,7 +227,8 @@ class StepTest {
   void should_copy_wait_values_to_memory_map() {
     Function function = new Function(name: 'fn1')
     ToxicProperties props = [functions: [fn1: function]]
-    new Step(function: 'fn1', wait: new Wait( timeoutMs: 30, intervalMs: 5, successes: 10)).copyArgsToMemory(props)
+    new Step(function: 'fn1', wait: new Wait( timeoutMs: 30, intervalMs: 5, successes: 10, delayMs: 100)).copyArgsToMemory(props)
+    assert props['task.retry.delayMs'] == 100
     assert props['task.retry.atMostMs'] == 30
     assert props['task.retry.every'] == 5
     assert props['task.retry.successes'] == 10
@@ -334,6 +335,78 @@ class StepTest {
     toxicProperties.testCase = new TestCase()
     def step = new Step(name:'name', function:'fn')
     step.foreach("{{ stringItems }}")
+
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
+    })
+    assert 3 == stepCount
+  }
+
+  @Test
+  void should_not_parse_as_range_when_values_are_strings() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("foo..,bar")
+
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
+    })
+    assert 2 == stepCount
+  }
+
+  @Test
+  void should_not_parse_as_range_when_values_are_missing() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("1..")
+
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
+    })
+    assert 1 == stepCount
+  }
+
+  @Test
+  void should_not_parse_as_range_when_multiple_delimiters_are_found() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.testCase = new TestCase()
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("1..2..3")
+
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
+    })
+    assert 1 == stepCount
+  }
+  
+  @Test
+  void should_interpolate_the_foreach_from_a_range() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.end = 2
+    toxicProperties.testCase = new TestCase()
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("0..{{ end }}")
+
+    int stepCount = 0
+    Step.eachStep([step], toxicProperties, {
+      stepCount++
+    })
+    assert 3 == stepCount
+  }
+
+  @Test
+  void should_interpolate_the_foreach_from_a_range_with_subtraction() {
+    ToxicProperties toxicProperties = new ToxicProperties()
+    toxicProperties.end = 3
+    toxicProperties.testCase = new TestCase()
+    def step = new Step(name:'name', function:'fn')
+    step.foreach("0..{{ end }}-1")
 
     int stepCount = 0
     Step.eachStep([step], toxicProperties, {

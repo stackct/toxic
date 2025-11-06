@@ -1,4 +1,3 @@
-
 package toxic
 
 import toxic.ToxicProperties
@@ -40,13 +39,13 @@ public abstract class CompareTask extends Task {
       throw new IllegalArgumentException('task.retry.condition is not a closure')
     }
 
-    def request = prepare(reqContent)
     String expected = lookupExpectedResponse(input)
 
     int successes = memory['task.retry.successes'] ?: 1
     (1..successes).every {
       Wait.on { ->
         try {
+          def request = prepare(reqContent)
           memory.lastResponse = transmit(request, expected, memory)
           validate(memory.lastResponse, expected, memory)
         }
@@ -62,7 +61,10 @@ public abstract class CompareTask extends Task {
           return memory['task.retry.condition']()
         }
         return true
-      }.every(memory.isNothing('task.retry.every') ? 1 : memory['task.retry.every']).atMostMs(memory.isNothing('task.retry.atMostMs') ? 1 : memory['task.retry.atMostMs']).start()
+      }.every(memory['task.retry.every'] ?: 1000)
+        .atMostMs(memory['task.retry.atMostMs'] ?: 30000)
+        .delayMs(memory['task.retry.delayMs'] ?: 0)
+        .start()
     }
     return null
   }

@@ -1,0 +1,45 @@
+test "Generate UUID" {
+    description "Tests that UUID returns a value"
+    tags "uuid"
+
+    step "UUID", "generateUUID", {
+    }
+
+    assertions {
+      neq "{{step.generateUUID.value}}", "null"
+    }
+}
+
+test "Generate UUID starting with valid characters" {
+    description "Tests that UUID generates a value with valid starting characters"
+    tags "uuid"
+
+    declare {
+      startsWith "1b2"
+    }
+
+    step "UUID", "generateUUID", {
+        startsWith "{{var.startsWith}}"
+    }
+
+    assertions {
+      startswith "{{step.generateUUID.value}}", "{{var.startsWith}}"
+    }
+}
+
+test "Fail to generate UUID starting with invalid characters" {
+    description "Tests that UUID doesn't generate a value with invalid starting characters"
+    tags "uuid"
+
+    declare {
+      startsWith "1z2"
+    }
+
+    step "UUID", "generateUUID", {
+        startsWith "{{var.startsWith}}"
+    }
+
+    assertions {
+      eq "{{step.generateUUID.value}}", "null"
+    }
+}

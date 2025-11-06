@@ -8,4 +8,5 @@ if [[ ! -d toxic/tests ]]; then
   exit 1
 fi
 
-grep -h "^ *tags" toxic/tests/*.test | sed -e 's/^ *tags //' | sed -e 's|//.*$||' | tr -d '" ' | tr ',' '\n' | sort | uniq -c
+# To sort by count, call this script with | sort -nr
+grep -rh tags toxic/tests | sed -e 's/^ *tags //' | sed -e 's|//.*$||' | tr -d '" ' | tr ',' '\n' | sort | uniq -c

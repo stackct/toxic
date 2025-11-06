@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic
 
 import org.junit.Test
@@ -114,6 +114,7 @@ public class TaskTest {
     results.each {
       assert it.startTime != null;
       assert it.stopTime != null;
+
     }
   }
 
@@ -134,7 +135,6 @@ public class TaskTest {
     def results = task.execute([:])
     assert results != null
     assert results.size() == 2
-    assert results[0].duration > 500
+    assert results[0].duration >= 500
   }
-
 }

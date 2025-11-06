@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic
 
 import org.apache.log4j.Logger
@@ -49,7 +49,7 @@ public class HttpValidator extends TextValidator {
 
     // If the expected response does not contain the HTTP result then advance
     // actualIdx pointer to start at the content and skip over the headers.
-    if (!expected?.startsWith("HTTP") && actual?.startsWith("HTTP")) {
+    if (!expected?.startsWith("HTTP") && null != actual && actual.startsWith("HTTP")) {
       contentBoundaries.each { boundary ->
         if (actual.contains(boundary)) {
           actualIdx = actual.indexOf(boundary) + boundary.size()

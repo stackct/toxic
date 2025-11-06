@@ -1,0 +1,35 @@
+test "compare two values" {
+  description "Compare two values"
+
+  step "ReturnValues", "value", {
+  }
+
+  assertions {
+    eq "foo", "foo"
+    eq "foo", 'foo'
+
+    eq "foo", "{{ step.value.simpleString }}"
+    eq '"foo"', "{{ step.value.doubleQuotedString }}"
+    eq "'foo'", "{{ step.value.singleQuotedString }}"
+  }
+}
+
+
+test "compare two files" {
+  description "Compare two files"
+
+  step "CompareTextFiles", "compareTrue", {
+    fileOne "{{ resourcePath }}/compare_files/file1.json"
+    fileTwo "{{ resourcePath }}/compare_files/file2.json"
+  }
+
+    step "CompareTextFiles", "compareFalse", {
+    fileOne "{{ resourcePath }}/compare_files/file1.json"
+    fileTwo "{{ resourcePath }}/compare_files/file3.json"
+  }
+
+  assertions {
+    eq "{{ step.compareTrue.isSame }}", "true"   
+    eq "{{ step.compareFalse.isSame }}", "false"  
+  }
+}

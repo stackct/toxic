@@ -25,7 +25,7 @@ class DepHandlerTest {
     mockFile(input) { file ->
       DirItem dirItem = new DirItem('something.dep')
       mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
-        def props = [deps: [artifact: artifactsDir]]
+        def props = [deps: [artifact: artifactsDir.absolutePath]]
         assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
         assert 1 == dirItem.children.size()
 
@@ -99,13 +99,20 @@ class DepHandlerTest {
   }
 
   @Test
-  void should_not_add_functions_child_when_dir_does_not_exist() {
+  void should_resolve_remote_dep_from_config_override() {
     String input = 'dep "artifact"'
     mockFile(input) { file ->
-      DirItem dirItem = new DirItem('something.dep')
-      def props = [homePath:'/home', deps: [artifact: new File('/foo/does/not/exist')]]
-      assert null == new DepHandler(dirItem, props).nextFile(file)
-      assert 0 == dirItem.children.size()
+      boolean resolved = false
+      DepResolver.metaClass.resolve = {
+        resolved = true
+      }
+      DirItem dirItem = new DirItem('artifact.dep')
+      mockFnDir { File baseDir, File artifactsDir, File expectedChild ->
+        def props = [homePath:baseDir.absolutePath, 'deps.artifact': 'oci://hostname/pickle/artifact/latest-foo']
+        assert expectedChild == new DepHandler(dirItem, props).nextFile(file)
+        assert [artifact: artifactsDir] == props.deps
+        assert resolved
+      }
     }
   }
 

@@ -92,6 +92,15 @@ function "KubeApply" {
     arg "file"
 }
 
+function "KubeCopyAutoTlsSecretToUnmanagedSecret" {
+    description "Copy an auto tls secret to an unmanaged secret. This is useful for integration environments that are short lived."
+    path "{{ libPath }}/environment/kube_secret/copy_auto_tls_secret_to_unmanaged_secret"
+
+    input "namespaceFrom"
+    input "secretName"
+    input "namespaceTo"
+}
+
 function "GetServiceUrl" {
   description "Returns the URL for a Kubernetes Service"
   path "{{ libPath }}/environment/service/get"

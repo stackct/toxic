@@ -1,11 +1,16 @@
 # Application output directories
+/app/
+/build/
 /gen/
 /output/
 /test-output/
 /log/
 /jobs/
 /current/
-/.vagrant/
+.gradle
+gradle/
+gradlew
+gradlew.bat
 
 # Log files
 *.log
@@ -33,34 +38,14 @@ tags
 # Mac files
 .DS_Store
 
-# Custom security properties
-toxic-secure.properties
-toxic-server.properties
-
-# RPM build files
-rpm/BUILD/toxic-*
-rpm/RPMS/noarch/toxic-*
-
-# Ansible files
-/inventory
-site.retry
-
 # Docker Build Files
 docker/artifacts
 
 # Ivy local cache
 /.ivy/
 
-# Ant autocomplete 
-.ant-targets-build.xml
-
 # Secret stuff
 secret*
 
 # Custom Helm values
 values-*.yaml
-
-# NPM Vendor cache
-package-lock.json
-
-common/build

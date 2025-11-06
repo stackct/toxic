@@ -1,0 +1,30 @@
+function "CaptureOutputFile", {
+  description "Run a shell script and capture its output"
+  path        "{{ libPath }}/shell/out_file"
+
+  input "parallel", false, 1
+
+  output "outputCount"
+  output "output"
+}
+
+function "CaptureOutputString", {
+  description "Run a shell script and capture the output in a string"
+  path        "{{ libPath }}/shell/out_string"
+
+  input "parallel", false, 1
+
+  output "outputCount"
+  output "output"
+}
+
+function "CaptureOutputCurl", {
+  description "Run a curl and capture the status"
+  path        "{{ libPath }}/shell/out_curl"
+
+  input "parallel", false, 1
+
+  output "statusCodes"
+  output "bodies"
+  output "count"
+}

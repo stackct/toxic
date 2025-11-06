@@ -29,16 +29,6 @@ class DateTime {
     new SimpleDateFormat(format).parse(time)
   }
 
-  /**
-   *
-   * @exception java.text.ParseException when time is unparseable
-   */
-  static parseZulu(time, format = "yyyy-MM-dd'T'HH:mm:ss'Z'") {
-    def df = new SimpleDateFormat(format)
-    df.setTimeZone(TimeZone.getTimeZone("Zulu"))
-    df.parse(time)
-  }
-
   static mock(Date ...date) {
     createMock(date)
   }
@@ -83,13 +73,6 @@ class DateTime {
     return valid
   }
 
-  static lastMillisecondOfDay(String day) {
-    if (!day) throw new NullPointerException("day argument cannot be null when calculating last millisecond of a day")
-    def cal = (parse(day) + 1).toCalendar()
-    cal.add(Calendar.MILLISECOND, -1)
-    return cal.time
-  }
-
   static Date fromExpDate(String expDate) {
     if (expDate.size() != "MMYYYY".size())
       throw new IllegalArgumentException("expDate not in correct format (MMYYYY)")
@@ -99,12 +82,6 @@ class DateTime {
     def cal = new GregorianCalendar(new Integer(yr), new Integer(mo)-1, 1)
 
     use (TimeCategory) { return cal.time + 1.month - 1.millisecond }
-  }
-
-  static boolean isExpired(Date date, validForMillis) {
-    def expiredCal = date?.toCalendar()
-    expiredCal?.add(Calendar.MILLISECOND, validForMillis)
-    return now() > expiredCal?.time
   }
 
   static boolean isPast(Date date) {

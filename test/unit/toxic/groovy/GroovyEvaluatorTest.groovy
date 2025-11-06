@@ -1,7 +1,4 @@
-
 package toxic.groovy
-
-import org.apache.commons.lang.exception.ExceptionUtils
 
 import static org.junit.Assert.*
 import org.junit.*
@@ -137,17 +134,20 @@ public class GroovyEvaluatorTest {
     try {
       GroovyEvaluator.eval(testScript, ['recompileScripts':"false"], "TestScript.groovy") == 2
     } catch(Exception e) {
-      def st = ExceptionUtils.getStackTrace(e)
-      assert st.contains("at TestScript")
+      assert getStackTrace(e).contains("at TestScript")
     }
 
     try {
       GroovyEvaluator.eval(testScript, ['recompileScripts':"true"], "TestScript2.groovy") == 2
     } catch(Exception e) {
-      def st = ExceptionUtils.getStackTrace(e)
-      assert st.contains("at TestScript2")
+      assert getStackTrace(e).contains("at TestScript2")
     }
 
   }
 
+  private String getStackTrace(Exception e) {
+    def sw = new StringWriter()
+    e.printStackTrace(new PrintWriter(sw))
+    sw.toString()
+  }
 }

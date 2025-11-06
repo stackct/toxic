@@ -380,9 +380,9 @@ NOT_VALID_JSON
     String expected = """{ "topic": { "foo": { "foo": { "foo": "bar" } }, "foo1": "bar1" }, "foo": "bar" }"""
     String actual = """{ "topic": { "foo": { "foo": { "foo": "baz" } }, "foo1": "bar2" }, "foo": "baz" }"""
     def message = ''<<''
-    message << 'Content mismatch; path=/foo; expected=bar; actual=baz\n'
     message << 'Content mismatch; path=/topic/foo/foo/foo; expected=bar; actual=baz\n'
     message << 'Content mismatch; path=/topic/foo1; expected=bar1; actual=bar2\n'
+    message << 'Content mismatch; path=/foo; expected=bar; actual=baz\n'
     expectValidationFailure(expected, actual, message.toString())
   }
 

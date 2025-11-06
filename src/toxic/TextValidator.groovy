@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic
 
 import org.apache.log4j.Logger
@@ -99,13 +99,13 @@ public class TextValidator implements Validator {
         r.init(props)
         r.startDelimiter = delimiter
         r.stopDelimiter = delimiter
-        
+
         // Create a new iterator with the replaced values
         exp = new StringIterator(r.replace(exp.value), exp.idx)
       } else if (exp.peek() != act.peek()) {
         def expectedNear = exp.peekAround(nearChars)
         def actualNear = act.peekAround(nearChars)
-        
+
         throw new ValidationException("Character mismatch -->" +
           "\n${'-'.multiply(25)}  ACTUAL  (${act.peek()}) ${'-'.multiply(25)}\n" +
           actualNear + "\n" +

@@ -1,6 +1,7 @@
 import java.nio.file.*
 
 def cmds = []
+cmds << 'magick'
 cmds << 'compare'
 cmds << '-alpha'
 cmds << 'Remove'

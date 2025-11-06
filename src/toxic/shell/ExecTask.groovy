@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic.shell
 
 import toxic.groovy.*
@@ -21,12 +21,12 @@ public class ExecTask extends CompareTask {
     if (input.contains("exec.cmd")) {
       def props = new Properties()
       props.load(new StringReader(input))
-      
+
       localMem.putAll(props)
-      
+
       localMem.execCmdArgs = []
       localMem.execEnvMap = [:]
-      
+
       localMem.execCmdArgs << localMem["exec.cmd"]
       localMem.findAll { k,v -> k.startsWith("exec.arg.") }.sort { a,b -> a.key <=> b.key }.each{ k,v ->
         localMem.execCmdArgs << v
@@ -41,7 +41,7 @@ public class ExecTask extends CompareTask {
       localMem.execCmd = input
       input = "exec(memory.execCmd)"
     }
-    
+
     input += """
       memory.stdout=out
       memory.stderr=err
@@ -51,7 +51,7 @@ public class ExecTask extends CompareTask {
     if (memory.execVerbose == "true") {
       log.info("Execution finished; exitCode=${localMem.exitCode}; stdout=${localMem.stdout}; stderr=${localMem.stderr}")
     }
-    
+
     result=""
     if (exitCode) result += "exitCode=${localMem.exitCode}\n"
     if (localMem.stderr) result += "stderr=${localMem.stderr}"

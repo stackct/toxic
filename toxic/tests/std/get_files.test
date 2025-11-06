@@ -1,0 +1,26 @@
+test "Test get files" {
+  description "Test that get files returns files"
+    step "GetFiles", "files", {
+      dir "{{ resourcePath }}/get_files"
+    }
+
+    assertions {
+      contains "{{ step.files.value }}", "file1.txt"
+      contains "{{ step.files.value }}", "file2.txt"
+      contains "{{ step.files.value }}", "other.txt"
+    }
+}
+
+test "Test get specified files" {
+  description "Test that get files returns files"
+    step "GetFiles", "files", {
+      pattern "file.\\.txt"
+      dir "{{ resourcePath }}/get_files"
+    }
+
+    assertions {
+      contains "{{ step.files.value }}", "file1.txt"
+      contains "{{ step.files.value }}", "file2.txt"
+      notcontains "{{ step.files.value }}", "other.txt"
+    }
+}

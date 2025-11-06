@@ -1,15 +1,13 @@
-
 package toxic.sql
 
 import toxic.CompareTask
-import toxic.ToxicProperties
 import org.apache.log4j.Logger
 import groovy.sql.Sql
 
 import java.sql.Clob
 import java.sql.SQLException
 import java.sql.Timestamp
-import java.sql.Types
+import toxic.color.*
 
 public class SqlTask extends CompareTask {
   protected static Logger slog = Logger.getLogger(SqlTask.class.name)
@@ -22,7 +20,7 @@ public class SqlTask extends CompareTask {
 
   // Verify required properties are set
   private verifyProperties() {
-    def requiredProps = ["sqlUrl", "sqlUser", "sqlPass", "sqlDriver"]
+    def requiredProps = ["sqlUrl", "sqlUser", "sqlPass"]
     def missingProps = requiredProps.findAll { !props.containsKey(it) }
     if(missingProps) {
       throw new IllegalArgumentException("Missing required properties: ${missingProps.join(",")}")
@@ -68,9 +66,10 @@ public class SqlTask extends CompareTask {
     return val.toString()
   }
 
-  protected def query(String sql) {
+  protected def query(String sql, ConfigObject memory) {
     if (props.sqlVerbose == "true") {
-      log.info("Submitting query; url=" + props.sqlUrl + ":" + props.sqlUser + ":" + props.sqlPass + "; Driver=" + props.sqlDriver + ":\n" + sql)
+      def formattedSql = Color.sql(memory, sql)
+      log.info("Submitting query; url=" + props.sqlUrl + ":" + props.sqlUser + ":" + props.sqlPass + ":" + formattedSql)
     }
     def dumpMeta = { meta ->
       if(slog.isTraceEnabled()) {
@@ -85,9 +84,10 @@ public class SqlTask extends CompareTask {
     return props.sqlConnection.rows(sql, dumpMeta)
   }
 
-  protected def execute(String sql) {
+  protected def execute(String sql, def memory) {
     if (props.sqlVerbose == "true") {
-      log.info("Executing statement(s); url=" + props.sqlUrl + ":" + props.sqlUser + ":" + props.sqlPass + "; Driver=" + props.sqlDriver + ":\n" + sql)
+      def formattedSql = Color.sql(memory, sql)
+      log.info("Executing statement(s); url=" + props.sqlUrl + ":" + props.sqlUser + ":" + props.sqlPass + ":\n" + formattedSql)
     }
 
     def results = []
@@ -101,6 +101,9 @@ public class SqlTask extends CompareTask {
         }
       }
     } catch (SQLException e) {
+      if(e.message.contains('kill state')) {
+        throw e
+      }
       results << e.toString()
     }
 
@@ -110,11 +113,11 @@ public class SqlTask extends CompareTask {
   protected transmit(request, expectedResponse, def memory) {
     int sqlRetries = getIntProperty(memory, 'sqlRetries')
     int sqlRetriesDelayMs = getIntProperty(memory, 'sqlRetriesDelayMs')
-
+      
     retry(sqlRetries, sqlRetriesDelayMs, {
       synchronized (props) {
         if (!props.sqlConnection || memory.sqlReconnect == "true") {
-          props.sqlConnection = Sql.newInstance(props.sqlUrl, props.sqlUser, props.sqlPass, props.sqlDriver)
+          props.sqlConnection = Sql.newInstance(props.sqlUrl, props.sqlUser, props.sqlPass)
         }
       }
     })
@@ -123,14 +126,15 @@ public class SqlTask extends CompareTask {
     def result
     retry(sqlRetries, sqlRetriesDelayMs, {
       if (request.toLowerCase().startsWith("select")) {
-        result = toCsv(query(request))
+        result = toCsv(query(request, memory))
       } else {
-        result = execute(request)
+        result = execute(request, memory)
       }
     })
 
     if (memory.sqlVerbose == "true") {
-      log.info("Received:\n" + result)
+      def formattedResult = Color.sql(memory, result)
+      log.info("Received:\n" + formattedResult)
     }
     memory.lastResponse = result.toString()
 
@@ -145,7 +149,10 @@ public class SqlTask extends CompareTask {
         break
       } catch (Exception se) {
         def message = se.toString().toLowerCase()
-        if (!['timeout', 'timed out'].find { message.contains(it) }) throw se
+        if (!['timeout', 'timed out', 'kill state'].find { message.contains(it) }) {
+          log.error(se.message, se)
+          throw se
+        }
         if (attempts > maxAttempts) {
           log.error("Exceeded allowed connection attempts; attempts=${attempts}", se)
           throw se

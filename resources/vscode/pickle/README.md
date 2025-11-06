@@ -4,24 +4,29 @@ This extension provides code snippets, content navigation, and test execution su
 
 ## Requirements
 
-* npm
-* To run tests, you must have `toxic` installed and in your `PATH`.
+- npm
+- To run tests, you must have `toxic` installed and in your `PATH`.
 
-## Installation
+## Installation (VS Code)
 
-From the root of this repository, run:
-
+```bash
+$ make
 ```
-make vscode
+
+## Installation (Cursor)
+
+```bash
+$ make install-cursor
 ```
+
 
 NOTE: If you are running on Windows, you are on your own.
 
 ## Features
 
-* Code snippets
-* Code navigation for Deps, Functions, and Tests
-* Run tests (single, file, or all)
+- Code snippets
+- Code navigation for Deps, Functions, and Tests
+- Run tests (single, file, or all)
 
 ## Configuration Options
 
@@ -34,24 +39,22 @@ NOTE: If you are running on Windows, you are on your own.
   "pickle.notifications.success": true,
 
   // List of runtime arguments in the format: -key=value
-  "pickle.runtimeArgs": [] 
+  "pickle.runtimeArgs": []
 }
 ```
 
 ## Screencasts
 
 ### Navigation
-![Pickle Navigation](https://github.com/stackct/toxic/raw/master/resources/vscode/pickle/resources/pickle-explorer-navigation.gif)
+
+![Pickle Navigation](./resources/pickle-explorer-navigation.gif)
 
 ### Authoring
-![Pickle Authoring](https://github.com/stackct/toxic/raw/master/resources/vscode/pickle/resources/pickle-explorer-authoring.gif)
 
-### Test Execution
-![Pickle Test Execution](https://github.com/stackct/toxic/raw/master/resources/vscode/pickle/resources/pickle-explorer-run-test.gif)
+![Pickle Authoring](./resources/pickle-explorer-authoring.gif)
 
 ## Next
 
-* Run tests based on tags (include/exclude)
-* Run current test from Editor window via keystroke
-* Show available functions provided by external dependencies
-* Figure out how to unit/integration test the extension
+- Run tests based on tags (include/exclude)
+- Show available functions provided by external dependencies
+- Figure out how to unit/integration test the extension

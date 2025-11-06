@@ -6,6 +6,7 @@ import toxic.ToxicProperties
 class Wait extends Parser {
     private static final List<String> requiredFields = ['timeoutMs', 'intervalMs', 'conditions']
 
+    int delayMs
     int timeoutMs
     int intervalMs
     int successes = 1
@@ -22,6 +23,10 @@ class Wait extends Parser {
         results << wait
     }
 
+    def delayMs(int value) {
+        this.delayMs = value
+    }
+    
     def timeoutMs(int value) {
         this.timeoutMs = value
     }

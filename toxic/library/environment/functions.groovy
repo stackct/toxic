@@ -90,6 +90,25 @@ memory.kubeApply = { String namespace, String file ->
   execWithEnv([kubectl, '--namespace', namespace, 'apply', '-f', file])
 }
 
+memory.kubeCopyAutoTlsSecretToUnmanagedSecret = { String namespaceFrom, String secretName, String namespaceTo ->
+  def file = File.createTempFile('auto_tls_secret', '.yaml')
+  assert 0 == memory.kubeExportSecret(namespaceFrom, secretName, file.canonicalPath)
+  
+  def fileContents = ''
+  file.text.eachLine {
+    if(it.startsWith('type:')) {
+      fileContents += 'type: Opaque\n'
+    }
+    else if(!(it =~ /cert-manager.io/)) {
+      fileContents += it + '\n'
+    }
+  }
+  file.write(fileContents)
+  
+  assert 0 == memory.kubeApply(namespaceTo, file.canonicalPath)
+  file.delete()
+}
+
 memory.helmRepoAdd = { String name, String url ->
   def cmds = []
   cmds << helm

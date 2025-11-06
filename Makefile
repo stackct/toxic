@@ -1,7 +1,22 @@
-PROJECT_DIR:=$(abspath $(dir $(firstword $(MAKEFILE_LIST))))
-VSCODE_DIR:=$(PROJECT_DIR)/resources/vscode/pickle
+clean:
+	@gradle clean
+	@rm -fr gen build .gradle
 
-vscode:
-	@$(VSCODE_DIR)/install.sh
+compile:
+	@gradle build -x test
 
-.DEFAULT_GOAL := update
+build:
+	@gradle build
+
+test: build
+	@bin/toxic -doDir=toxic/tests
+
+buildWatch:
+	@gradle build --continuous
+
+testWatch: build
+	@gradle test --continuous
+
+.PHONY: build
+
+.DEFAULT_GOAL := build

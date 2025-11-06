@@ -1,9 +1,10 @@
 package log
 
 import groovy.transform.Synchronized
+import groovy.xml.XmlParser
+import groovy.xml.XmlNodePrinter
 
 import org.apache.log4j.*
-import org.apache.log4j.spi.*
 import org.apache.log4j.xml.DOMConfigurator
 import org.xml.sax.SAXException
 

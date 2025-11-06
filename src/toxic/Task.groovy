@@ -2,6 +2,9 @@
 package toxic
 
 import org.apache.log4j.Logger
+import org.codehaus.groovy.runtime.StackTraceUtils
+import toxic.dsl.MessageCollector
+import toxic.color.Color
 
 public abstract class Task {
   protected static Logger slog = Logger.getLogger(Task.class.name)
@@ -61,7 +64,10 @@ public abstract class Task {
     memory.taskFamily = family
 
     memory.taskIterations = memory.taskIterations ? memory.taskIterations : 1
-    log.debug("Executing task; family=" + family + "; name=" + name + "; tmId=" + memory.tmId + "; tmRep=" + memory.tmRep + "; taskId=" + memory.taskId + "; taskIterations=" + memory.taskIterations)
+
+    def executingMessage = "Executing task; family=$family; name=$name; tmId=$memory.tmId; tmRep=$memory.tmRep;taskId=$memory.taskId; taskIterations=$memory.taskIterations"
+    log.debug(executingMessage)
+    overallResult.addMessage(executingMessage)
     def iters = new Integer(memory.taskIterations)
     memory.uniqueId = System.currentTimeMillis() + "." + id
 
@@ -91,14 +97,32 @@ public abstract class Task {
           results << result
         }
 
-        log.error("Task failed; family='$family'; name='${name}'; iteration='${memory.taskIteration}'; exception='${result.errorType}'; message='${result.error}'")
+        var taskFailed = Color.failure(props, "Task failed")
+        var messageFailed = Color.failure(props, result.error)
+
+        def message = "${taskFailed} family='$family'; name='${name}'; iteration='${memory.taskIteration}'; exception='${result.errorType}'; message=${messageFailed}"
+        log.error(message)
+
+        MessageCollector.add(message)
         if (!(t instanceof AssertionError) && !(t instanceof ValidationException)) {
           log.error("Error stack trace", t)
+          MessageCollector.add("Error stack trace")
+          StringWriter sw = new StringWriter()
+          PrintWriter pw = new PrintWriter(sw)
+          StackTraceUtils.extractRootCause(t)
+          t.printStackTrace(pw)
+          MessageCollector.add(sw.toString());
         } else {
           log.debug("Task failure stack trace", t)
         }
-        log.warn("Diagnostics - Request\n${memory.lastRequest}")
-        log.warn("Diagnostics - Response\n${memory.lastResponse}")
+
+        def lastRequest = "Diagnostics - Request\n${memory.lastRequest}"
+        log.warn(lastRequest)
+        MessageCollector.add(getHttpValues(memory))
+        MessageCollector.add(lastRequest)
+        def lastResponse = "Diagnostics - Response\n${memory.lastResponse}"
+        log.warn(lastResponse)
+        MessageCollector.add(lastResponse)
       }
 
       if (memory.taskIteration == null) {
@@ -121,6 +145,12 @@ public abstract class Task {
     if(log.isDebugEnabled()) log.debug("Task Results: ${results}")
 
     return results
+  }
+
+  String getHttpValues(Map<String,Object> memory){
+    String values = ""
+    memory.findAll {k,v -> k.startsWith("http.header")}.forEach {k,v -> values += "\n\t${k}: ${v}"}
+    return values
   }
 
   int getIntProperty(def memory, String property) {

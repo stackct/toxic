@@ -1,0 +1,104 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'groovy'
+    id 'com.adarshr.test-logger' version '4.0.0'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'toxic.Main'
+        )
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/LICENSE*"
+        exclude "META-INF/MSFTSIG*"
+        exclude "META-INF/NOTICE*"
+    }
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+}
+
+repositories {
+    mavenCentral()
+}
+
+def groovyVersion = '4.0.21'
+
+dependencies {
+    implementation "org.apache.groovy:groovy-all:${groovyVersion}"
+    implementation "org.apache.groovy:groovy-datetime:${groovyVersion}"
+    implementation "org.apache.groovy:groovy-dateutil:${groovyVersion}"
+    implementation 'com.google.guava:guava:33.2.1-jre'
+    implementation 'com.microsoft.signalr:signalr:8.0.6'
+    implementation 'com.microsoft.sqlserver:mssql-jdbc:12.6.2.jre11'
+    implementation 'commons-io:commons-io:2.16.1'
+    implementation 'org.apache.commons:commons-compress:1.26.2'
+    implementation 'org.apache.commons:commons-text:1.14.0'
+    implementation 'org.apache.commons:commons-csv:1.14.0'
+    implementation 'org.json:json:20240303'
+    implementation 'org.slf4j:slf4j-reload4j:2.0.13'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+}
+
+sourceSets {
+    main {
+        groovy {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['conf', 'resources']
+        }
+    }
+    test {
+        groovy {
+            srcDirs = ['test/unit']
+        }
+        resources {
+            srcDirs = ['conf', 'resources']
+        }
+    }
+}
+
+testlogger {
+    theme 'standard'
+    showExceptions true
+    showStackTraces true
+    showFullStackTraces false
+    showCauses true
+    slowThreshold 2000
+    showSummary false
+    showSimpleNames false
+    showPassed false
+    showSkipped false
+    showFailed true
+    showOnlySlow false
+    showStandardStreams true
+    showPassedStandardStreams false
+    showSkippedStandardStreams false
+    showFailedStandardStreams true
+    logLevel 'lifecycle'
+}
+
+// Clears screen between test runs
+gradle.addListener new BuildAdapter() {
+    void projectsEvaluated(Gradle gradle) {
+        // Only do this is someone is using watch mode
+        if (gradle.startParameter.continuous) {
+          exec { commandLine 'clear' }
+        }
+    }
+}

@@ -23,7 +23,7 @@ class DepHandler extends LinkHandler {
     props.deps = props.deps ?: [:]
     String prefix = 'deps.'
     props.findAll { k, v -> k.startsWith(prefix) && v }.each {
-      props.deps[it.key.substring(prefix.size())] = new File(it.value)
+      props.deps[it.key.substring(prefix.size())] = it.value
     }
     Dep.parse(file.text).each {
       process(it)
@@ -32,27 +32,41 @@ class DepHandler extends LinkHandler {
 
   void process(Dep dep) {
     if(props.deps.containsKey(dep.name)) {
-      resolveLocal(props.deps[dep.name])
+      processDepOverride(dep.name, props.deps[dep.name])
+      return
+    }
+
+    if(!props['pickle.repoUrl']) {
+      throw new DependencyResolutionException('Missing required property -pickle.repoUrl')
+    }
+    resolveRemote(dep.name, "${props['pickle.repoUrl']}/${dep.artifactId}:latest")
+  }
+
+  void processDepOverride(String depName, String depValue) {
+    if(new File(depValue).isDirectory()) {
+      resolveLocal(depName, depValue)
     }
     else {
-      resolveRemote(dep)
+      resolveRemote(depName, depValue)
     }
   }
 
-  void resolveLocal(File depsDir) {
-    addFunctionsChild(depsDir)
+  void resolveLocal(String depName, String depsDirPath) {
+    props.deps[depName] = new File(depsDirPath)
+    addFunctionsChild(depsDirPath)
   }
 
-  void resolveRemote(Dep dep) {
-    DepResolver depResolver = new DepResolver(dep.artifactId, props)
+  void resolveRemote(String depName, String depUrl) {
+    DepResolver depResolver = new DepResolver(depName, depUrl, props)
     if(!props.useDepsCache) {
       depResolver.resolve()
     }
-    props.deps[dep.name] = depResolver.depsDir
-    addFunctionsChild(depResolver.depsDir)
+    def depsDirPath = depResolver.depsDir.absolutePath
+    props.deps[depName] = new File(depsDirPath)
+    addFunctionsChild(depsDirPath)
   }
 
-  void addFunctionsChild(def depsDir) {
+  void addFunctionsChild(String depsDir) {
     File fnDir = new File(depsDir, 'functions')
     if(fnDir.isDirectory() && fnDir.list().length > 0) {
       addChild(new DirItem(fnDir, item))

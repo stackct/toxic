@@ -1,0 +1,17 @@
+function "ReturnValues", {
+  description "Return value that can be compared in a test"
+  path "{{ libPath }}/compare/return_values"
+
+  output "simpleString"
+  output "doubleQuotedString"
+  output "singleQuotedString"
+}
+
+function "CompareTextFiles" {
+      description "compare two text files to see if they are the same"
+  path "{{ libPath }}/compare/text_files"
+  input "fileOne"
+  input "fileTwo"
+
+  output "isSame"
+}

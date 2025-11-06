@@ -33,6 +33,10 @@ class Assertion implements Serializable {
     assertFunction(ying, yang, 'contains')
   }
 
+  Assertion notcontains(String ying, String yang) {
+    assertFunction(ying, yang, 'contains', true)
+  }
+
   Assertion contains(Map ying, String yang) {
     assertFunction(ying, yang, 'containsKey')
   }
@@ -49,14 +53,18 @@ class Assertion implements Serializable {
     assertFunction(ying, yang, 'endsWith')
   }
 
-  private Assertion assertFunction(def ying, def yang, String function) {
-    String failureMessage = failureMessage("\"${ying}.${function}(${yang})\"")
-    assertions << "assert ${format(ying)}.${function}(${format(yang)}) : ${failureMessage}"
+  private Assertion assertFunction(def ying, def yang, String function, boolean negate = false) {
+    String failureMessage = failureMessage("${negate?"!":""}${ying}.${function}(${yang})")
+    if(negate)
+      assertions << "assert ! ${format(ying)}.${function}(${format(yang)}) : ${failureMessage}"
+    else
+      assertions << "assert ${format(ying)}.${function}(${format(yang)}) : ${failureMessage}"
+
     this
   }
 
   private Assertion assertOperation(Object ying, Object yang, String operator) {
-    String failureMessage = failureMessage("\"${ying ?: "''"} ${operator} ${yang ?: "''"}\"")
+    String failureMessage = failureMessage("${ying ?: "''"} ${operator} ${yang ?: "''"}")
     if (ying instanceof String && ying?.isNumber() && yang instanceof String && yang?.isNumber()) {
       if (ying.isLong()) ying = ying as long
       else if (ying.isDouble()) ying = ying as double
@@ -84,6 +92,9 @@ class Assertion implements Serializable {
   }
 
   private String failureMessage(String message) {
-    message.replaceAll(Step.beginVariableRegex, variableReplacement).replaceAll(Step.endVariableRegex, variableReplacement)
+    message = message
+      .replaceAll(Step.beginVariableRegex, variableReplacement).replaceAll(Step.endVariableRegex, variableReplacement)
+      .replaceAll('"', "").replaceAll("'", "")
+    "\"${message}\""
   }
 }

@@ -52,31 +52,6 @@ class DateTimeTest {
       assert date2 == DateTime.now()
     }
   }
-
-  @Test
-  void should_parse_zulu() {
-    TimeZone.setDefault(TimeZone.getTimeZone('Zulu'))
-    def cal = Calendar.instance
-    cal.set(year: 2016, month: Calendar.MARCH, date: 03, hourOfDay: 15, minute: 38, second: 11)
-    cal.set(Calendar.MILLISECOND, 000)
-
-    assert cal.timeInMillis == DateTime.parseZulu('2016-03-03T15:38:11Z').time
-  }
-
-  @Test
-  void should_parse_zulu_with_custom_format() {
-    TimeZone.setDefault(TimeZone.getTimeZone('Zulu'))
-    def cal = Calendar.instance
-    cal.set(year: 2016, month: Calendar.MARCH, date: 03, hourOfDay: 15, minute: 38, second: 11)
-    cal.set(Calendar.MILLISECOND, 000)
-
-    assert cal.timeInMillis == DateTime.parseZulu('2016-03-03 15:38:11', 'yyyy-MM-dd HH:mm:ss').time
-  }
-
-  @Test(expected = ParseException)
-  void should_throw_exception_when_parsing_invalid_zulu_time() {
-    DateTime.parseZulu('NOT A DATE').time
-  }
  
   @Test
   void should_be_used_to_produce_test_prescribed_dates_from_strings_yymmdd() {    
@@ -166,17 +141,6 @@ class DateTimeTest {
   }
   
   @Test
-  void should_determine_last_millisecond_of_a_day() {
-    assert DateTime.lastMillisecondOfDay('2012-07-21') == Date.parse('yyyy-MM-dd HH:mm:ss.SSS', '2012-07-21 23:59:59.999')
-    assert DateTime.lastMillisecondOfDay('2012-12-31') == Date.parse('yyyy-MM-dd HH:mm:ss.SSS', '2012-12-31 23:59:59.999')
-  }
-
-  @Test(expected=NullPointerException)
-  void should_throw_npe_if_null_arg() {
-    DateTime.lastMillisecondOfDay(null)
-  }
-  
-  @Test
   void should_throw_exception_if_expDate_is_not_valid_format() {
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("expDate not in correct format (MMYYYY)");
@@ -189,14 +153,6 @@ class DateTimeTest {
     assert DateTime.fromExpDate("122014") == DateTime.parse('2014-12-31 23:59:59.999')
     assert DateTime.fromExpDate("022013") == DateTime.parse('2013-02-28 23:59:59.999')
     assert DateTime.fromExpDate("022012") == DateTime.parse('2012-02-29 23:59:59.999')
-  }
-
-  @Test
-  void should_test_expiration() {
-    assert !DateTime.isExpired(DateTime.now(), 2000)
-    assert DateTime.isExpired(DateTime.now() - 1, 2000)
-    assert !DateTime.isExpired(DateTime.now() - 1, 2000 + (24 * 3600 * 1000))
-    assert DateTime.isExpired(DateTime.now() - 1, -100 + (24 * 3600 * 1000))
   }
 
   @Test

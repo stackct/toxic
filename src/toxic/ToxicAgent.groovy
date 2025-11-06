@@ -6,6 +6,7 @@ import javax.net.ssl.*
 import java.util.concurrent.*
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
+import toxic.color.Color
 
 /**
  * The ToxicAgent is responsible for spawning one or more TaskMasters,
@@ -173,7 +174,10 @@ public class ToxicAgent implements Callable<List<TaskResult>> {
       results.each {
         success += (it.success ? 1 : 0)
       }
-      log.info("Agent Shutdown; durationMS=" + elapsedTime + "; tasks=" + results.size() + "; success=" + success + "; fail=" + (results.size() - success))
+
+      def successPrompt = Color.success(props, "success=")
+      def failurePrompt = Color.failure(props, "fail=")
+      log.info("Agent Shutdown; durationMS=" + elapsedTime + "; tasks=" + results.size() + "; ${successPrompt}" + success + "; ${failurePrompt}" + (results.size() - success))
     }
     return results
   }

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+PICKLE_TEST_DIR=${PICKLE_TEST_DIR:-toxic/tests}
+
+usage() {
+  echo "usage: pickle COMMAND [ARGS]"
+  echo ""
+  echo "commands:"
+  echo " * run"
+
+  exit 1
+}
+
+cmd=$1; shift
+
+if [[ $cmd != "run" ]]; then
+  usage
+fi
+
+toxic -doDir=${PICKLE_TEST_DIR} $*

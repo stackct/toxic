@@ -35,6 +35,7 @@ class Wait {
 
   def codeBlock
   def successCondition
+  def delay
   def timeout
   def interval
   def interrupt
@@ -50,6 +51,11 @@ class Wait {
     this.successCondition = defaultSuccessCondition
     this.results = []
     this.attemptCount = 0
+  }
+
+  public Wait delayMs(int delayMs) {
+    this.delay = delayMs
+    this
   }
 
   public Wait until(int timeout) {
@@ -91,6 +97,10 @@ class Wait {
   }
 
   public boolean start() throws TimeoutException {
+    if (delay) {
+      log.info("Delaying start for ${delay}ms")
+      pause(delay)
+    }
     start = DateTime.now()
     while (!successCondition(executeAttempt())) {
       if(maxAttempts) log.info("Attempt ${attemptCount} of ${maxAttempts} failed")
@@ -117,10 +127,16 @@ class Wait {
 
   private executeAttempt() {
     attemptCount++
-    def result = codeBlock.maximumNumberOfParameters > 0 ? codeBlock.call(attemptCount) : codeBlock.call()
-    results << result
-    lastResult = result
-    return result
+    try {
+      def result = codeBlock.maximumNumberOfParameters > 0 ? codeBlock.call(attemptCount) : codeBlock.call()
+      results << result
+      lastResult = result
+      return result
+    }
+    catch(Exception e) {
+      log.error(e.message, e)
+      return false
+    }
   }
 
   private boolean isTimedOut() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 Value Pay Services, LLC.  All rights reserved.
+
 package toxic
 
 import groovy.mock.interceptor.MockFor
@@ -68,23 +68,23 @@ public class ToxicAgentTest {
   @Test
   public void test_call_formatter_empty_classname() {
     def cp = []
-    def ta = new ToxicAgent() 
+    def ta = new ToxicAgent()
     def props = new ToxicProperties()
     props.foo = 1
     ta.init(props)
 
     // should not throw exception on an empty class
-    ta.callFormatter(null, []) 
+    ta.callFormatter(null, [])
 
-    ta.callFormatter("agent.formatter.1", []) 
-    
+    ta.callFormatter("agent.formatter.1", [])
+
     ta.props["agent.formatter.1"] = null
-    ta.callFormatter("agent.formatter.1", []) 
+    ta.callFormatter("agent.formatter.1", [])
 
     ta.props["agent.formatter.1"] = " "
-    ta.callFormatter("agent.formatter.1", []) 
+    ta.callFormatter("agent.formatter.1", [])
   }
-  
+
   @Test
   public void should_construct_daemon_threads() {
     def ta = new ToxicAgent()

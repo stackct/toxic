@@ -1,11 +1,13 @@
 
 package toxic.groovy
 
+import toxic.TaskResult
 import toxic.ToxicProperties
 import org.apache.log4j.Logger
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.runtime.InvokerHelper
 import groovy.transform.Synchronized
+import toxic.dsl.MessageCollector
 
 public class GroovyEvaluator {
   protected static Logger slog = Logger.getLogger(GroovyEvaluator.class.name)
@@ -69,7 +71,10 @@ public class GroovyEvaluator {
         synchronized(memory.fastClassMap) {
           scriptClass = memory.fastClassMap[key]
           if (!scriptClass) {
-            if (log.isDebugEnabled()) log.debug("Caching new script class; key=${key}; inputScript=$input")
+            if (log.isDebugEnabled()) {
+              def message = "Caching new script class; key=${key}; inputScript=$input"
+              log.debug(message)
+            }
             def compiler = new CompilerConfiguration()
             scriptBase = memory?.groovyScriptBase ?: "toxic.groovy.GroovyScriptBase"
             compiler.setScriptBaseClass(scriptBase)
@@ -89,7 +94,10 @@ public class GroovyEvaluator {
       binding.setVariable("log", log)
       binding.setVariable("input", input)
       def sc = InvokerHelper.createScript(scriptClass, binding)
-      if (log.isDebugEnabled()) log.debug("Executing script class; key=${key}; inputScript=$input")
+      if (log.isDebugEnabled()) {
+        def message = "Executing script class; key=${key}; inputScript=$input"
+        log.debug(message)
+      }
       result = sc.run()
     } else { // "recompileScripts" enabled
       def shell
@@ -125,7 +133,10 @@ public class GroovyEvaluator {
       shell.setVariable("input", input)
 
       def scr = convertInput(input)
-      if (log.isDebugEnabled()) log.debug("Evaluating Groovy script; inputScript=$input")
+      if (log.isDebugEnabled()) {
+        def message = "Evaluating Groovy script; inputScript=$input"
+        log.debug(message)
+      }
       try {
         long start = System.currentTimeMillis()
         if(scriptFileName) {
@@ -134,7 +145,10 @@ public class GroovyEvaluator {
           result = shell.evaluate(scr)
         }
         long elapsed = System.currentTimeMillis() - start
-        if (log.isDebugEnabled()) log.debug("Finished evaluating Groovy script; elapsedMs=${elapsed}; inputScript=$input")
+        if (log.isDebugEnabled()) {
+          def message = "Finished evaluating Groovy script; elapsedMs=${elapsed}; inputScript=$input"
+          log.debug(message)
+        }
 
         if (memory) {
           // Accumulate perf stats
@@ -149,17 +163,23 @@ public class GroovyEvaluator {
           long totalMs = memory["groovyshellAccumScriptExecMs_${memory.tmId}"]
           long totalCount = memory["groovyshellAccumScriptExecCount_${memory.tmId}"]
           if (totalCount % 100 == 0) {
-            log.info("Average script execution time; totalCount=${totalCount}; totalMs=${totalMs}; avgMs=${totalMs / totalCount}")
+            def message = "Average script execution time; totalCount=${totalCount}; totalMs=${totalMs}; avgMs=${totalMs / totalCount}"
+            log.info(message)
+            MessageCollector.add(message)
           }
         }
       } catch (Throwable t) {
-        log.error("Error evaluating Groovy script; script=" + scr)
+        def message = "Error evaluating Groovy script; script=" + scr
+        log.error(message)
+        MessageCollector.add(message)
         throw t
       } finally {
-        if (clearClassLoader(shell, memory)) log.debug("Cleared shell classloader cache; tmId=${memory.tmId}")
+        if (clearClassLoader(shell, memory)) {
+          def message = "Cleared shell classloader cache; tmId=${memory.tmId}"
+          log.debug(message)
+        }
       }
     }
-
     return result
   }
 

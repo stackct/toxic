@@ -1,0 +1,49 @@
+test "Execute a shell script and capture using file", {
+  description "Executing shell scripts reads stdout from the spawned process and to get every byte of output is important for small strings using files to capture the output"
+  // This test proves that a shell command that redirects output to a
+  // a file is MOSTLY reliable. It will fail 1 in 100 times.
+  tags "ignored"
+  
+  step "CaptureOutputFile", "script", {
+    parallel 10
+  }
+
+  assertions {
+    eq "{{ step.script.outputCount}}", "10"
+    eq "{{ step.script.output}}", "X,X,X,X,X,X,X,X,X,X"
+  }
+}
+
+test "Execute a shell script and capture using string", {
+  description "Executing shell scripts reads stdout from the spawned process and to get every byte of output is important for small strings using stringbuffers to capture the output"
+   // This test randomly fails and demonstrates the
+   // ability ot a spawned process to successfully be captured by 
+   // the parent.
+  tags "ignored"
+  
+  step "CaptureOutputString", "script", {
+    parallel 10
+  }
+
+  assertions {
+    eq "{{ step.script.outputCount}}", "10"
+    eq "{{ step.script.output}}", "X,X,X,X,X,X,X,X,X,X"
+  }
+}
+
+test "Execute a curl and get status code using curl", {
+  description "The curl command can output the status code using a -w but the reading of output is unreliable. Instead enable -i, write to a file and read from there"
+   // This test bakes a semi-reliable way to execute curl and capture the 
+   // status code from the response without relying on the stdout problem.
+  tags "ignored"
+  
+  step "CaptureOutputCurl", "script", {
+    parallel 10
+  }
+
+  assertions {
+    eq "{{ step.script.count}}", "10"
+    eq "{{ step.script.statusCodes}}", "200,200,200,200,200,200,200,200,200,200"
+    eq "{{ step.script.bodies}}", ""
+  }
+}

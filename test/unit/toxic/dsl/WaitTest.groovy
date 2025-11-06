@@ -12,6 +12,7 @@ class WaitTest {
             { -> wait { } },
             { -> wait { timeoutMs(1) } },
             { -> wait { timeoutMs(1); intervalMs(2) } },
+            { -> wait { timeoutMs(1); intervalMs(2); delayMs(3) } },
         ]
 
         testCases.each { tt ->
@@ -43,6 +44,7 @@ class WaitTest {
     public void should_parse_wait_statement() {
         def input = { ->
             wait {
+                delayMs    5
                 timeoutMs  1
                 intervalMs 2
                 successes  3
@@ -59,6 +61,7 @@ class WaitTest {
 
         Parser.parse(new Wait(), input).with { waits ->
             assert waits.size() == 1
+            assert waits[0].delayMs == 5
             assert waits[0].timeoutMs == 1
             assert waits[0].intervalMs == 2
             assert waits[0].successes == 3

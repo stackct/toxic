@@ -24,3 +24,19 @@ function "ParseUri" {
   output "port"
   output "queryParams"
 }
+
+function "MultipartForm" {
+  description "Sends a multipart/form-data POST request"
+  path "{{ libPath }}/http/multipart_form"
+
+  input "url"
+  input "fields"  // comma-separated list of field names
+  input "values"  // comma-separated list of field values
+
+  input "cookie", false
+  input "bearer", false
+  input "compressed", false, "true"
+
+  output "response"
+  output "json"
+}

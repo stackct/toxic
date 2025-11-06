@@ -1,50 +1,49 @@
 
 package toxic
-
-import groovy.time.Duration
-
 /**
  * Contains the metrics of the task's output.
  */
-public class TaskResult implements Serializable {
-  public static areAllSuccessful(List<TaskResult> results) {
+class TaskResult implements Serializable {
+  static areAllSuccessful(List<TaskResult> results) {
     return getFailedTask(results) == null
   }
 
-  public static countFailures(List<TaskResult> results) {
+  static countFailures(List<TaskResult> results) {
     return results.findAll { !it.success }.size()
   }
 
-  public static getFailedTask(List<TaskResult> results) {
+  static getFailedTask(List<TaskResult> results) {
     return results.find { !it.success }
   }
 
-  public static shouldAbort(def props, List<TaskResult> results) {
+  static shouldAbort(def props, List<TaskResult> results) {
     if (props) {
       (props.tmHaltOnError == 'true' && !areAllSuccessful(results)) ||
       (props.containsKey('tmHaltOnErrorThreshold') && (props.tmHaltOnErrorThreshold.toInteger() <= countFailures(results)))
     }
   }
 
-  public def id
-  public def family
-  public def name
-  public def type
+  def id
+  def family
+  def name
+  def type
   private String error
   private String errorType
   private boolean success
   private Long startTime
   private Long stopTime
+  private List<String> messages  = new ArrayList<>()
 
-  public TaskResult(def id, def family, def name, def type) {
+  TaskResult(def id, def family, def name, def type) {
     startTime = System.currentTimeMillis()
     this.id = id
     this.family = family
     this.name = name
     this.type = type
+    this.messages
   }
 
-  public TaskResult(Map map) {
+  TaskResult(Map map) {
     fromSimple(map)
   }
 
@@ -52,46 +51,58 @@ public class TaskResult implements Serializable {
     stopTime = System.currentTimeMillis()
   }
 
-  public void setSuccess(boolean result) {
+  void setSuccess(boolean result) {
     mark()
     this.success = result
   }
 
-  public boolean getSuccess() {
+  boolean getSuccess() {
     return success
   }
 
-  public boolean isComplete() {
+  boolean isComplete() {
     this.stopTime != null
   }
 
-  public int getDuration() {
+  int getDuration() {
     Math.abs((this.startTime ?: 0) - (this.stopTime ?: 0))
   }
 
-  public void setError(String t) {
+  void setError(String t) {
     mark()
     error = t
   }
 
-  public String getSuite() {
+  String getSuite() {
     this.family.replaceAll("/", "--").toLowerCase()
   }
 
-  public String getError() {
+  String getError() {
     return error
   }
 
-  public long getElapsedTimeMillis() {
+  def addMessage(String message){
+    this.messages.add(message)
+  }
+  
+  def addMessages(List<String> messages){
+    this.messages.addAll((java.util.Collection)messages)
+  }
+
+  def getMessages(){
+    return messages
+  }
+
+  long getElapsedTimeMillis() {
     return startTime ? (stopTime ? stopTime - startTime : System.currentTimeMillis() - startTime) : 0
   }
 
   @Override
-  public String toString() {
+  String toString() {
     "TaskResult(id=${id}, family=${family}, name=${name}, type=${type}, error=${error}, success=${success}, startTime=${startTime}, stopTime=${stopTime})"
   }
 
-  public Map toSimple() {
+  Map toSimple() {
     def map        = [:]
     map.id         = this.id
     map.family     = this.family
@@ -107,7 +118,7 @@ public class TaskResult implements Serializable {
     map
   }
 
-  public def fromSimple(def map) {
+  def fromSimple(def map) {
     this.id = map.id
     this.family = map.family
     this.name = map.name
@@ -116,5 +127,8 @@ public class TaskResult implements Serializable {
     this.success = map.success
     this.startTime = map.startTime
     this.stopTime = map.stopTime
+    if(map.messages){
+      addMessages(map.messages)
+    }
   }
 }

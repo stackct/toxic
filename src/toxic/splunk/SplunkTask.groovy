@@ -1,5 +1,6 @@
 package toxic.splunk
 
+import groovy.xml.XmlParser
 import toxic.TaskResult
 import org.apache.log4j.Logger
 import toxic.http.HttpTask

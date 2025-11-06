@@ -3,6 +3,8 @@ package toxic.http
 import org.apache.log4j.Logger
 import toxic.CompareTask
 import toxic.ToxicProperties
+import toxic.dsl.MessageCollector
+import toxic.color.Color
 
 import javax.net.ssl.SSLSocketFactory
 import java.util.zip.GZIPInputStream
@@ -19,7 +21,7 @@ class HttpTask extends CompareTask {
     props.keySet().sort().each { key ->
       if (key.startsWith(prefix)) {
         def value = props[key]
-        if (value) {
+        if (value != null) {
 
           if (key.endsWith("Content-Encoding") && value == "gzip") {
             gzip = true
@@ -96,7 +98,11 @@ class HttpTask extends CompareTask {
     def content
     if (gzip) content = " Gzip compressed: ${request.size()}"
     else content = "\n${request}"
-    memory.lastRequest = "Sending to host=" + memory.httpHost + ":" + memory.httpPort + "; SSL=" + (ssl?"true":"false") + "; retries=${httpRetries}:${content}"
+
+    def logContent = Color.http(memory, content)
+    memory.lastRequest = "Sending to host=" + memory.httpHost + ":" + memory.httpPort + "; SSL=" + (ssl?"true":"false") + "; retries=${httpRetries}:${logContent}"
+
+    MessageCollector.add(memory.lastRequest)
 
     if (memory.httpVerbose == "true") {
       log.info(memory.lastRequest)
@@ -151,9 +157,18 @@ class HttpTask extends CompareTask {
       }
     }
 
-    if (memory.httpVerbose == "true") {
-      log.info("Received:\n" + result)
+    // Check if response is binary and sanitize if needed
+    def contentType = extractContentTypeFromResponse(result)
+    if (isBinaryContentType(contentType)) {
+      def responseParts = result.split(HTTP_CR + HTTP_CR, 2) as List
+      result = responseParts[0] + HTTP_CR + HTTP_CR + "[Binary body removed - Content-Type: ${contentType}]"
     }
+
+    if (memory.httpVerbose == "true") {
+      def logResults = Color.http(memory, result)
+      log.info("Received:\n${logResults}")
+    }
+    MessageCollector.add(result)
 
     setResponseProperties(result, memory)
 
@@ -176,7 +191,8 @@ class HttpTask extends CompareTask {
     headers.find { h -> h.startsWith('HTTP') }.with { h ->
       h.split(' ').with { parts ->
         memory['http.response.code'] = parts[1]
-        memory['http.response.reason'] = parts[2..-1].join(' ')
+        memory['http.response.reason'] = ""
+        if (parts.length > 2) memory['http.response.reason'] = parts[2..-1].join(' ')
       }
       headers.remove(h)
     }
@@ -231,6 +247,35 @@ class HttpTask extends CompareTask {
 
   protected Socket getSocketFromProps(memory) {
     return new Socket(memory.httpHost, new Integer(memory.httpPort.toString()))
+  }
+
+  protected boolean isBinaryContentType(String contentType) {
+    if (!contentType) return false
+    
+    def cleanContentType = contentType.toLowerCase().split(';')[0].trim()
+    
+    def binaryTypes = [
+      'image/', 'video/', 'audio/',
+      'application/pdf', 'application/zip', 'application/gzip',
+      'application/x-tar', 'application/x-gzip', 'application/x-compress',
+      'application/x-compressed', 'application/x-zip-compressed',
+      'application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument'
+    ]
+    
+    return binaryTypes.any { cleanContentType.startsWith(it.toLowerCase()) }
+  }
+
+  protected String extractContentTypeFromResponse(String response) {
+    if (!response) return null
+    
+    def responseParts = response.split(HTTP_CR + HTTP_CR, 2) as List
+    if (responseParts.size() < 1) return null
+    
+    def headerLines = responseParts[0].split(HTTP_CR) as List
+    def contentTypeLine = headerLines.find { it.toLowerCase().startsWith('content-type:') }
+    
+    return contentTypeLine ? contentTypeLine.split(':', 2)[1].trim() : null
   }
 
   void setupHttpConnection() {

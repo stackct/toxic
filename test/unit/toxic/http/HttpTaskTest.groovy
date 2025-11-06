@@ -78,7 +78,7 @@ public class HttpTaskTest {
     props["http.header.Empty"] = ""
     props["http.header.Null"] = null
     xt.init(null, props)
-    def expectedResult = "Another: world\r\nTest-This: hello\r\n"
+    def expectedResult = "Another: world\r\nEmpty: \r\nTest-This: hello\r\n"
     assert xt.headers() == expectedResult
   }
 
@@ -222,6 +222,26 @@ public class HttpTaskTest {
   public void testLookupExpectedResponseMissing() {
     def xt = new HttpTask()
     assert xt.lookupExpectedResponse(new File("missing_req.http")) == null
+  }
+
+  @Test
+  void should_read_start_line_with_no_reason_text() {
+    String http = 'HTTP/1.1 200\r\ncontent-length: 5\r\n\r\n<ok/>'
+
+    def memory = new ToxicProperties()
+    new HttpTask().setResponseProperties(http, memory)
+    assert memory["http.response.code"] == "200"
+    assert memory["http.response.reason"] == ""
+  }
+
+  @Test
+  void should_read_start_line_with_reason_text() {
+    String http = 'HTTP/1.1 200 FOO\r\ncontent-length: 5\r\n\r\n<ok/>'
+
+    def memory = new ToxicProperties()
+    new HttpTask().setResponseProperties(http, memory)
+    assert memory["http.response.code"] == "200"
+    assert memory["http.response.reason"] == "FOO"
   }
 
   @Test

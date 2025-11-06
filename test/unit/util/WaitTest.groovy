@@ -157,5 +157,34 @@ public class WaitTest {
     Wait.indefinitely().unless(stopWaiting)
   }
 
+  @Test
+  public void should_handle_exception_in_wait_condition() {
+    def waiter = Wait.on { attemptNum->
+      if (attemptNum == 1) {
+        throw new Exception("OOPS!")
+      }
+      else if (attemptNum == 2) {
+        return false
+      }
+      return true
+    }.every(1).atMostAttempts(3)
 
+    def waitReturn = waiter.start()
+    assert waitReturn == true
+    assert waiter.lastResult == true
+    assert waiter.results == [false, true]
+  }
+
+  @Test
+  public void should_apply_initial_delay() {
+    def delayApplied = false
+    Thread.metaClass.'static'.sleep = { long time -> 
+      if (time == 100) {
+        delayApplied = true
+      }
+    }
+
+    Wait.on { -> true }.delayMs(100).start()
+    assert delayApplied
+  }
 }

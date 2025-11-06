@@ -2,24 +2,24 @@ function "Debug" {
   description "Prints out debugging information"
   path        "{{ libPath }}/std/debug"
 
-  arg "value"
+  input "value"
 }
 
 function "ExportProperty" {
   description "Set a global property"
   path        "{{ libPath }}/std/property/export"
 
-  arg "key"
-  arg "value"
-  arg "force", false
+  input "key"
+  input "value"
+  input "force", false
 }
 
 function "RandomString" {
   description "Generates a random alphanumeric string of the given length"
   path        "{{ libPath }}/std/random_string"
 
-  arg "length"
-  arg "prefix", false
+  input "length"
+  input "prefix", false
 
   output "value"
 }
@@ -28,9 +28,9 @@ function "RandomNumericString" {
   description "Generates a random numeric string of the given length"
   path        "{{ libPath }}/std/random_numeric_string"
 
-  arg "length"
-  arg "prefix", false
-  arg "suffix", false
+  input "length"
+  input "prefix", false
+  input "suffix", false
 
   output "value"
 }
@@ -39,15 +39,27 @@ function "UUID" {
   description "Generates a UUID"
   path        "{{ libPath }}/std/uuid"
 
+  input "startsWith", false
+
   output "value"
+}
+
+function "RandomEmail" {
+  description "Generates a random email"
+  path "{{ libPath }}/std/email"
+
+  input "domain", false, "test.invalid"
+  input "length", false, 9
+
+  output "address"
 }
 
 function "VerifyUrls" {
   description "Verifies a 200 on GET request on a URL or a list of URLs; if waitMs is provided retries every second, up to the give number of waitMs milliseconds for each url, before failing"
   path        "{{ libPath }}/std/verify"
 
-  arg "url"
-  arg "waitMs", false
+  input "url"
+  input "waitMs", false
 
   output "result"
 }
@@ -56,10 +68,10 @@ function "GetDate", {
   description "Returns the current date offset by optional number of days"
   path        "{{ libPath }}/std/get_date"
 
-  arg "offsetDays", false, 0
-  arg "utc",        false, true
-  arg "format",     false, "yyyyMMdd"
-  
+  input "offsetDays", false, 0
+  input "utc",        false, true
+  input "format",     false, "yyyyMMdd"
+
   output "date"
 }
 
@@ -67,7 +79,8 @@ function "GetFiles", {
   description "Returns a list of files within a directory"
   path        "{{ libPath }}/std/get_files"
 
-  arg "dir"
+  input "dir"
+  input "pattern", false
 
   output "value"
 }
@@ -75,8 +88,8 @@ function "GetFiles", {
 function "StartHttpServer", {
   description "starts a http server that can be used as a partner simulator"
   path "{{ libPath }}/std/interceptor/start"
-  arg "port", false, 8080
-  arg "route", false, "/"
+  input "port", false, 8080
+  input "route", false, "/"
 
   output "httpServer"
   output "requestCounter"
@@ -86,17 +99,26 @@ function "StopHttpServer", {
   description "stops the provided http server"
   path "{{ libPath }}/std/interceptor/stop"
 
-  arg "httpServer"
+  input "httpServer"
 }
 
 function "WaitForRequests", {
   description "waits until the specified number of requests have been received by the server started from StartHttpServer. This is useful when waiting for a queued job to send a http request"
   path "{{ libPath }}/std/interceptor/wait_for_requests"
 
-  arg "requestCounter"
-  arg "waitForCount"
-  arg "waitForAtMostMilliseconds"
+  input "requestCounter"
+  input "waitForCount"
+  input "waitForAtMostMilliseconds"
 
   output "requestCounter"
   output "success"
+}
+
+function "Base64Encode", {
+  description "encodes the given string as base64"
+  path "{{ libPath }}/std/base64/encode"
+
+  input "text"
+
+  output "encoded"
 }
